@@ -87,13 +87,7 @@ const Field: React.FC<FieldProps> = ({ label, id, ...rest }) => (
 // ─── Login Form ───────────────────────────────────────────────────────────────
 
 const LoginForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
-  const {
-    login,
-    error,
-    clearError,
-    isLoading: authLoading,
-    roleRedirectPath,
-  } = useAuthContext();
+  const { login, error, clearError, roleRedirectPath } = useAuthContext();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -255,12 +249,7 @@ const ROLES: {
 ];
 
 const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
-  const {
-    register,
-    error,
-    clearError,
-    isLoading: authLoading,
-  } = useAuthContext();
+  const { register, error, clearError } = useAuthContext();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");

@@ -28,6 +28,8 @@ interface AuthContextValue {
   ) => Promise<void>;
   logout: () => Promise<void>;
   clearError: () => void;
+  refreshSession: () => Promise<void>;
+  getAccessToken: () => string | null;
 
   // Role helpers
   isOwner: () => boolean;
@@ -102,13 +104,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const init = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        console.log(
+          "[AuthContext] Initializing - checking for existing session...",
+        );
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error("[AuthContext] Session check error:", error);
+          throw error;
+        }
+
         if (mounted) {
-          await hydrateFromSession(data.session);
+          if (data.session) {
+            console.log(
+              "[AuthContext] Found existing session, hydrating user...",
+            );
+            await hydrateFromSession(data.session);
+          } else {
+            console.log("[AuthContext] No existing session found");
+            setUser(null);
+          }
         }
       } catch (err) {
         // Network failure or Supabase project paused
         const msg = err instanceof Error ? err.message : String(err);
+        console.error("[AuthContext] Initialization error:", msg);
         if (mounted) {
           setError(
             msg.includes("fetch")
@@ -123,19 +143,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     init();
 
+    // Listen for auth state changes (login, logout, token refresh)
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      async (event, newSession) => {
+        console.log("[AuthContext] Auth state changed:", event);
         if (mounted) {
-          // Don't touch isLoading here - let login/register/logout manage it
-          // This prevents race conditions with button states
+          // Handle specific auth events
+          switch (event) {
+            case "SIGNED_IN":
+              console.log("[AuthContext] User signed in");
+              break;
+            case "SIGNED_OUT":
+              console.log("[AuthContext] User signed out");
+              setUser(null);
+              setSession(null);
+              break;
+            case "TOKEN_REFRESHED":
+              console.log("[AuthContext] Token refreshed");
+              break;
+            case "USER_UPDATED":
+              console.log("[AuthContext] User updated");
+              break;
+          }
+
+          // Update session state
           await hydrateFromSession(newSession);
         }
       },
     );
 
+    // Auto-refresh session when page becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden && mounted) {
+        console.log("[AuthContext] Page visible, checking session...");
+        supabase.auth.getSession().then(({ data }) => {
+          if (data.session && mounted) {
+            hydrateFromSession(data.session);
+          }
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       mounted = false;
       listener.subscription.unsubscribe();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [hydrateFromSession]);
 
@@ -249,13 +303,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const logout = async () => {
+    console.log("[AuthContext] Logging out...");
     setError(null);
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
+    console.log("[AuthContext] Logged out successfully");
   };
 
   const clearError = () => setError(null);
+
+  // Manually refresh the session (useful for long-running apps)
+  const refreshSession = async () => {
+    console.log("[AuthContext] Manually refreshing session...");
+    try {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error("[AuthContext] Session refresh failed:", error);
+        throw error;
+      }
+      if (data.session) {
+        console.log("[AuthContext] Session refreshed successfully");
+        await hydrateFromSession(data.session);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Session refresh failed";
+      console.error("[AuthContext] Refresh error:", msg);
+      setError(msg);
+    }
+  };
+
+  // Get current access token (useful for API calls to backend)
+  const getAccessToken = (): string | null => {
+    return session?.access_token ?? null;
+  };
 
   // ─── Role Helpers ────────────────────────────────────────────────────────────
 
@@ -288,6 +369,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         register,
         logout,
         clearError,
+        refreshSession,
+        getAccessToken,
         isOwner,
         isManager,
         isQC,

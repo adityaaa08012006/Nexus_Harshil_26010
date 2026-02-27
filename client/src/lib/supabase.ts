@@ -20,8 +20,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 console.log("[Supabase Client] Creating client...");
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-console.log("[Supabase Client] Client created successfully");
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Store session in localStorage for persistence across page reloads
+    storage: window.localStorage,
+    storageKey: "godam-auth-token",
+    autoRefreshToken: true, // Automatically refresh tokens before expiry
+    persistSession: true, // Persist session across browser sessions
+    detectSessionInUrl: true, // Detect auth redirects with session in URL
+  },
+});
+console.log(
+  "[Supabase Client] Client created successfully with session persistence",
+);
 
 // ─── Auth types ───────────────────────────────────────────────────────────────
 export type UserRole = "owner" | "manager" | "qc_rep";

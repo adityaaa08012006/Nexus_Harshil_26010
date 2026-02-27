@@ -281,7 +281,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               {initials}
             </div>
             <p className="text-white text-sm font-medium truncate">
-              {user?.full_name}
+              {user?.name}
             </p>
             <p className="text-xs truncate" style={{ color: "#a7d8a0" }}>
               {roleLabel}
