@@ -3,7 +3,19 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useInventory } from "../hooks/useInventory";
 import { useAuthContext } from "../context/AuthContext";
 import type { Batch, BatchInsert, BatchUpdate } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import { InventoryTable } from "../components/dashboard/InventoryTable";
+import { CROP_OPTIONS, UNIT_OPTIONS, GRADE_OPTIONS } from "../constants/cropOptions";
+
+interface FarmerContact {
+  id: string;
+  name: string;
+  phone: string | null;
+  location: string | null;
+  growing_crop: string | null;
+  crop_variety: string | null;
+}
+
 
 // ─── BatchModal Component ──────────────────────────────────────────────────────
 
@@ -39,15 +51,39 @@ const BatchModal: React.FC<BatchModalProps> = ({
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useCustomCrop, setUseCustomCrop] = useState(false);
+  const [customCrop, setCustomCrop] = useState("");
+  const [farmers, setFarmers] = useState<FarmerContact[]>([]);
+  const [loadingFarmers, setLoadingFarmers] = useState(false);
+  const [selectedFarmerId, setSelectedFarmerId] = useState<string>("");
+
+  // Fetch farmers from the database
+  useEffect(() => {
+    if (isOpen) {
+      setLoadingFarmers(true);
+      supabase
+        .from("contacts")
+        .select("id, name, phone, location, growing_crop, crop_variety")
+        .eq("type", "farmer")
+        .order("name")
+        .then(({ data }) => {
+          setFarmers(data ?? []);
+          setLoadingFarmers(false);
+        });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (batch) {
+      const isCustom = batch.crop && !CROP_OPTIONS.includes(batch.crop as any);
+      setUseCustomCrop(!!isCustom);
+      setCustomCrop(isCustom ? batch.crop : "");
       setFormData({
         batch_id: batch.batch_id,
         farmer_id: batch.farmer_id,
         farmer_name: batch.farmer_name ?? "",
         farmer_contact: batch.farmer_contact ?? "",
-        crop: batch.crop,
+        crop: isCustom ? "Other" : batch.crop,
         variety: batch.variety ?? "",
         quantity: batch.quantity,
         unit: batch.unit,
@@ -64,13 +100,44 @@ const BatchModal: React.FC<BatchModalProps> = ({
         ...prev,
         batch_id: `B-${timestamp}-${random}`.toUpperCase(),
       }));
+      setUseCustomCrop(false);
+      setCustomCrop("");
+      setSelectedFarmerId("");
     }
   }, [batch]);
+
+  // When a farmer is selected from the database, auto-fill fields
+  const handleFarmerSelect = (farmerId: string) => {
+    setSelectedFarmerId(farmerId);
+    if (!farmerId) return;
+    const farmer = farmers.find((f) => f.id === farmerId);
+    if (farmer) {
+      const isCustom = farmer.growing_crop && !CROP_OPTIONS.includes(farmer.growing_crop as any);
+      setFormData((prev) => ({
+        ...prev,
+        farmer_id: farmerId.substring(0, 8).toUpperCase(),
+        farmer_name: farmer.name,
+        farmer_contact: farmer.phone ?? "",
+        crop: isCustom ? "Other" : (farmer.growing_crop ?? prev.crop),
+        variety: farmer.crop_variety ?? prev.variety,
+      }));
+      if (isCustom) {
+        setUseCustomCrop(true);
+        setCustomCrop(farmer.growing_crop ?? "");
+      } else if (farmer.growing_crop) {
+        setUseCustomCrop(false);
+        setCustomCrop("");
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+
+    const resolvedCrop =
+      useCustomCrop || formData.crop === "Other" ? customCrop : formData.crop;
 
     try {
       if (batch) {
@@ -78,7 +145,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
         await onSubmit({
           farmer_name: formData.farmer_name || undefined,
           farmer_contact: formData.farmer_contact || undefined,
-          crop: formData.crop,
+          crop: resolvedCrop,
           variety: formData.variety || undefined,
           quantity: formData.quantity,
           unit: formData.unit,
@@ -94,7 +161,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
           farmer_id: formData.farmer_id,
           farmer_name: formData.farmer_name || undefined,
           farmer_contact: formData.farmer_contact || undefined,
-          crop: formData.crop,
+          crop: resolvedCrop,
           variety: formData.variety || undefined,
           quantity: formData.quantity,
           unit: formData.unit,
@@ -171,6 +238,38 @@ const BatchModal: React.FC<BatchModalProps> = ({
               style={{ borderColor: "#E5E7EB" }}
             />
           </div>
+
+          {/* Select from Farmer Database */}
+          {!batch && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select from Farmer Database
+              </label>
+              <select
+                value={selectedFarmerId}
+                onChange={(e) => handleFarmerSelect(e.target.value)}
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                style={
+                  {
+                    borderColor: "#E5E7EB",
+                    "--tw-ring-color": "#48A111",
+                  } as React.CSSProperties
+                }
+              >
+                <option value="">
+                  {loadingFarmers ? "Loading farmers..." : "-- Select a farmer (optional) --"}
+                </option>
+                {farmers.map((f) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name} {f.growing_crop ? `(${f.growing_crop})` : ""} {f.location ? `- ${f.location}` : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-400 mt-1">
+                Selecting a farmer auto-fills name, contact, and crop info
+              </p>
+            </div>
+          )}
 
           {/* Farmer info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -252,22 +351,72 @@ const BatchModal: React.FC<BatchModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Crop <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={formData.crop}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, crop: e.target.value }))
-                }
-                required
-                placeholder="e.g., Potato, Tomato"
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
-                style={
-                  {
-                    borderColor: "#E5E7EB",
-                    "--tw-ring-color": "#48A111",
-                  } as React.CSSProperties
-                }
-              />
+              {useCustomCrop ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customCrop}
+                    onChange={(e) => setCustomCrop(e.target.value)}
+                    required
+                    placeholder="Enter crop name"
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                    style={
+                      {
+                        borderColor: "#E5E7EB",
+                        "--tw-ring-color": "#48A111",
+                      } as React.CSSProperties
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUseCustomCrop(false);
+                      setCustomCrop("");
+                      setFormData((prev) => ({ ...prev, crop: "" }));
+                    }}
+                    className="px-3 py-2 text-xs font-medium rounded-lg border transition-colors hover:bg-gray-50"
+                    style={{ borderColor: "#E5E7EB", color: "#6B7280" }}
+                  >
+                    Use List
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <select
+                    value={formData.crop}
+                    onChange={(e) => {
+                      if (e.target.value === "Other") {
+                        setUseCustomCrop(true);
+                        setFormData((prev) => ({ ...prev, crop: "Other" }));
+                      } else {
+                        setFormData((prev) => ({ ...prev, crop: e.target.value }));
+                      }
+                    }}
+                    required
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                    style={
+                      {
+                        borderColor: "#E5E7EB",
+                        "--tw-ring-color": "#48A111",
+                      } as React.CSSProperties
+                    }
+                  >
+                    <option value="">Select crop</option>
+                    {CROP_OPTIONS.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setUseCustomCrop(true)}
+                    className="px-3 py-2 text-xs font-medium rounded-lg text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: "#48A111" }}
+                    title="Manually enter crop name"
+                  >
+                    ✏️ Custom
+                  </button>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -291,9 +440,34 @@ const BatchModal: React.FC<BatchModalProps> = ({
             </div>
           </div>
 
-          {/* Quantity + Zone */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
+          {/* Grade */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Grade
+            </label>
+            <select
+              value={(formData as any).grade ?? ""}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, grade: e.target.value } as any))
+              }
+              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+              style={
+                {
+                  borderColor: "#E5E7EB",
+                  "--tw-ring-color": "#48A111",
+                } as React.CSSProperties
+              }
+            >
+              <option value="">Select grade (optional)</option>
+              {GRADE_OPTIONS.map((g) => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Quantity + Unit + Zone */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="sm:col-span-1">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Quantity <span className="text-red-500">*</span>
               </label>
@@ -318,7 +492,29 @@ const BatchModal: React.FC<BatchModalProps> = ({
                 }
               />
             </div>
-            <div>
+            <div className="sm:col-span-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Unit
+              </label>
+              <select
+                value={formData.unit}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, unit: e.target.value }))
+                }
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                style={
+                  {
+                    borderColor: "#E5E7EB",
+                    "--tw-ring-color": "#48A111",
+                  } as React.CSSProperties
+                }
+              >
+                {UNIT_OPTIONS.map((u) => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
+            </div>
+            <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Zone <span className="text-red-500">*</span>
               </label>

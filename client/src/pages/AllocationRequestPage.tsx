@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAllocations } from "../hooks/useAllocations";
 import type { AllocationInsert, AllocationRequest } from "../lib/supabase";
+import { CROP_OPTIONS, UNIT_OPTIONS, GRADE_OPTIONS } from "../constants/cropOptions";
 
 // ─── Status badge helpers ───────────────────────────────────────────────────
 
@@ -42,15 +43,21 @@ const RequestModal: React.FC<RequestModalProps> = ({ isOpen, onClose, onSubmit }
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [useCustomCrop, setUseCustomCrop] = useState(false);
+  const [customCrop, setCustomCrop] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      await onSubmit(formData);
+      const resolvedCrop =
+        useCustomCrop || formData.crop === "Other" ? customCrop : formData.crop;
+      await onSubmit({ ...formData, crop: resolvedCrop });
       onClose();
       setFormData({ crop: "", quantity: 0, location: "", unit: "kg" });
+      setUseCustomCrop(false);
+      setCustomCrop("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit request");
     } finally {
@@ -83,14 +90,61 @@ const RequestModal: React.FC<RequestModalProps> = ({ isOpen, onClose, onSubmit }
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Crop *
               </label>
-              <input
-                required
-                value={formData.crop}
-                onChange={(e) => setFormData((p) => ({ ...p, crop: e.target.value }))}
-                placeholder="e.g. Tomatoes"
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
-                style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#48A111" } as React.CSSProperties}
-              />
+              {useCustomCrop ? (
+                <div className="flex gap-2">
+                  <input
+                    required
+                    value={customCrop}
+                    onChange={(e) => setCustomCrop(e.target.value)}
+                    placeholder="Enter crop name"
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                    style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#48A111" } as React.CSSProperties}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUseCustomCrop(false);
+                      setCustomCrop("");
+                      setFormData((p) => ({ ...p, crop: "" }));
+                    }}
+                    className="px-3 py-2 text-xs font-medium rounded-lg border transition-colors hover:bg-gray-50"
+                    style={{ borderColor: "#E5E7EB", color: "#6B7280" }}
+                  >
+                    Use List
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <select
+                    required
+                    value={formData.crop}
+                    onChange={(e) => {
+                      if (e.target.value === "Other") {
+                        setUseCustomCrop(true);
+                        setFormData((p) => ({ ...p, crop: "Other" }));
+                      } else {
+                        setFormData((p) => ({ ...p, crop: e.target.value }));
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                    style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#48A111" } as React.CSSProperties}
+                  >
+                    <option value="">Select crop</option>
+                    {CROP_OPTIONS.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setUseCustomCrop(true)}
+                    className="px-3 py-2 text-xs font-medium rounded-lg text-white transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: "#48A111" }}
+                    title="Manually enter crop/fruit name"
+                  >
+                    ✏️ Custom
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Variety */}
@@ -135,12 +189,29 @@ const RequestModal: React.FC<RequestModalProps> = ({ isOpen, onClose, onSubmit }
                   className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                   style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#48A111" } as React.CSSProperties}
                 >
-                  <option value="kg">kg</option>
-                  <option value="tonnes">tonnes</option>
-                  <option value="quintals">quintals</option>
-                  <option value="units">units</option>
+                  {UNIT_OPTIONS.map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
                 </select>
               </div>
+            </div>
+
+            {/* Grade */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Grade
+              </label>
+              <select
+                value={(formData as any).grade ?? ""}
+                onChange={(e) => setFormData((p) => ({ ...p, grade: e.target.value } as any))}
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
+                style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#48A111" } as React.CSSProperties}
+              >
+                <option value="">Select grade (optional)</option>
+                {GRADE_OPTIONS.map((g) => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
+              </select>
             </div>
 
             {/* Location */}

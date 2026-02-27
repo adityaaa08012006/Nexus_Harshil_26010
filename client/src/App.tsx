@@ -25,6 +25,7 @@ import { QCDashboard } from "./pages/QCDashboard";
 import { QCOrders } from "./pages/QCOrders";
 import { AllocationManagePage } from "./pages/AllocationManagePage";
 import { AllocationRequestPage } from "./pages/AllocationRequestPage";
+import { FarmerManagement } from "./pages/FarmerManagement";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
                         <Route path="sensors" element={<SensorMonitoring />} />
                         <Route path="alerts" element={<AlertsPage />} />
                         <Route path="allocations" element={<AllocationManagePage />} />
+                        <Route path="farmers" element={<FarmerManagement />} />
                       <Route
                           path="*"
                           element={<Navigate to="dashboard" replace />}
@@ -80,6 +82,7 @@ function App() {
                         <Route path="alerts" element={<AlertsPage />} />
                         <Route path="batch/:id" element={<BatchDetails />} />
                         <Route path="allocations" element={<AllocationManagePage />} />
+                        <Route path="farmers" element={<FarmerManagement />} />
                       <Route
                           path="*"
                           element={<Navigate to="dashboard" replace />}

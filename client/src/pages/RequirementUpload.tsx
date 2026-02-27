@@ -17,71 +17,9 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { supabase } from "../lib/supabase";
+import { CROP_OPTIONS, UNIT_OPTIONS, GRADE_OPTIONS } from "../constants/cropOptions";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
-// Common agricultural products for dropdowns
-const CROP_OPTIONS = [
-  "Rice",
-  "Wheat",
-  "Maize",
-  "Barley",
-  "Millet",
-  "Tomato",
-  "Onion",
-  "Potato",
-  "Cabbage",
-  "Cauliflower",
-  "Carrot",
-  "Peas",
-  "Mango",
-  "Apple",
-  "Banana",
-  "Grapes",
-  "Orange",
-  "Papaya",
-  "Guava",
-  "Lentils",
-  "Chickpeas",
-  "Kidney Beans",
-  "Black Gram",
-  "Green Gram",
-  "Groundnut",
-  "Soybean",
-  "Sunflower",
-  "Mustard",
-  "Turmeric",
-  "Chili",
-  "Coriander",
-  "Cumin",
-  "Ginger",
-  "Garlic",
-  "Cotton",
-  "Sugarcane",
-  "Tea",
-  "Coffee",
-  "Other",
-];
-
-const UNIT_OPTIONS = [
-  "kg",
-  "quintal",
-  "tonne",
-  "bags",
-  "crates",
-  "boxes",
-  "pieces",
-];
-
-const GRADE_OPTIONS = [
-  "Grade A",
-  "Grade B",
-  "Grade C",
-  "Premium",
-  "Standard",
-  "Organic",
-  "No specification",
-];
 
 export const RequirementUpload: React.FC = () => {
   const navigate = useNavigate();
@@ -620,20 +558,61 @@ export const RequirementUpload: React.FC = () => {
                       {index + 1}
                     </td>
                     <td className="py-3 px-4">
-                      <select
-                        value={item.crop || ""}
-                        onChange={(e) =>
-                          updateItem(index, "crop", e.target.value)
-                        }
-                        className="w-full min-w-[140px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      >
-                        <option value="">Select crop</option>
-                        {CROP_OPTIONS.map((crop) => (
-                          <option key={crop} value={crop}>
-                            {crop}
-                          </option>
-                        ))}
-                      </select>
+                      {item._customCrop ? (
+                        <div className="flex gap-1">
+                          <input
+                            type="text"
+                            value={item.crop || ""}
+                            onChange={(e) =>
+                              updateItem(index, "crop", e.target.value)
+                            }
+                            placeholder="Enter crop/fruit"
+                            className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updateItem(index, "_customCrop", false);
+                              updateItem(index, "crop", "");
+                            }}
+                            className="px-2 py-1 text-xs rounded border border-gray-300 hover:bg-gray-50 whitespace-nowrap"
+                            title="Switch to dropdown"
+                          >
+                            📋
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-1">
+                          <select
+                            value={item.crop || ""}
+                            onChange={(e) => {
+                              if (e.target.value === "Other") {
+                                updateItem(index, "_customCrop", true);
+                                updateItem(index, "crop", "");
+                              } else {
+                                updateItem(index, "crop", e.target.value);
+                              }
+                            }}
+                            className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          >
+                            <option value="">Select crop</option>
+                            {CROP_OPTIONS.map((crop) => (
+                              <option key={crop} value={crop}>
+                                {crop}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => updateItem(index, "_customCrop", true)}
+                            className="px-2 py-1 text-xs rounded text-white whitespace-nowrap"
+                            style={{ backgroundColor: "#48A111" }}
+                            title="Manually enter fruit/type"
+                          >
+                            ✏️
+                          </button>
+                        </div>
+                      )}
                     </td>
                     <td className="py-3 px-4">
                       <input
@@ -758,20 +737,60 @@ export const RequirementUpload: React.FC = () => {
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       Crop *
                     </label>
-                    <select
-                      value={item.crop || ""}
-                      onChange={(e) =>
-                        updateItem(index, "crop", e.target.value)
-                      }
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    >
-                      <option value="">Select crop</option>
-                      {CROP_OPTIONS.map((crop) => (
-                        <option key={crop} value={crop}>
-                          {crop}
-                        </option>
-                      ))}
-                    </select>
+                    {item._customCrop ? (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={item.crop || ""}
+                          onChange={(e) =>
+                            updateItem(index, "crop", e.target.value)
+                          }
+                          placeholder="Enter crop/fruit name"
+                          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            updateItem(index, "_customCrop", false);
+                            updateItem(index, "crop", "");
+                          }}
+                          className="px-3 py-2 text-xs rounded border border-gray-300 hover:bg-gray-50"
+                        >
+                          Use List
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <select
+                          value={item.crop || ""}
+                          onChange={(e) => {
+                            if (e.target.value === "Other") {
+                              updateItem(index, "_customCrop", true);
+                              updateItem(index, "crop", "");
+                            } else {
+                              updateItem(index, "crop", e.target.value);
+                            }
+                          }}
+                          className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        >
+                          <option value="">Select crop</option>
+                          {CROP_OPTIONS.map((crop) => (
+                            <option key={crop} value={crop}>
+                              {crop}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => updateItem(index, "_customCrop", true)}
+                          className="px-3 py-2 text-xs rounded text-white"
+                          style={{ backgroundColor: "#48A111" }}
+                          title="Manually enter fruit/type"
+                        >
+                          ✏️ Custom
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Variety */}
