@@ -145,3 +145,64 @@ export interface Alert {
   triggered_at: string;
   created_at: string;
 }
+
+// ─── Allocation types ─────────────────────────────────────────────────────────
+export type AllocationStatus =
+  | "pending"
+  | "reviewing"
+  | "allocated"
+  | "dispatched"
+  | "completed"
+  | "cancelled";
+
+export interface AllocationRequest {
+  id: string;
+  request_id: string;
+  requester_id: string;
+  crop: string;
+  variety?: string | null;
+  quantity: number;
+  unit: string;
+  deadline?: string | null;
+  location: string;
+  price?: number | null;
+  status: AllocationStatus;
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string;
+  // Joined from user_profiles
+  requester?: {
+    name: string;
+    email: string;
+    role: string;
+  } | null;
+}
+
+export interface AllocationInsert {
+  crop: string;
+  variety?: string;
+  quantity: number;
+  unit?: string;
+  deadline?: string;
+  location: string;
+  price?: number;
+  notes?: string;
+}
+
+// ─── Dispatch types ───────────────────────────────────────────────────────────
+export type DispatchStatus = "pending" | "in-transit" | "delivered" | "cancelled";
+
+export interface Dispatch {
+  id: string;
+  dispatch_id: string;
+  batch_id: string;
+  allocation_id?: string | null;
+  destination: string;
+  dispatch_date: string;
+  quantity: number;
+  unit: string;
+  status: DispatchStatus;
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string;
+}

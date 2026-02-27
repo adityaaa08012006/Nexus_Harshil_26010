@@ -19,6 +19,8 @@ import { BatchDetails } from "./pages/BatchDetails";
 import { SensorMonitoring } from "./pages/SensorMonitoring";
 import { AlertsPage } from "./pages/AlertsPage";
 import { WarehousesPage } from "./pages/WarehousesPage";
+import { AllocationManagePage } from "./pages/AllocationManagePage";
+import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 
 function App() {
   return (
@@ -44,6 +46,7 @@ function App() {
                       <Route path="batch/:id" element={<BatchDetails />} />
                       <Route path="sensors" element={<SensorMonitoring />} />
                       <Route path="alerts" element={<AlertsPage />} />
+                      <Route path="allocations" element={<AllocationManagePage />} />
                       <Route
                         path="*"
                         element={<Navigate to="dashboard" replace />}
@@ -68,6 +71,7 @@ function App() {
                       <Route path="sensors" element={<SensorMonitoring />} />
                       <Route path="alerts" element={<AlertsPage />} />
                       <Route path="batch/:id" element={<BatchDetails />} />
+                      <Route path="allocations" element={<AllocationManagePage />} />
                       <Route
                         path="*"
                         element={<Navigate to="dashboard" replace />}
@@ -79,7 +83,7 @@ function App() {
             }
           />
 
-          {/* ── QC routes (placeholder for now) ── */}
+          {/* ── QC routes ── */}
           <Route
             path="/qc/*"
             element={
@@ -87,7 +91,8 @@ function App() {
                 <RoleRoute allowedRoles={["qc_rep"]}>
                   <AppLayout>
                     <Routes>
-                      <Route path="dashboard" element={<QCPlaceholder />} />
+                      <Route path="dashboard" element={<AllocationRequestPage />} />
+                      <Route path="allocations" element={<AllocationRequestPage />} />
                       <Route path="inventory" element={<InventoryPage />} />
                       <Route path="alerts" element={<AlertsPage />} />
                       <Route path="batch/:id" element={<BatchDetails />} />
@@ -109,17 +114,5 @@ function App() {
     </Router>
   );
 }
-
-// ── QC Placeholder Dashboard ───────────────────────────────────────────────────
-
-const QCPlaceholder: React.FC = () => (
-  <div className="flex flex-col items-center justify-center h-64">
-    <span className="text-4xl mb-4">🔬</span>
-    <h2 className="text-xl font-bold mb-2" style={{ color: "#25671E" }}>
-      QC Dashboard
-    </h2>
-    <p className="text-sm text-gray-500">Coming soon in Phase III</p>
-  </div>
-);
 
 export default App;

@@ -1,14 +1,21 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 import cron from "node-cron";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: resolve(__dirname, ".env") });
 import authRoutes from "./routes/auth.js";
 import sensorRoutes from "./routes/sensors.js";
 import warehouseRoutes from "./routes/warehouses.js";
+import allocationRoutes from "./routes/allocation.js";
 import { createClient } from "@supabase/supabase-js";
 import { calculateRiskScore } from "./utils/riskCalculation.js";
 
-dotenv.config();
+// dotenv already loaded above with absolute path
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,8 +56,9 @@ app.use("/api/sensors", sensorRoutes);
 console.log("  ✅ /api/sensors");
 app.use("/api/warehouses", warehouseRoutes);
 console.log("  ✅ /api/warehouses");
+app.use("/api/allocation", allocationRoutes);
+console.log("  ✅ /api/allocation");
 // app.use('/api/inventory', inventoryRoutes)
-// app.use('/api/allocation', allocationRoutes)
 // app.use('/api/contacts', contactRoutes)
 // app.use('/api/pdf-parse', pdfParseRoutes)
 
