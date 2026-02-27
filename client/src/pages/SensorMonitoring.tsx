@@ -1,9 +1,17 @@
 import React, { useState } from "react";
-import { Warehouse, RefreshCw, Settings, Activity } from "lucide-react";
+import {
+  Warehouse,
+  RefreshCw,
+  Settings,
+  Activity,
+  Download,
+} from "lucide-react";
 import { SensorCard } from "../components/sensors/SensorCard";
 import { useEnvironmentalData } from "../hooks/useEnvironmentalData";
 import { useAuthContext } from "../context/AuthContext";
 import { useWarehouse } from "../context/WarehouseContext";
+import ThresholdConfigModal from "../components/sensors/ThresholdConfigModal";
+import HistoricalChartsSection from "../components/sensors/HistoricalChartsSection";
 
 const ZONES = ["Grain Storage", "Cold Storage", "Dry Storage", "Fresh Produce"];
 
@@ -19,6 +27,7 @@ export const SensorMonitoring: React.FC = () => {
   const [selectedZone, setSelectedZone] = useState<string>(ZONES[0]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
+  const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
 
   // Use selected warehouse ID from context
   const warehouseId = selectedWarehouseId || null;
@@ -31,6 +40,7 @@ export const SensorMonitoring: React.FC = () => {
     isLoading,
     error,
     refetch,
+    updateThreshold,
     simulateData,
   } = useEnvironmentalData(warehouseId, undefined, 10000);
 
@@ -55,6 +65,55 @@ export const SensorMonitoring: React.FC = () => {
     } finally {
       setIsSimulating(false);
     }
+  };
+
+  // Handle CSV export of current zone readings
+  const handleExportCSV = () => {
+    if (!zoneReading) {
+      alert("No sensor data available to export");
+      return;
+    }
+
+    // Prepare CSV data
+    const headers = [
+      "Timestamp",
+      "Zone",
+      "Temperature (°C)",
+      "Humidity (%)",
+      "Ethylene (ppm)",
+      "CO₂ (ppm)",
+      "Ammonia (ppm)",
+    ];
+
+    const row = [
+      new Date(zoneReading.reading_time).toLocaleString(),
+      zoneReading.zone,
+      zoneReading.temperature.toFixed(2),
+      zoneReading.humidity.toFixed(2),
+      zoneReading.ethylene.toFixed(2),
+      zoneReading.co2.toFixed(2),
+      zoneReading.ammonia.toFixed(2),
+    ];
+
+    // Create CSV content
+    const csvContent = [headers.join(","), row.join(",")].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `sensor-data-${selectedZone.replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (warehousesLoading) {
@@ -194,9 +253,20 @@ export const SensorMonitoring: React.FC = () => {
                 Refresh
               </button>
 
-              {/* Settings button (placeholder) */}
+              {/* Export CSV button */}
               <button
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors"
+                onClick={handleExportCSV}
+                disabled={!zoneReading}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-4 h-4" />
+                Export CSV
+              </button>
+
+              {/* Settings button */}
+              <button
+                onClick={() => setIsThresholdModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors hover:opacity-90"
                 style={{ backgroundColor: "#48A111" }}
               >
                 <Settings className="w-4 h-4" />
@@ -280,71 +350,79 @@ export const SensorMonitoring: React.FC = () => {
 
         {/* Sensor Cards Grid */}
         {zoneReading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <SensorCard
-              reading={zoneReading}
-              threshold={zoneThreshold}
-              sensorType="temperature"
-            />
-            <SensorCard
-              reading={zoneReading}
-              threshold={zoneThreshold}
-              sensorType="humidity"
-            />
-            <SensorCard
-              reading={zoneReading}
-              threshold={zoneThreshold}
-              sensorType="ethylene"
-            />
-            <SensorCard
-              reading={zoneReading}
-              threshold={zoneThreshold}
-              sensorType="co2"
-            />
-            <SensorCard
-              reading={zoneReading}
-              threshold={zoneThreshold}
-              sensorType="ammonia"
-            />
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <SensorCard
+                reading={zoneReading}
+                threshold={zoneThreshold}
+                sensorType="temperature"
+              />
+              <SensorCard
+                reading={zoneReading}
+                threshold={zoneThreshold}
+                sensorType="humidity"
+              />
+              <SensorCard
+                reading={zoneReading}
+                threshold={zoneThreshold}
+                sensorType="ethylene"
+              />
+              <SensorCard
+                reading={zoneReading}
+                threshold={zoneThreshold}
+                sensorType="co2"
+              />
+              <SensorCard
+                reading={zoneReading}
+                threshold={zoneThreshold}
+                sensorType="ammonia"
+              />
 
-            {/* Zone Info Card */}
-            <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <Warehouse className="w-6 h-6 text-blue-600" />
+              {/* Zone Info Card */}
+              <div className="bg-white p-6 rounded-lg border-2 border-gray-200">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Warehouse className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900">Zone Info</h3>
                 </div>
-                <h3 className="font-semibold text-gray-900">Zone Info</h3>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Zone:</span>
-                  <span className="font-medium text-gray-900">
-                    {selectedZone}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Active Alerts:</span>
-                  <span
-                    className={`font-medium ${alerts.filter((a) => a.zone === selectedZone).length > 0 ? "text-red-600" : "text-green-600"}`}
-                  >
-                    {alerts.filter((a) => a.zone === selectedZone).length}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Last Update:</span>
-                  <span className="font-medium text-gray-900">
-                    {new Date(zoneReading.reading_time).toLocaleTimeString()}
-                  </span>
-                </div>
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                    Auto-refreshing every 10 seconds
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Zone:</span>
+                    <span className="font-medium text-gray-900">
+                      {selectedZone}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Active Alerts:</span>
+                    <span
+                      className={`font-medium ${alerts.filter((a) => a.zone === selectedZone).length > 0 ? "text-red-600" : "text-green-600"}`}
+                    >
+                      {alerts.filter((a) => a.zone === selectedZone).length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Last Update:</span>
+                    <span className="font-medium text-gray-900">
+                      {new Date(zoneReading.reading_time).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                      Auto-refreshing every 10 seconds
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+
+            {/* Historical Charts Section */}
+            <HistoricalChartsSection
+              warehouseId={warehouseId}
+              selectedZone={selectedZone}
+            />
+          </>
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <p className="text-gray-600">
@@ -359,6 +437,15 @@ export const SensorMonitoring: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Threshold Configuration Modal */}
+      <ThresholdConfigModal
+        isOpen={isThresholdModalOpen}
+        onClose={() => setIsThresholdModalOpen(false)}
+        zone={selectedZone}
+        currentThreshold={zoneThreshold}
+        onSave={updateThreshold}
+      />
     </div>
   );
 };
