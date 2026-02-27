@@ -17,12 +17,17 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { supabase } from "../lib/supabase";
-import { CROP_OPTIONS, UNIT_OPTIONS, GRADE_OPTIONS } from "../constants/cropOptions";
+import {
+  CROP_OPTIONS,
+  UNIT_OPTIONS,
+  GRADE_OPTIONS,
+} from "../constants/cropOptions";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export const RequirementUpload: React.FC = () => {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<"pdf" | "manual">("pdf");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [parsing, setParsing] = useState(false);
@@ -315,14 +320,41 @@ export const RequirementUpload: React.FC = () => {
           </button>
           <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900">
-              Upload PDF Requirements
+              Upload Requirements
             </h1>
           </div>
         </div>
         <p className="text-sm text-gray-600 ml-11">
-          Upload a PDF document with agricultural product requirements. Our AI
-          will automatically extract and organize the details for you.
+          Upload a PDF or manually enter agricultural product requirements.
         </p>
+      </div>
+
+      {/* ── Mode Selector ── */}
+      <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setMode("pdf")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              mode === "pdf"
+                ? "bg-green-600 text-white shadow-md"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            <Upload className="w-5 h-5" />
+            Upload PDF
+          </button>
+          <button
+            onClick={() => setMode("manual")}
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+              mode === "manual"
+                ? "bg-green-600 text-white shadow-md"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            <Plus className="w-5 h-5" />
+            Manual Entry
+          </button>
+        </div>
       </div>
 
       {/* ── Error/Success Messages ── */}
@@ -364,8 +396,8 @@ export const RequirementUpload: React.FC = () => {
         </div>
       )}
 
-      {/* ── Upload Section ── */}
-      {items.length === 0 && (
+      {/* ── Upload Section (PDF Mode) ── */}
+      {mode === "pdf" && items.length === 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
           {/* Drag & Drop Zone */}
           <div
@@ -458,6 +490,52 @@ export const RequirementUpload: React.FC = () => {
         </div>
       )}
 
+      {/* ── Manual Entry Section ── */}
+      {mode === "manual" && items.length === 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+          <div className="text-center space-y-4">
+            <div
+              className="w-16 h-16 mx-auto rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "#E8F5E9" }}
+            >
+              <Package className="w-8 h-8" style={{ color: "#48A111" }} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                Manually Add Requirements
+              </h3>
+              <p className="text-sm text-gray-500">
+                Click the button below to start adding items to your list
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setItems([
+                  {
+                    crop: "",
+                    variety: "",
+                    quantity: "",
+                    unit: "kg",
+                    location: "",
+                    deadline: "",
+                    grade: "No specification",
+                    price: "",
+                    notes: "",
+                    confidence: 1.0,
+                  },
+                ]);
+                setFilename("Manual Entry");
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 text-white rounded-lg font-medium transition-all hover:opacity-90 shadow-sm"
+              style={{ backgroundColor: "#48A111" }}
+            >
+              <Plus className="w-5 h-5" />
+              Start Adding Items
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Parsed Items ── */}
       {items.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -466,7 +544,7 @@ export const RequirementUpload: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">
-                  📋 Extracted Items ({items.length})
+                  📋 Requirements List ({items.length})
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
                   {!parsedId
@@ -604,7 +682,9 @@ export const RequirementUpload: React.FC = () => {
                           </select>
                           <button
                             type="button"
-                            onClick={() => updateItem(index, "_customCrop", true)}
+                            onClick={() =>
+                              updateItem(index, "_customCrop", true)
+                            }
                             className="px-2 py-1 text-xs rounded text-white whitespace-nowrap"
                             style={{ backgroundColor: "#48A111" }}
                             title="Manually enter fruit/type"
@@ -906,23 +986,39 @@ export const RequirementUpload: React.FC = () => {
                     />
                   </div>
 
+                  {/* Price (Optional) */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Price per Unit (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      value={item.price || ""}
+                      onChange={(e) =>
+                        updateItem(index, "price", e.target.value)
+                      }
+                      placeholder="Optional"
+                      min="0"
+                      step="0.01"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </div>
+
                   {/* Notes */}
-                  {item.notes && (
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Notes
-                      </label>
-                      <textarea
-                        value={item.notes || ""}
-                        onChange={(e) =>
-                          updateItem(index, "notes", e.target.value)
-                        }
-                        placeholder="Additional notes"
-                        rows={2}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                      />
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Notes (Optional)
+                    </label>
+                    <textarea
+                      value={item.notes || ""}
+                      onChange={(e) =>
+                        updateItem(index, "notes", e.target.value)
+                      }
+                      placeholder="Additional notes (optional)"
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                    />
+                  </div>
                 </div>
               </div>
             ))}

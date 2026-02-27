@@ -7,6 +7,7 @@
 ## 📋 Development Status
 
 ### Deferred Features (To Be Implemented)
+
 - **Problem Statement Section**: Interactive split-screen section showcasing crisis statistics and solutions
   - Left panel: Crisis metrics and critical gaps
   - Right panel: Godam's solutions and benefits
@@ -29,6 +30,38 @@ By integrating:
 Godam Solutions transforms traditional warehouses into intelligent, optimized decision-making hubs.
 
 The platform bridges farmers, warehouse managers, and buyers through a structured and intelligent ecosystem, minimizing waste and maximizing value realization.
+
+---
+
+## 📁 Project Structure
+
+The project is organized into a clean, maintainable structure:
+
+```
+├── client/              # React + TypeScript frontend
+├── server/              # Node.js + Express backend
+│   ├── config/          # Configuration files
+│   ├── database/        # Database files
+│   │   ├── migrations/  # SQL migration files
+│   │   └── seeds/       # Database seed scripts
+│   ├── middleware/      # Express middleware
+│   ├── routes/          # API routes
+│   ├── scripts/         # Utility scripts
+│   └── utils/           # Helper functions
+├── docs/                # Documentation
+│   ├── archive/         # Historical implementation notes
+│   ├── setup/           # Setup and configuration guides
+│   └── PROJECT_STRUCTURE.md  # Detailed structure documentation
+├── test-data/           # Sample data for testing
+├── README.md            # This file
+└── LICENSE
+```
+
+**Quick Navigation:**
+
+- [Full Project Structure](docs/PROJECT_STRUCTURE.md) - Detailed documentation
+- [Setup Guide](docs/setup/SUPABASE_SETUP.md) - Database configuration
+- [Testing Guide](docs/setup/TESTING_SETUP.md) - Testing environment setup
 
 ---
 
