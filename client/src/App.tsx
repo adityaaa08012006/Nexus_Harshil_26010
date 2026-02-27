@@ -162,7 +162,12 @@ function App() {
                           />
                           <Route path="pdf-history" element={<PdfHistory />} />
                           <Route path="orders" element={<QCOrders />} />
-                        <Route path="tracking" element={<QCOrderTracking />} />
+                          <Route
+                            path="tracking"
+                            element={<QCOrderTracking />}
+                          />
+                          <Route path="contacts" element={<ContactInfo />} />
+                          <Route path="contacts" element={<QCContactInfo />} />
                           <Route path="inventory" element={<InventoryPage />} />
                           <Route path="alerts" element={<AlertsPage />} />
                           <Route path="batch/:id" element={<BatchDetails />} />
