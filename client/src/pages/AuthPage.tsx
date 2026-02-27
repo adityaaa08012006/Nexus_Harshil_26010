@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import type { UserRole } from "../lib/supabase";
+import logo from "../assets/logo.png";
 
 // ─── Role Selection Card ──────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ const RoleCard: React.FC<RoleCardProps> = ({
   <button
     type="button"
     onClick={onSelect}
-    className="relative w-full text-left rounded-xl p-4 border-2 transition-all duration-200 focus:outline-none"
+    className="relative w-full aspect-square text-left rounded-xl p-4 border-2 transition-all duration-200 focus:outline-none flex flex-col items-center justify-center"
     style={{
       borderColor: selected ? "#48A111" : "rgba(37,103,30,0.15)",
       backgroundColor: selected ? "rgba(72,161,17,0.07)" : "#fff",
@@ -32,18 +33,18 @@ const RoleCard: React.FC<RoleCardProps> = ({
   >
     {selected && (
       <span
-        className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white"
+        className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
         style={{ backgroundColor: "#48A111" }}
       >
         ✓
       </span>
     )}
-    <span className="block text-2xl mb-1">{icon}</span>
-    <span className="block text-sm font-bold" style={{ color: "#25671E" }}>
+    <span className="block text-3xl mb-2">{icon}</span>
+    <span className="block text-sm font-bold text-center" style={{ color: "#25671E" }}>
       {title}
     </span>
     <span
-      className="block text-xs mt-0.5"
+      className="block text-xs mt-1 text-center"
       style={{ color: "rgba(37,103,30,0.6)" }}
     >
       {description}
@@ -252,6 +253,7 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
   const { register, error, clearError } = useAuthContext();
   const navigate = useNavigate();
 
+  const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -260,18 +262,37 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
   const [localError, setLocalError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
     setLocalError("");
-    if (password !== confirm) {
-      setLocalError("Passwords do not match");
+    clearError();
+    
+    // Validate step 1 fields
+    if (!name.trim()) {
+      setLocalError("Please enter your full name");
+      return;
+    }
+    if (!email.trim()) {
+      setLocalError("Please enter your email address");
       return;
     }
     if (password.length < 6) {
       setLocalError("Password must be at least 6 characters");
       return;
     }
+    if (password !== confirm) {
+      setLocalError("Passwords do not match");
+      return;
+    }
+    
+    setStep(2);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    clearError();
+    setLocalError("");
+    
     setIsSubmitting(true);
     try {
       await register(name, email, password, role);
@@ -294,14 +315,111 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
   const displayError = localError || error;
   const isDisabled = isSubmitting;
 
+  // Step 1: Basic Information
+  if (step === 1) {
+    return (
+      <form onSubmit={handleNext} className="flex flex-col gap-4">
+        <div>
+          <h2 className="text-2xl font-extrabold" style={{ color: "#25671E" }}>
+            Create account
+          </h2>
+          <p className="text-sm mt-1" style={{ color: "rgba(37,103,30,0.6)" }}>
+            Join Godam Solutions — let's get started
+          </p>
+        </div>
+
+        {displayError && (
+          <div
+            className="px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2"
+            style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }}
+          >
+            <span>⚠️</span> {displayError}
+          </div>
+        )}
+
+        <Field
+          label="Full name"
+          id="reg-name"
+          type="text"
+          placeholder="Ravi Kumar"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+        <Field
+          label="Email address"
+          id="reg-email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+        <Field
+          label="Password"
+          id="reg-password"
+          type="password"
+          placeholder="Min. 6 characters"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="new-password"
+        />
+        <Field
+          label="Confirm password"
+          id="reg-confirm"
+          type="password"
+          placeholder="Repeat password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          required
+          autoComplete="new-password"
+        />
+
+        <button
+          type="submit"
+          className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:opacity-90"
+          style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
+        >
+          Next →
+        </button>
+
+        <p
+          className="text-center text-sm"
+          style={{ color: "rgba(37,103,30,0.6)" }}
+        >
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={onSwitch}
+            className="font-semibold"
+            style={{ color: "#48A111" }}
+          >
+            Sign in
+          </button>
+        </p>
+      </form>
+    );
+  }
+
+  // Step 2: Role Selection
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div>
+        <button
+          type="button"
+          onClick={() => setStep(1)}
+          className="text-sm font-medium mb-3 flex items-center gap-1 transition-colors"
+          style={{ color: "#48A111" }}
+        >
+          ← Back
+        </button>
         <h2 className="text-2xl font-extrabold" style={{ color: "#25671E" }}>
-          Create account
+          Select your role
         </h2>
         <p className="text-sm mt-1" style={{ color: "rgba(37,103,30,0.6)" }}>
-          Join Godam Solutions — choose your role below
+          Choose how you'll use Godam Solutions
         </p>
       </div>
 
@@ -314,60 +432,15 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
         </div>
       )}
 
-      <Field
-        label="Full name"
-        id="reg-name"
-        type="text"
-        placeholder="Ravi Kumar"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <Field
-        label="Email address"
-        id="reg-email"
-        type="email"
-        placeholder="you@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        autoComplete="email"
-      />
-      <Field
-        label="Password"
-        id="reg-password"
-        type="password"
-        placeholder="Min. 6 characters"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        autoComplete="new-password"
-      />
-      <Field
-        label="Confirm password"
-        id="reg-confirm"
-        type="password"
-        placeholder="Repeat password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-        required
-        autoComplete="new-password"
-      />
-
-      <div>
-        <p className="text-sm font-medium mb-2" style={{ color: "#25671E" }}>
-          Select your role
-        </p>
-        <div className="grid grid-cols-3 gap-2">
-          {ROLES.map((r) => (
-            <RoleCard
-              key={r.role}
-              {...r}
-              selected={role === r.role}
-              onSelect={() => setRole(r.role)}
-            />
-          ))}
-        </div>
+      <div className="grid grid-cols-3 gap-3">
+        {ROLES.map((r) => (
+          <RoleCard
+            key={r.role}
+            {...r}
+            selected={role === r.role}
+            onSelect={() => setRole(r.role)}
+          />
+        ))}
       </div>
 
       <button
@@ -425,7 +498,7 @@ export const AuthPage: React.FC = () => {
     <div className="min-h-screen flex" style={{ backgroundColor: "#F7F0F0" }}>
       {/* ── Left Panel (hidden on mobile) ── */}
       <div
-        className="hidden lg:flex lg:w-1/2 xl:w-[55%] flex-col justify-between p-12 relative overflow-hidden"
+        className="hidden lg:flex lg:w-1/2 xl:w-[55%] flex-col items-center justify-center p-12 relative overflow-hidden"
         style={{
           background:
             "linear-gradient(140deg, #1a3a10 0%, #25671E 50%, #48A111 100%)",
@@ -433,98 +506,46 @@ export const AuthPage: React.FC = () => {
       >
         {/* Decorative circles */}
         <div
-          className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-10"
+          className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10"
           style={{
             backgroundColor: "#F2B50B",
             transform: "translate(30%, -30%)",
           }}
         />
         <div
-          className="absolute bottom-0 left-0 w-56 h-56 rounded-full opacity-10"
+          className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-10"
           style={{
             backgroundColor: "#48A111",
             transform: "translate(-30%, 30%)",
           }}
         />
 
-        {/* Logo */}
-        <div className="flex items-center gap-3 z-10">
-          <span className="text-3xl">🌾</span>
-          <div>
-            <span
-              className="text-xl font-extrabold"
-              style={{ color: "#F7F0F0" }}
-            >
-              Godam
-            </span>
-            <span
-              className="text-xl font-light ml-1"
-              style={{ color: "#F2B50B" }}
-            >
-              Solutions
-            </span>
+        {/* Centered Content */}
+        <div className="z-10 text-center">
+          {/* Logo */}
+          <div className="mb-8 flex justify-center">
+            <img 
+              src={logo} 
+              alt="Godam AI" 
+              className="h-32 w-auto object-contain drop-shadow-2xl"
+            />
           </div>
-        </div>
-
-        {/* Main content */}
-        <div className="z-10">
+          
+          {/* Godam AI Title */}
           <h1
-            className="text-4xl xl:text-5xl font-extrabold leading-tight mb-6"
+            className="text-5xl xl:text-6xl font-bold mb-6"
             style={{ color: "#F7F0F0" }}
           >
-            Intelligent Post-Harvest{" "}
-            <span style={{ color: "#F2B50B" }}>Warehouse</span> Optimization
+            Godam AI
           </h1>
+          
+          {/* Impactful Tagline */}
           <p
-            className="text-lg leading-relaxed mb-10"
-            style={{ color: "rgba(247,240,240,0.75)" }}
+            className="text-2xl xl:text-3xl font-light leading-relaxed"
+            style={{ color: "#F2B50B" }}
           >
-            Real-time spoilage detection, AI-powered allocation, and complete
-            batch traceability — from farm gate to market delivery.
+            Transforming Warehouses<br />with Intelligence
           </p>
-
-          {/* Feature pills */}
-          <div className="flex flex-wrap gap-3">
-            {[
-              "🌡️ Sensor Monitoring",
-              "📊 Risk Scoring",
-              "🎯 Smart Allocation",
-              "🤖 AI Parsing",
-              "♻️ Waste Reduction",
-            ].map((f) => (
-              <span
-                key={f}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold"
-                style={{
-                  backgroundColor: "rgba(247,240,240,0.12)",
-                  color: "#F7F0F0",
-                }}
-              >
-                {f}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* SDG Footer */}
-        <div className="z-10 flex items-center gap-3">
-          <div className="flex gap-2">
-            {["SDG 2 🌱", "SDG 9 🏗", "SDG 12 ♻️"].map((s) => (
-              <span
-                key={s}
-                className="text-xs px-2 py-1 rounded"
-                style={{
-                  backgroundColor: "rgba(247,240,240,0.1)",
-                  color: "rgba(247,240,240,0.65)",
-                }}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-          <span className="text-xs" style={{ color: "rgba(247,240,240,0.4)" }}>
-            SDG Aligned
-          </span>
         </div>
       </div>
 
