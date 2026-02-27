@@ -150,7 +150,7 @@ export default function SolutionSection() {
         {/* Additional Features */}
         <div ref={extraRef} className="scroll-reveal grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-16">
           {/* Traceability */}
-          <div className="bg-gradient-to-br from-godam-sun/5 to-orange-50 border-2 border-godam-sun/15 rounded-3xl p-8 hover:shadow-sun transition-all duration-300 hover:-translate-y-1">
+          <div className="bg-godam-sun/5 border-2 border-godam-sun/15 rounded-3xl p-8 hover:shadow-sun transition-all duration-300 hover:-translate-y-1">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-godam-sun/10 rounded-2xl flex items-center justify-center text-godam-sun flex-shrink-0">
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -176,7 +176,7 @@ export default function SolutionSection() {
           </div>
 
           {/* AI PDF Parsing */}
-          <div className="bg-gradient-to-br from-godam-forest/5 to-emerald-50 border-2 border-godam-forest/15 rounded-3xl p-8 hover:shadow-godam transition-all duration-300 hover:-translate-y-1">
+          <div className="bg-godam-forest/5 border-2 border-godam-forest/15 rounded-3xl p-8 hover:shadow-godam transition-all duration-300 hover:-translate-y-1">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-godam-forest/10 rounded-2xl flex items-center justify-center text-godam-forest flex-shrink-0">
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -208,7 +208,7 @@ export default function SolutionSection() {
         <div ref={ctaRef} className="scroll-reveal text-center">
           <Link
             to="/features"
-            className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-godam-forest to-godam-leaf text-white font-heading font-semibold rounded-2xl shadow-godam transition-all duration-300 hover:scale-[1.04] hover:shadow-godam-lg group"
+            className="inline-flex items-center space-x-3 px-8 py-4 bg-godam-forest text-white font-heading font-semibold rounded-2xl shadow-godam transition-all duration-300 hover:scale-[1.04] hover:shadow-godam-lg group"
           >
             <span>Explore All Features</span>
             <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

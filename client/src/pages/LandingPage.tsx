@@ -3,7 +3,7 @@ import { Button } from '../components/common/Button';
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+    <div className="min-h-screen bg-green-50">
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">

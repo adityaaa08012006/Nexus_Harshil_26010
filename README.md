@@ -4,6 +4,16 @@
 
 ---
 
+## 📋 Development Status
+
+### Deferred Features (To Be Implemented)
+- **Problem Statement Section**: Interactive split-screen section showcasing crisis statistics and solutions
+  - Left panel: Crisis metrics and critical gaps
+  - Right panel: Godam's solutions and benefits
+  - Status: Design approved, implementation deferred
+
+---
+
 ## 1️⃣ Executive Summary
 
 Godam Solutions is a scalable, data-driven warehouse management platform designed to reduce post-harvest losses in agricultural supply chains.

@@ -133,7 +133,7 @@ export default function CTASection() {
                 {[...Array(5)].map((_, i) => (
                   <div
                     key={i}
-                    className="w-10 h-10 rounded-full bg-gradient-to-br from-godam-leaf to-godam-forest border-2 border-white/30 flex items-center justify-center text-white font-heading font-bold text-sm"
+                    className="w-10 h-10 rounded-full bg-godam-leaf border-2 border-white/30 flex items-center justify-center text-white font-heading font-bold text-sm"
                   >
                     {String.fromCharCode(65 + i)}
                   </div>

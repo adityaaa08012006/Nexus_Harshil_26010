@@ -9,6 +9,7 @@ import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RoleRoute } from "./components/auth/RoleRoute";
 import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
 import { AuthPage } from "./pages/AuthPage";
 import { Dashboard } from "./pages/Dashboard";
 import { BatchDetails } from "./pages/BatchDetails";
@@ -46,6 +47,7 @@ function App() {
         <Routes>
           {/* ── Public ── */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/auth" element={<AuthPage />} />
 
           {/* ── Owner routes ── */}

@@ -4,12 +4,16 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "Missing Supabase environment variables. Check your .env.local file.",
+  console.warn(
+    "Missing Supabase environment variables. Some features will be disabled. Check your .env file.",
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Use placeholder values if not configured yet
+const url = supabaseUrl || "https://placeholder.supabase.co";
+const key = supabaseAnonKey || "placeholder-key";
+
+export const supabase = createClient(url, key);
 
 export type UserRole = "owner" | "manager" | "qc_rep";
 

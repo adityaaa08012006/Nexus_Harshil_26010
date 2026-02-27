@@ -12,7 +12,7 @@ const steps = [
         <circle cx="18.5" cy="18.5" r="2.5"/>
       </svg>
     ),
-    gradient: 'from-godam-forest to-godam-leaf',
+    bgColor: 'godam-forest',
   },
   {
     title: 'Sensors Monitor',
@@ -22,7 +22,7 @@ const steps = [
         <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z" />
       </svg>
     ),
-    gradient: 'from-godam-leaf to-godam-sun',
+    bgColor: 'godam-leaf',
   },
   {
     title: 'Demand Arrives',
@@ -35,7 +35,7 @@ const steps = [
         <line x1="16" y1="17" x2="8" y2="17"/>
       </svg>
     ),
-    gradient: 'from-godam-sun to-orange-500',
+    bgColor: 'godam-sun',
   },
   {
     title: 'Optimized Dispatch',
@@ -46,7 +46,7 @@ const steps = [
         <polyline points="22 4 12 14.01 9 11.01"/>
       </svg>
     ),
-    gradient: 'from-godam-forest to-godam-leaf',
+    bgColor: 'godam-forest',
   },
 ];
 
@@ -94,13 +94,13 @@ export default function WorkflowSection() {
             <div key={i} className="flex flex-col items-center text-center group" style={{ transitionDelay: `${i * 150}ms` }}>
               {/* Icon circle */}
               <div className="relative mb-6 group-hover:scale-110 transition-transform duration-500">
-                <div className={`absolute inset-0 bg-gradient-to-br ${step.gradient} rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity`} />
-                <div className={`relative w-24 h-24 bg-gradient-to-br ${step.gradient} rounded-full flex items-center justify-center shadow-lg`}>
+                <div className={`absolute inset-0 bg-${step.bgColor} rounded-full blur-xl opacity-40 group-hover:opacity-60 transition-opacity`} />
+                <div className={`relative w-24 h-24 bg-${step.bgColor} rounded-full flex items-center justify-center shadow-lg`}>
                   {step.icon}
                 </div>
                 {/* Step number */}
                 <div className="absolute -top-1 -right-1 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100">
-                  <span className={`text-sm font-heading font-bold bg-gradient-to-br ${step.gradient} bg-clip-text text-transparent`}>
+                  <span className={`text-sm font-heading font-bold text-${step.bgColor}`}>
                     {i + 1}
                   </span>
                 </div>
@@ -133,8 +133,8 @@ export default function WorkflowSection() {
                     <path d="M18 20V10M12 20V4M6 20v-6"/>
                   </svg>
                 ),
-                gradient: 'from-godam-forest to-godam-leaf',
-                bg: 'from-godam-forest/5 to-godam-leaf/5',
+                bgColor: 'godam-forest',
+                bgLight: 'godam-forest/5',
                 border: 'border-godam-leaf/15',
               },
               {
@@ -145,8 +145,8 @@ export default function WorkflowSection() {
                     <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                   </svg>
                 ),
-                gradient: 'from-godam-sun to-orange-500',
-                bg: 'from-godam-sun/5 to-orange-50',
+                bgColor: 'godam-sun',
+                bgLight: 'godam-sun/5',
                 border: 'border-godam-sun/15',
               },
               {
@@ -157,13 +157,13 @@ export default function WorkflowSection() {
                     <path d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 ),
-                gradient: 'from-godam-leaf to-godam-forest',
-                bg: 'from-godam-leaf/5 to-godam-forest/5',
+                bgColor: 'godam-leaf',
+                bgLight: 'godam-leaf/5',
                 border: 'border-godam-forest/15',
               },
             ].map((item, i) => (
-              <div key={i} className={`flex flex-col items-center text-center p-6 bg-gradient-to-br ${item.bg} rounded-2xl border ${item.border}`}>
-                <div className={`w-14 h-14 bg-gradient-to-br ${item.gradient} rounded-2xl flex items-center justify-center mb-4 shadow-md`}>
+              <div key={i} className={`flex flex-col items-center text-center p-6 bg-${item.bgLight} rounded-2xl border ${item.border}`}>
+                <div className={`w-14 h-14 bg-${item.bgColor} rounded-2xl flex items-center justify-center mb-4 shadow-md`}>
                   {item.icon}
                 </div>
                 <h4 className="font-heading font-bold text-gray-900 mb-1">{item.title}</h4>
