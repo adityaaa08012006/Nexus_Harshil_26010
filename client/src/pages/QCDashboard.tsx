@@ -446,7 +446,12 @@ export const QCDashboard: React.FC = () => {
         <ManualOrderModal
           onClose={() => setManualOrderOpen(false)}
           onSuccess={fetchDashboardData}
-          createRequest={createRequest}
+          createRequest={async (data) => {
+            const result = await createRequest(data);
+            if (result.error) {
+              throw new Error(result.error);
+            }
+          }}
         />
       )}
     </div>
@@ -462,9 +467,22 @@ interface ManualOrderModalProps {
 }
 
 const CROP_OPTIONS_LIST = [
-  "Tomatoes", "Potatoes", "Onions", "Apples", "Bananas",
-  "Cabbage", "Wheat", "Grapes", "Cauliflower", "Rice",
-  "Maize", "Soybean", "Sugarcane", "Carrots", "Peas", "Other",
+  "Tomatoes",
+  "Potatoes",
+  "Onions",
+  "Apples",
+  "Bananas",
+  "Cabbage",
+  "Wheat",
+  "Grapes",
+  "Cauliflower",
+  "Rice",
+  "Maize",
+  "Soybean",
+  "Sugarcane",
+  "Carrots",
+  "Peas",
+  "Other",
 ];
 
 const UNIT_OPTIONS_LIST = ["kg", "tonnes", "quintal", "boxes", "crates"];
@@ -495,7 +513,8 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
       if (!resolvedCrop) throw new Error("Please enter a crop name");
       if (!formData.quantity || formData.quantity <= 0)
         throw new Error("Please enter a valid quantity");
-      if (!formData.location) throw new Error("Please enter a delivery location");
+      if (!formData.location)
+        throw new Error("Please enter a delivery location");
       await createRequest({ ...formData, crop: resolvedCrop });
       onSuccess();
       onClose();
@@ -552,7 +571,9 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
                 >
                   <option value="">Select a crop…</option>
                   {CROP_OPTIONS_LIST.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -567,7 +588,11 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
                   />
                   <button
                     type="button"
-                    onClick={() => { setUseCustomCrop(false); setCustomCrop(""); setFormData((p) => ({ ...p, crop: "" })); }}
+                    onClick={() => {
+                      setUseCustomCrop(false);
+                      setCustomCrop("");
+                      setFormData((p) => ({ ...p, crop: "" }));
+                    }}
                     className="px-3 py-2 text-xs text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50"
                   >
                     List
@@ -579,12 +604,18 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
             {/* Variety (optional) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Variety <span className="text-gray-400 font-normal">(optional)</span>
+                Variety{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <input
                 type="text"
                 value={formData.variety ?? ""}
-                onChange={(e) => setFormData((p) => ({ ...p, variety: e.target.value || undefined }))}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    variety: e.target.value || undefined,
+                  }))
+                }
                 placeholder="e.g. Roma, Kufri Jyoti…"
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
@@ -600,7 +631,12 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
                   type="number"
                   min={1}
                   value={formData.quantity || ""}
-                  onChange={(e) => setFormData((p) => ({ ...p, quantity: parseFloat(e.target.value) || 0 }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      quantity: parseFloat(e.target.value) || 0,
+                    }))
+                  }
                   required
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
@@ -611,11 +647,15 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
                 </label>
                 <select
                   value={formData.unit}
-                  onChange={(e) => setFormData((p) => ({ ...p, unit: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, unit: e.target.value }))
+                  }
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   {UNIT_OPTIONS_LIST.map((u) => (
-                    <option key={u} value={u}>{u}</option>
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -629,7 +669,9 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
               <input
                 type="text"
                 value={formData.location}
-                onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, location: e.target.value }))
+                }
                 placeholder="City or address"
                 required
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -639,12 +681,18 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
             {/* Deadline (optional) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Deadline <span className="text-gray-400 font-normal">(optional)</span>
+                Deadline{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <input
                 type="date"
                 value={formData.deadline ?? ""}
-                onChange={(e) => setFormData((p) => ({ ...p, deadline: e.target.value || undefined }))}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    deadline: e.target.value || undefined,
+                  }))
+                }
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
@@ -652,11 +700,17 @@ const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
             {/* Notes (optional) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes <span className="text-gray-400 font-normal">(optional)</span>
+                Notes{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <textarea
                 value={formData.notes ?? ""}
-                onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value || undefined }))}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    notes: e.target.value || undefined,
+                  }))
+                }
                 rows={2}
                 placeholder="Any special requirements…"
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"

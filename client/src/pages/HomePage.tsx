@@ -1,5 +1,5 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import logo from "../assets/public/logo1.png";
 import GlassNavbar from '../components/home/GlassNavbar';
 import { 
@@ -301,72 +301,134 @@ export default function HomePage() {
 
 
 
-      {/* Call to Action Hub */}
-      <section className="py-10 md:py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10 md:mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-godam-forest mb-4">Ready to Transform Your Warehouse?</h2>
-            <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto">Choose your path to get started with Godam Solutions</p>
+      {/* Reimagined Call to Action Hub */}
+      <section className="relative py-24 bg-gradient-to-b from-white to-green-50/30 overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-godam-leaf/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-godam-forest/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-godam-forest to-godam-leaf mb-6 tracking-tight"
+            >
+              Ready to Transform Your Warehouse?
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed"
+            >
+              Choose your path to success with Godam Solutions. Whether you're evaluating, operating, or investing, we have the tools you need.
+            </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-10 mb-20">
             {[
               {
                 title: "For Judges & Evaluators",
-                desc: "Explore the live demo and see our technical implementation",
+                desc: "Explore our live technical demo and witness the implementation firsthand.",
                 cta: "View Live Demo",
                 icon: Shield,
-                link: "/dashboard"
+                link: "/dashboard",
+                color: "from-blue-500 to-cyan-400"
               },
               {
                 title: "For Warehouse Operators",
-                desc: "Schedule a consultation to discuss your specific needs",
+                desc: "Schedule a personalized consultation to optimize your specific operations.",
                 cta: "Schedule Call",
                 icon: Users,
-                link: "#contact"
+                link: "#contact",
+                color: "from-emerald-500 to-green-400"
               },
               {
                 title: "For Investors & Partners",
-                desc: "Download our pitch deck and business plan",
+                desc: "Access our detailed pitch deck and comprehensive business plan.",
                 cta: "Download Pitch",
                 icon: TrendingUp,
-                link: "#pitch"
+                link: "#pitch",
+                color: "from-purple-500 to-indigo-400"
               }
             ].map((card, idx) => (
-              <div key={idx} className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gray-50 border-2 border-gray-200 hover:border-godam-leaf transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                <div className="absolute inset-0 bg-godam-leaf opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative z-10 p-6 md:p-8">
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-godam-leaf rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:bg-white group-hover:bg-opacity-20 transition">
-                    <card.icon className="text-white" size={24} />
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-godam-forest mb-3 group-hover:text-white transition">{card.title}</h3>
-                  <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6 group-hover:text-white group-hover:text-opacity-90 transition">{card.desc}</p>
-                  <Link 
-                    to={card.link}
-                    className="inline-flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 bg-godam-leaf text-white rounded-full font-bold hover:bg-white hover:text-godam-forest transition shadow-lg group-hover:bg-white group-hover:text-godam-forest text-sm md:text-base"
-                  >
-                    {card.cta}
-                    <ArrowRight size={18} />
-                  </Link>
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                whileHover={{ y: -10 }}
+                className="group relative bg-white rounded-[2rem] p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden"
+              >
+                {/* Green Blur Hover Effect */}
+                <div className="absolute inset-0 bg-godam-leaf/0 group-hover:bg-godam-leaf/5 transition-colors duration-500" />
+                <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-godam-leaf/20 rounded-full blur-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${card.color} opacity-10 rounded-bl-[100px] transition-transform group-hover:scale-110`} />
+                
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${card.color} flex items-center justify-center mb-6 shadow-lg transform group-hover:rotate-6 transition-transform duration-300`}>
+                  <card.icon className="text-white w-8 h-8" />
                 </div>
-              </div>
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-godam-forest transition-colors">
+                  {card.title}
+                </h3>
+                
+                <p className="text-gray-600 mb-8 leading-relaxed h-20">
+                  {card.desc}
+                </p>
+                
+                <Link 
+                  to={card.link}
+                  className="inline-flex items-center gap-2 text-godam-forest font-bold group-hover:gap-4 transition-all"
+                >
+                  {card.cta}
+                  <span className={`w-8 h-8 rounded-full bg-godam-leaf/10 flex items-center justify-center group-hover:bg-godam-leaf group-hover:text-white transition-all`}>
+                    <ArrowRight size={16} />
+                  </span>
+                </Link>
+              </motion.div>
             ))}
           </div>
 
-          <div className="mt-10 md:mt-16 bg-godam-leaf rounded-2xl md:rounded-3xl p-6 md:p-12 text-center text-white">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">Join the Agricultural Revolution</h3>
-            <p className="text-base md:text-xl mb-6 md:mb-8 text-white text-opacity-90 max-w-3xl mx-auto">
-              Help us eliminate ₹92,651 crores in annual post-harvest losses and build a sustainable future for Indian agriculture.
-            </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
-              <Link to="/auth" className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-white text-godam-forest rounded-full font-bold hover:bg-gray-100 transition shadow-lg text-base md:text-lg">
-                Get Started Free
-              </Link>
-              <a href="mailto:contact@godamsolutions.com" className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-white bg-opacity-20 text-white rounded-full font-bold hover:bg-opacity-30 transition border-2 border-white text-base md:text-lg">
-                Contact Us
-              </a>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="relative bg-gradient-to-r from-godam-forest to-godam-leaf rounded-[2.5rem] p-8 md:p-16 text-center text-white shadow-2xl overflow-hidden"
+          >
+            {/* Abstract Pattern Overlay */}
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
+            <div className="absolute -top-24 -left-24 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl" />
+
+            <div className="relative z-10">
+              <h3 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">
+                Join the Agricultural Revolution
+              </h3>
+              <p className="text-lg md:text-2xl text-green-50/90 mb-10 max-w-3xl mx-auto font-light leading-relaxed">
+                Help us eliminate <span className="font-bold text-white">₹92,651 crores</span> in annual post-harvest losses and build a sustainable future for Indian agriculture.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row justify-center gap-4 md:gap-6">
+                <Link 
+                  to="/auth" 
+                  className="px-8 py-4 bg-white text-godam-forest rounded-full font-bold hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:scale-105 transition-all duration-300 text-lg shadow-lg flex items-center justify-center gap-2"
+                >
+                  Get Started Free
+                  <ArrowRight size={20} />
+                </Link>
+                <a 
+                  href="mailto:contact@godamsolutions.com" 
+                  className="px-8 py-4 bg-godam-forest text-white border border-white/30 rounded-full font-bold hover:bg-white/10 hover:border-white transition-all duration-300 text-lg flex items-center justify-center backdrop-blur-sm"
+                >
+                  Contact Us
+                </a>
+              </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 

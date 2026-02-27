@@ -110,28 +110,28 @@ const PotentialUsersCarousel = () => {
         }
 
         .logo-loop-item {
-          min-width: 170px;
-          height: 88px;
+          min-width: 240px;
+          height: 120px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           background: #ffffff;
           border-radius: 12px;
-          padding: 10px 14px;
+          padding: 12px 16px;
           box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-          gap: 6px;
+          gap: 8px;
         }
 
         .logo-loop-image {
-          max-height: 34px;
+          max-height: 38px;
           width: auto;
-          max-width: 130px;
+          max-width: 145px;
           object-fit: contain;
         }
 
         .logo-loop-name {
-          font-size: 12px;
+          font-size: 13px;
           line-height: 1;
           font-weight: 600;
           color: #1f2937;

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Upload,
   FileText,
@@ -25,8 +25,38 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+// Confidence badge helper component
+const ConfidenceBadge: React.FC<{ confidence: number }> = ({ confidence }) => {
+  const percentage = Math.round(confidence * 100);
+
+  let bgColor, textColor, label;
+  if (percentage >= 80) {
+    bgColor = "bg-green-100";
+    textColor = "text-green-700";
+    label = "High";
+  } else if (percentage >= 50) {
+    bgColor = "bg-yellow-100";
+    textColor = "text-yellow-700";
+    label = "Medium";
+  } else {
+    bgColor = "bg-red-100";
+    textColor = "text-red-700";
+    label = "Low";
+  }
+
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${bgColor} ${textColor}`}
+      title={`Confidence: ${percentage}%`}
+    >
+      {label} ({percentage}%)
+    </span>
+  );
+};
+
 export const RequirementUpload: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [mode, setMode] = useState<"pdf" | "manual">("pdf");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -67,14 +97,34 @@ export const RequirementUpload: React.FC = () => {
     fetchWarehouses();
   }, []);
 
+  // Handle preloaded data from navigation (for edit/resubmit flow)
+  React.useEffect(() => {
+    const state = location.state as any;
+    if (state?.preloadedItems && state?.mode === "edit") {
+      console.log("[PRELOAD] Loading preloaded items:", state.preloadedItems);
+      setItems(state.preloadedItems);
+      setFilename(state.filename || "Edited Document");
+      setMode("pdf"); // Set to pdf mode to show the items form
+      // Clear the state to prevent re-loading on subsequent visits
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile && selectedFile.type === "application/pdf") {
+    const validTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (selectedFile && validTypes.includes(selectedFile.type)) {
       setFile(selectedFile);
       setError(null);
     } else {
-      setError("Please select a valid PDF file");
+      setError("Please select a valid document file (PDF, JPG, PNG, or DOCX)");
       setFile(null);
     }
   };
@@ -83,11 +133,18 @@ export const RequirementUpload: React.FC = () => {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile && droppedFile.type === "application/pdf") {
+    const validTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+    if (droppedFile && validTypes.includes(droppedFile.type)) {
       setFile(droppedFile);
       setError(null);
     } else {
-      setError("Please drop a valid PDF file");
+      setError("Please drop a valid document file (PDF, JPG, PNG, or DOCX)");
     }
   }, []);
 
@@ -342,7 +399,7 @@ export const RequirementUpload: React.FC = () => {
             }`}
           >
             <Upload className="w-5 h-5" />
-            Upload PDF
+            Upload Document
           </button>
           <button
             onClick={() => setMode("manual")}
@@ -412,7 +469,7 @@ export const RequirementUpload: React.FC = () => {
           >
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,.pdf,image/jpeg,.jpg,.jpeg,image/png,.png,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
               onChange={handleFileSelect}
               className="hidden"
               id="pdf-upload"
@@ -428,10 +485,10 @@ export const RequirementUpload: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    Drop your PDF here
+                    Drop your document here
                   </h3>
                   <p className="text-sm text-gray-500">
-                    or click to browse • Maximum 10MB
+                    PDF, JPG, PNG, or DOCX • Maximum 10MB
                   </p>
                 </div>
                 <label
@@ -440,7 +497,7 @@ export const RequirementUpload: React.FC = () => {
                   style={{ backgroundColor: "#48A111" }}
                 >
                   <Upload className="w-5 h-5" />
-                  Select PDF File
+                  Select File
                 </label>
               </div>
             ) : (
@@ -637,63 +694,68 @@ export const RequirementUpload: React.FC = () => {
                       {index + 1}
                     </td>
                     <td className="py-3 px-4">
-                      {item._customCrop ? (
-                        <div className="flex gap-1">
-                          <input
-                            type="text"
-                            value={item.crop || ""}
-                            onChange={(e) =>
-                              updateItem(index, "crop", e.target.value)
-                            }
-                            placeholder="Enter crop/fruit"
-                            className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              updateItem(index, "_customCrop", false);
-                              updateItem(index, "crop", "");
-                            }}
-                            className="px-2 py-1 text-xs rounded border border-gray-300 hover:bg-gray-50 whitespace-nowrap"
-                            title="Switch to dropdown"
-                          >
-                            📋
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex gap-1">
-                          <select
-                            value={item.crop || ""}
-                            onChange={(e) => {
-                              if (e.target.value === "Other") {
-                                updateItem(index, "_customCrop", true);
-                                updateItem(index, "crop", "");
-                              } else {
-                                updateItem(index, "crop", e.target.value);
+                      <div className="space-y-1">
+                        {item._customCrop ? (
+                          <div className="flex gap-1">
+                            <input
+                              type="text"
+                              value={item.crop || ""}
+                              onChange={(e) =>
+                                updateItem(index, "crop", e.target.value)
                               }
-                            }}
-                            className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          >
-                            <option value="">Select crop</option>
-                            {CROP_OPTIONS.map((crop) => (
-                              <option key={crop} value={crop}>
-                                {crop}
-                              </option>
-                            ))}
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateItem(index, "_customCrop", true)
-                            }
-                            className="px-2 py-1 text-xs rounded text-white whitespace-nowrap"
-                            style={{ backgroundColor: "#48A111" }}
-                            title="Manually enter fruit/type"
-                          >
-                            ✏️
-                          </button>
-                        </div>
-                      )}
+                              placeholder="Enter crop/fruit"
+                              className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                updateItem(index, "_customCrop", false);
+                                updateItem(index, "crop", "");
+                              }}
+                              className="px-2 py-1 text-xs rounded border border-gray-300 hover:bg-gray-50 whitespace-nowrap"
+                              title="Switch to dropdown"
+                            >
+                              📋
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-1">
+                            <select
+                              value={item.crop || ""}
+                              onChange={(e) => {
+                                if (e.target.value === "Other") {
+                                  updateItem(index, "_customCrop", true);
+                                  updateItem(index, "crop", "");
+                                } else {
+                                  updateItem(index, "crop", e.target.value);
+                                }
+                              }}
+                              className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            >
+                              <option value="">Select crop</option>
+                              {CROP_OPTIONS.map((crop) => (
+                                <option key={crop} value={crop}>
+                                  {crop}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateItem(index, "_customCrop", true)
+                              }
+                              className="px-2 py-1 text-xs rounded text-white whitespace-nowrap"
+                              style={{ backgroundColor: "#48A111" }}
+                              title="Manually enter fruit/type"
+                            >
+                              ✏️
+                            </button>
+                          </div>
+                        )}
+                        {item.confidence !== undefined && mode === "pdf" && (
+                          <ConfidenceBadge confidence={item.confidence} />
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       <input

@@ -233,8 +233,82 @@ export const extractTextFromPDF = async (pdfBuffer) => {
   }
 };
 
+// Extract text from image (JPEG, PNG) using OCR
+export const extractTextFromImage = async (imageBuffer, mimeType) => {
+  console.log("\n[IMAGE EXTRACT] ═══════════════════════════════════════");
+  console.log("[IMAGE EXTRACT] Starting text extraction from image...");
+  console.log(`[IMAGE EXTRACT] Buffer size: ${imageBuffer.length} bytes`);
+  console.log(`[IMAGE EXTRACT] MIME type: ${mimeType}`);
+
+  try {
+    console.log("[IMAGE EXTRACT] Initializing Gemini model...");
+    const model = getGeminiModel();
+    console.log("[IMAGE EXTRACT] ✅ Model ready");
+
+    // Convert image to base64 for Gemini
+    console.log("[IMAGE EXTRACT] Converting image to base64...");
+    const base64Data = imageBuffer.toString("base64");
+    console.log(
+      `[IMAGE EXTRACT] Base64 length: ${base64Data.length} characters`,
+    );
+
+    console.log("[IMAGE EXTRACT] Sending image to Gemini API for OCR...");
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          mimeType: mimeType,
+          data: base64Data,
+        },
+      },
+      "Extract all text content from this image using OCR. Return only the text you see in the image, no formatting or additional commentary. If the image contains a table, extract all data in a structured way. If it's a document/form, extract all visible text.",
+    ]);
+
+    console.log("[IMAGE EXTRACT] ✅ Received response from Gemini");
+
+    const text = result.response.text();
+    console.log(
+      `[IMAGE EXTRACT] Extracted text length: ${text.length} characters`,
+    );
+    console.log(`[IMAGE EXTRACT] Text preview: ${text.substring(0, 150)}...`);
+    console.log("[IMAGE EXTRACT] ✅ Extraction completed successfully");
+    console.log("[IMAGE EXTRACT] ═══════════════════════════════════════\n");
+
+    return { success: true, text };
+  } catch (error) {
+    console.error("\n[IMAGE EXTRACT ERROR] ═══════════════════════════════");
+    console.error("[IMAGE EXTRACT ERROR] Failed to extract text from image");
+    console.error("[IMAGE EXTRACT ERROR] Error type:", error.constructor.name);
+    console.error("[IMAGE EXTRACT ERROR] Error message:", error.message);
+
+    if (error.stack) {
+      console.error("[IMAGE EXTRACT ERROR] Stack trace:");
+      console.error(error.stack);
+    }
+
+    if (error.message.includes("API key")) {
+      console.error("\n[IMAGE EXTRACT ERROR] 🔑 API KEY ISSUE DETECTED!");
+      console.error(
+        "[IMAGE EXTRACT ERROR] Your Gemini API key may be invalid or missing.",
+      );
+    }
+    if (error.message.includes("not found") || error.message.includes("404")) {
+      console.error("\n[IMAGE EXTRACT ERROR] 🤖 MODEL NOT FOUND!");
+      console.error(
+        "[IMAGE EXTRACT ERROR] The Gemini model may not be available.",
+      );
+      console.error(
+        "[IMAGE EXTRACT ERROR] Try these models: gemini-2.5-flash, gemini-2.5-pro, gemini-2.5-flash-lite",
+      );
+    }
+    console.error("[IMAGE EXTRACT ERROR] ═══════════════════════════════\n");
+
+    return { success: false, error: error.message, text: "" };
+  }
+};
+
 export default {
   getGeminiModel,
   parseRequirementWithGemini,
   extractTextFromPDF,
+  extractTextFromImage,
 };

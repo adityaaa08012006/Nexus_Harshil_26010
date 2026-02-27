@@ -11,7 +11,10 @@ import {
   ArrowRight,
   Github,
   Linkedin,
-  Twitter
+  Twitter,
+  MapPin,
+  Mail,
+  Phone
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import GlassNavbar from '../components/home/GlassNavbar';
@@ -97,69 +100,140 @@ export default function AboutPage() {
       </section>
 
       {/* Grid Section */}
-      <section className="py-20 bg-white">
+      {/* Our Story & Stats Section */}
+      <section className="py-24 bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
             {/* Story Card */}
             <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="lg:col-span-2 bg-gray-50 rounded-3xl p-8 md:p-12 relative overflow-hidden group hover:shadow-lg transition-shadow"
+              transition={{ duration: 0.6 }}
+              className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 md:p-14 shadow-xl shadow-gray-100/50 relative overflow-hidden group border border-gray-100 hover:shadow-2xl hover:shadow-godam-leaf/5 transition-all duration-500 h-full flex flex-col justify-center"
             >
-              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Building2 size={120} />
+              {/* Blur Green Effects */}
+              <div className="absolute top-0 left-0 w-64 h-64 bg-godam-leaf/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 group-hover:bg-godam-leaf/20 transition-colors duration-700"></div>
+              <div className="absolute bottom-0 right-0 w-80 h-80 bg-godam-leaf/10 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 group-hover:bg-godam-leaf/20 transition-colors duration-700"></div>
+
+              <div className="absolute top-10 right-10 p-4 opacity-5 group-hover:opacity-10 transition-opacity duration-700 transform group-hover:scale-110">
+                <Building2 size={180} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Story</h3>
-              <p className="text-gray-600 text-lg leading-relaxed mb-6">
-                Godam AI began with a simple observation: India's agricultural potential is immense, but its infrastructure is fragmented. 
-                We saw warehouses struggling with manual processes, lack of visibility, and preventable spoilage.
-              </p>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                By combining IoT sensors with Gemini-powered AI, we created a platform that doesn't just manage inventory—it protects it. 
-                Today, we empower warehouse owners to make decisions that save money and food.
-              </p>
+              
+              <div className="relative z-10">
+                <h3 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+                  Our Story
+                  <span className="h-2 w-2 rounded-full bg-godam-leaf animate-pulse"></span>
+                </h3>
+                
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                  Godam AI began with a simple observation: India's agricultural potential is immense, but its infrastructure is fragmented. 
+                  We saw warehouses struggling with <span className="text-godam-forest font-medium bg-godam-leaf/10 px-1 rounded">manual processes</span>, lack of visibility, and preventable spoilage.
+                </p>
+                
+                <p className="text-gray-600 text-lg leading-relaxed">
+                  By combining <span className="text-godam-forest font-medium bg-godam-leaf/10 px-1 rounded">IoT sensors</span> with <span className="text-godam-forest font-medium bg-godam-leaf/10 px-1 rounded">Gemini-powered AI</span>, we created a platform that doesn't just manage inventory—it protects it. 
+                  Today, we empower warehouse owners to make decisions that save money and food.
+                </p>
+              </div>
             </motion.div>
 
-            {/* Impact Stats */}
-            <div className="space-y-8">
+            {/* Right Column - Reimagined Impact Stats */}
+            <div className="lg:mt-0 flex flex-col h-full"> 
+              
+              {/* Unified Impact Status Card */}
               <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="bg-godam-forest text-white rounded-3xl p-8 md:p-10 shadow-xl relative overflow-hidden"
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-gray-100 relative overflow-hidden h-full flex flex-col justify-center gap-8 group min-h-[480px]"
               >
-                 <div className="absolute -bottom-4 -right-4 bg-white/10 w-32 h-32 rounded-full blur-2xl"></div>
-                 <h4 className="text-white/80 text-sm uppercase tracking-wider font-semibold mb-2">Annual Loss Targeted</h4>
-                 <div className="text-4xl md:text-5xl font-bold mb-1">₹92k Cr</div>
-                 <div className="text-godam-leaf text-sm font-medium">Post-harvest waste</div>
+                 {/* Strong Blur Green Background */}
+                 <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-godam-leaf/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                 <div className="absolute -top-20 -right-20 w-60 h-60 bg-godam-leaf/20 rounded-full blur-[80px]"></div>
+                 <div className="absolute bottom-0 left-0 w-40 h-40 bg-godam-forest/5 rounded-full blur-3xl"></div>
+
+                 {/* Stat 1: Loss Targeted */}
+                 <div className="relative z-10 flex items-start gap-5 group/item transition-transform duration-300 hover:translate-x-2">
+                   <div className="w-14 h-14 rounded-2xl bg-godam-forest text-white flex items-center justify-center shadow-lg shadow-godam-forest/20 shrink-0">
+                     <TrendingUp size={28} />
+                   </div>
+                   <div>
+                     <div className="text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Annual Loss Targeted</div>
+                     <div className="text-4xl font-bold text-gray-900 tracking-tight leading-none mb-1">₹92k Cr</div>
+                     <div className="text-sm text-godam-leaf font-medium">Post-harvest waste</div>
+                   </div>
+                 </div>
+
+                 {/* Divider */}
+                 <div className="relative z-10 w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+
+                 {/* Stat 2: Growth Chart */}
+                 <div className="relative z-10 w-full group/item">
+                   <div className="flex items-center justify-between mb-4">
+                     <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-godam-leaf text-white flex items-center justify-center shadow-lg shadow-godam-leaf/20 shrink-0">
+                         <Building2 size={24} />
+                       </div>
+                       <div>
+                         <div className="text-xs uppercase tracking-wider font-bold text-gray-400">Growth Focus</div>
+                         <div className="text-2xl font-bold text-gray-900 leading-none">10,000+</div>
+                         <div className="text-xs text-godam-leaf font-medium">Warehouses by 2030</div>
+                       </div>
+                     </div>
+                   </div>
+                   
+                   {/* Animated Bar Chart */}
+                   <div className="h-40 flex items-end justify-between gap-2 px-2 pb-2 mt-4 relative">
+                      {/* Grid lines */}
+                      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10 z-0">
+                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
+                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
+                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
+                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
+                      </div>
+
+                      {[
+                        { year: '2024', val: 15, label: '50' },
+                        { year: '2026', val: 35, label: '500' },
+                        { year: '2028', val: 65, label: '2.5k' },
+                        { year: '2030', val: 100, label: '10k' }
+                      ].map((bar, idx) => (
+                        <div key={idx} className="flex flex-col items-center gap-2 w-full h-full justify-end relative z-10">
+                           <div className="relative w-full max-w-[40px] h-[80%] flex items-end bg-gray-50 rounded-t-lg overflow-hidden">
+                              <motion.div 
+                                initial={{ height: "0%" }}
+                                whileInView={{ height: `${bar.val}%` }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 1.2, delay: 0.2 + (idx * 0.2), ease: "easeOut" }}
+                                className={`w-full rounded-t-lg ${idx === 3 ? 'bg-gradient-to-t from-godam-forest to-godam-leaf' : 'bg-green-200'}`}
+                              />
+                                {idx === 3 && (
+                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-godam-forest text-white text-[10px] font-bold py-1 px-2 rounded-lg shadow-md whitespace-nowrap animate-bounce z-20">
+                                    Goal
+                                  </div>
+                                )}
+                           </div>
+                           <span className={`text-[10px] font-bold ${idx === 3 ? 'text-godam-forest' : 'text-gray-400'}`}>{bar.year}</span>
+                        </div>
+                      ))}
+                   </div>
+                 </div>
+
               </motion.div>
 
-              <motion.div 
-                 initial={{ opacity: 0, x: 20 }}
-                 whileInView={{ opacity: 1, x: 0 }}
-                 viewport={{ once: true }}
-                 transition={{ duration: 0.5, delay: 0.2 }}
-                 className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="p-3 bg-green-50 rounded-xl text-green-600">
-                    <TrendingUp size={24} />
-                  </div>
-                  <h4 className="font-bold text-gray-900 text-lg">Growth Focus</h4>
-                </div>
-                <p className="text-gray-600">Scaling to empower 10,000+ warehouses across India by 2030.</p>
-              </motion.div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Values Section */}
-      <section className="py-20 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-gray-50 border-t border-gray-200 relative overflow-hidden">
+        <div className="absolute -top-16 -left-16 h-72 w-72 rounded-full bg-godam-leaf/20 blur-3xl" />
+        <div className="absolute -bottom-20 right-10 h-80 w-80 rounded-full bg-godam-forest/15 blur-3xl" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
            <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900">Why We Do It</h2>
           </div>
@@ -171,13 +245,15 @@ export default function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: idx * 0.1 }}
-                className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 hover:border-godam-leaf/30 hover:shadow-md transition-all"
+                className="relative overflow-hidden bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-godam-leaf/10 hover:border-godam-leaf/30 hover:shadow-md transition-all"
               >
-                <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-700 mb-6">
+                <div className="absolute -top-10 -right-10 h-28 w-28 rounded-full bg-godam-leaf/20 blur-2xl" />
+                <div className="absolute -bottom-12 -left-8 h-24 w-24 rounded-full bg-godam-forest/15 blur-2xl" />
+                <div className="relative z-10 w-12 h-12 bg-godam-leaf/10 rounded-xl flex items-center justify-center text-godam-forest mb-6">
                   {val.icon}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{val.title}</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="relative z-10 text-xl font-bold text-gray-900 mb-3">{val.title}</h3>
+                <p className="relative z-10 text-gray-600 leading-relaxed">
                   {val.description}
                 </p>
               </motion.div>
@@ -256,17 +332,83 @@ export default function AboutPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-12">
+      <footer className="bg-gray-900 text-white pt-10 md:pt-16 pb-6 md:pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-3">
-              <img src={logo} alt="Godam AI" className="h-8 w-auto opacity-80" />
-              <span className="text-sm text-gray-500">© 2026 Godam AI Solutions</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8 md:mb-12">
+            {/* Company Info */}
+            <div className="sm:col-span-2 md:col-span-1">
+              <div className="flex items-center mb-4">
+                <img src={logo} alt="Godam AI" className="h-10 md:h-12 w-auto" />
+              </div>
+              <p className="text-gray-400 mb-4 text-sm leading-relaxed">
+                Intelligent post-harvest warehouse optimization for reducing agricultural losses and maximizing efficiency.
+              </p>
+              <div className="flex gap-3">
+                {['twitter', 'facebook', 'instagram', 'linkedin'].map((social) => (
+                  <a 
+                    key={social} 
+                    href="#" 
+                    className="w-9 h-9 md:w-10 md:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-godam-leaf transition"
+                  >
+                    <span className="sr-only">{social}</span>
+                    <span className="text-sm">●</span>
+                  </a>
+                ))}
+              </div>
             </div>
-            <div className="flex gap-8">
-               <span className="text-sm text-gray-500 hover:text-gray-800 cursor-pointer">Privacy Policy</span>
-               <span className="text-sm text-gray-500 hover:text-gray-800 cursor-pointer">Terms of Service</span>
-               <span className="text-sm text-gray-500 hover:text-gray-800 cursor-pointer">Contact</span>
+
+            {/* Explore */}
+            <div>
+              <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">Explore</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                {['About', 'Solutions', 'Team', 'Portfolio', 'Contact'].map((link) => (
+                  <li key={link}>
+                    <a href="#" className="hover:text-godam-leaf transition">{link}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* News */}
+            <div>
+              <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">News</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
+                {['Blog', 'Recent News', 'FAQ', 'Terms & Conditions'].map((link) => (
+                  <li key={link}>
+                    <a href="#" className="hover:text-godam-leaf transition">{link}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">Contact</h3>
+              <ul className="space-y-3 text-gray-400 text-sm">
+                <li className="flex items-start gap-2">
+                  <MapPin size={16} className="text-godam-leaf flex-shrink-0 mt-1" />
+                  <span>Green Building, Mumbai 400001, Maharashtra, India</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Mail size={16} className="text-godam-leaf flex-shrink-0 mt-1" />
+                  <span>support@godamsolutions.com</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <Phone size={16} className="text-godam-leaf flex-shrink-0 mt-1" />
+                  <span>+91 98765 43210</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-gray-800 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-400 text-xs md:text-sm text-center md:text-left">
+              © 2026 <span className="text-godam-leaf">Godam Solutions</span>. All Rights Reserved.
+            </p>
+            <div className="flex gap-4 md:gap-6 text-xs md:text-sm text-gray-400">
+              <a href="#" className="hover:text-godam-leaf transition">Privacy Policy</a>
+              <a href="#" className="hover:text-godam-leaf transition">Terms of Use</a>
             </div>
           </div>
         </div>
