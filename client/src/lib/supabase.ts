@@ -28,6 +28,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true, // Automatically refresh tokens before expiry
     persistSession: true, // Persist session across browser sessions
     detectSessionInUrl: true, // Detect auth redirects with session in URL
+    // Prevent storage lock issues by allowing requests to steal locks
+    flowType: "pkce",
   },
 });
 console.log(

@@ -79,14 +79,14 @@ export const ManagerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6">
       {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
         <div>
-          <h1 className="text-xl font-bold" style={{ color: "#25671E" }}>
+          <h1 className="text-xl font-bold text-gray-900">
             Warehouse Dashboard
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 mt-1">
             {user?.name} ·{" "}
             {new Date().toLocaleDateString("en-IN", {
               weekday: "long",
@@ -95,28 +95,20 @@ export const ManagerDashboard: React.FC = () => {
             })}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={() => navigate("/manager/inventory")}
-            className="px-4 py-2 text-sm font-medium rounded-lg border transition-colors"
-            style={{ borderColor: "#48A111", color: "#48A111" }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "#48A11115";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-                "transparent";
-            }}
+            className="px-4 py-2 text-sm font-medium rounded-lg border transition-all hover:bg-gray-50"
+            style={{ borderColor: "#E5E7EB", color: "#374151" }}
           >
             View Inventory
           </button>
           <button
             onClick={() => navigate("/manager/inventory?action=add")}
-            className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-opacity hover:opacity-90"
+            className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-all hover:opacity-90 shadow-sm"
             style={{ backgroundColor: "#48A111" }}
           >
-            + Add Batch
+            Add Batch
           </button>
         </div>
       </div>
@@ -143,10 +135,10 @@ export const ManagerDashboard: React.FC = () => {
 
       {/* ── High-risk spotlight table ── */}
       {highRiskBatches.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold" style={{ color: "#DC2626" }}>
-              ⚠ High-Risk Spotlight
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-900">
+              High-Risk Batches
             </h2>
             <button
               onClick={() => navigate("/manager/inventory?filter=high")}
@@ -169,17 +161,17 @@ export const ManagerDashboard: React.FC = () => {
       )}
 
       {/* ── Full inventory (collapsed by default on mobile) ── */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-600">
-            All Active Batches
+      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-900">
+            Batch Inventory
           </h2>
           <button
             onClick={() => navigate("/manager/inventory")}
             className="text-xs font-medium hover:underline"
             style={{ color: "#48A111" }}
           >
-            Open full table →
+            View all →
           </button>
         </div>
         <InventoryTable

@@ -234,7 +234,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div
       className="flex h-screen overflow-hidden"
-      style={{ backgroundColor: "#F7F0F0" }}
+      style={{ backgroundColor: "#F9FAFB" }}
     >
       {/* ── Sidebar ── */}
       <>
@@ -336,7 +336,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {/* Logout */}
           <div className="px-3 py-4 border-t border-white/10">
             <button
-              onClick={() => logout()}
+              onClick={async () => {
+                await logout();
+                navigate("/auth");
+              }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
               style={{ color: "#d1f0c9" }}
               onMouseEnter={(e) => {

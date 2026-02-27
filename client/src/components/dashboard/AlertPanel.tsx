@@ -1,6 +1,7 @@
 import React from "react";
 import { Alert } from "../../lib/supabase";
 import { formatRelativeTime } from "../../utils/formatters";
+import { AlertCircle, AlertTriangle, Info } from "lucide-react";
 
 interface AlertPanelProps {
   alerts: Alert[];
@@ -11,21 +12,21 @@ interface AlertPanelProps {
 
 const SEVERITY_CONFIG = {
   critical: {
-    icon: "🚨",
+    icon: AlertCircle,
     border: "#DC2626",
     bg: "#FEF2F2",
     text: "#991B1B",
     label: "Critical",
   },
   warning: {
-    icon: "⚠️",
+    icon: AlertTriangle,
     border: "#F2B50B",
     bg: "#FFFBEB",
     text: "#92400E",
     label: "Warning",
   },
   info: {
-    icon: "ℹ️",
+    icon: Info,
     border: "#3B82F6",
     bg: "#EFF6FF",
     text: "#1E40AF",
@@ -43,17 +44,17 @@ export const AlertPanel: React.FC<AlertPanelProps> = ({
 
   return (
     <div
-      className="rounded-2xl p-6 shadow-sm border"
-      style={{ backgroundColor: "#F7F0F0", borderColor: "#25671E20" }}
+      className="rounded-xl p-6 shadow-sm border"
+      style={{ backgroundColor: "white", borderColor: "#E5E7EB" }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-bold" style={{ color: "#25671E" }}>
-          Active Alerts
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-sm font-semibold text-gray-700">
+          Alerts & Notifications
         </h3>
         {active.length > 0 && (
           <span
-            className="text-xs font-bold px-2 py-0.5 rounded-full"
-            style={{ backgroundColor: "#DC262620", color: "#DC2626" }}
+            className="text-xs font-semibold px-2 py-1 rounded-full"
+            style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }}
           >
             {active.length}
           </span>
@@ -68,49 +69,52 @@ export const AlertPanel: React.FC<AlertPanelProps> = ({
           />
         </div>
       ) : active.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 py-6">
-          <span className="text-3xl">✅</span>
+        <div className="flex flex-col items-center gap-2 py-8">
+          <div className="p-3 rounded-full bg-green-50">
+            <AlertCircle size={24} className="text-green-600" />
+          </div>
           <p className="text-sm text-gray-500">All clear — no active alerts</p>
         </div>
       ) : (
         <div className="space-y-3">
           {active.map((alert) => {
             const cfg = SEVERITY_CONFIG[alert.severity];
+            const Icon = cfg.icon;
             return (
               <div
                 key={alert.id}
-                className="border-l-4 rounded-r-xl p-3 flex items-start gap-3"
+                className="rounded-lg p-3 flex items-start gap-3 border"
                 style={{ borderColor: cfg.border, backgroundColor: cfg.bg }}
               >
-                <span className="text-lg flex-shrink-0">{cfg.icon}</span>
+                <div className="flex-shrink-0 mt-0.5">
+                  <Icon size={18} style={{ color: cfg.text }} strokeWidth={2} />
+                </div>
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-sm font-medium"
+                    className="text-sm font-medium leading-snug"
                     style={{ color: cfg.text }}
                   >
                     {alert.message}
                   </p>
-                  <div className="flex items-center justify-between mt-1">
-                    <p
-                      className="text-xs opacity-60"
-                      style={{ color: cfg.text }}
+                  <p
+                    className="text-xs mt-1.5 opacity-70"
+                    style={{ color: cfg.text }}
+                  >
+                    {alert.zone ? `Zone ${alert.zone} · ` : ""}
+                    {formatRelativeTime(alert.created_at)}
+                  </p>
+                  {onAcknowledge && (
+                    <button
+                      onClick={() => onAcknowledge(alert.id)}
+                      className="text-xs font-medium px-3 py-1 rounded-md transition-colors hover:opacity-80 mt-2"
+                      style={{
+                        backgroundColor: "#48A111",
+                        color: "white",
+                      }}
                     >
-                      {alert.zone ? `Zone ${alert.zone} · ` : ""}
-                      {formatRelativeTime(alert.created_at)}
-                    </p>
-                    {onAcknowledge && (
-                      <button
-                        onClick={() => onAcknowledge(alert.id)}
-                        className="text-xs font-semibold px-2 py-0.5 rounded-full transition-opacity hover:opacity-80"
-                        style={{
-                          backgroundColor: "#48A11120",
-                          color: "#48A111",
-                        }}
-                      >
-                        Dismiss
-                      </button>
-                    )}
-                  </div>
+                      Acknowledge
+                    </button>
+                  )}
                 </div>
               </div>
             );

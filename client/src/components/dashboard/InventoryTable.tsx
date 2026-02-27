@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { RiskBadge } from "../common/RiskBadge";
 import { getDaysRemaining } from "../../utils/riskCalculation";
+import { AlertTriangle } from "lucide-react";
 import type { Batch } from "../../lib/supabase";
 
 type SortKey =
@@ -315,12 +316,11 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                         >
                           {daysLeft}d
                           {isExpiringSoon && (
-                            <span
-                              className="ml-1 text-xs"
+                            <AlertTriangle
+                              size={12}
+                              className="inline ml-1"
                               style={{ color: "#F2B50B" }}
-                            >
-                              ⚠
-                            </span>
+                            />
                           )}
                         </span>
                       )}

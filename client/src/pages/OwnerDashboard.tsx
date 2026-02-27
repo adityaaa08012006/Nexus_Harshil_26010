@@ -64,14 +64,14 @@ export const OwnerDashboard: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-6">
       {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
         <div>
-          <h1 className="text-xl font-bold" style={{ color: "#25671E" }}>
-            Owner Overview
+          <h1 className="text-xl font-bold text-gray-900">
+            Organization Overview
           </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="text-sm text-gray-500 mt-1">
             Multi-warehouse inventory and performance monitoring
           </p>
         </div>
@@ -88,10 +88,10 @@ export const OwnerDashboard: React.FC = () => {
                 e.target.value === "all" ? undefined : e.target.value,
               )
             }
-            className="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+            className="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 bg-white"
             style={
               {
-                borderColor: "#25671E40",
+                borderColor: "#E5E7EB",
                 "--tw-ring-color": "#48A111",
               } as React.CSSProperties
             }
@@ -272,12 +272,12 @@ export const OwnerDashboard: React.FC = () => {
         <RiskChart batches={batches} />
 
         {/* Quick warehouse list */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-base font-bold mb-4" style={{ color: "#25671E" }}>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+          <h3 className="text-sm font-semibold mb-5 text-gray-700">
             Your Warehouses
           </h3>
           {warehouses.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-6">
+            <p className="text-sm text-gray-400 text-center py-8">
               No warehouses configured yet.
             </p>
           ) : (
@@ -289,13 +289,13 @@ export const OwnerDashboard: React.FC = () => {
                   className="w-full text-left px-4 py-3 rounded-lg border transition-all hover:shadow-sm"
                   style={
                     selectedWarehouseId === w.id
-                      ? { borderColor: "#48A111", backgroundColor: "#48A11110" }
+                      ? { borderColor: "#48A111", backgroundColor: "#F0F9FF" }
                       : { borderColor: "#E5E7EB", backgroundColor: "#fff" }
                   }
                 >
                   <p
                     className="font-medium text-sm"
-                    style={{ color: "#25671E" }}
+                    style={{ color: "#1F2937" }}
                   >
                     {w.name}
                   </p>
@@ -308,9 +308,9 @@ export const OwnerDashboard: React.FC = () => {
       </div>
 
       {/* ── Read-only inventory table ── */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-600">
+      <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-900">
             {selectedWarehouse
               ? `${selectedWarehouse.name} Inventory`
               : "All Inventory"}
@@ -320,11 +320,11 @@ export const OwnerDashboard: React.FC = () => {
             className="text-xs font-medium hover:underline"
             style={{ color: "#48A111" }}
           >
-            View full page →
+            View all →
           </button>
         </div>
         {isLoading ? (
-          <div className="bg-white rounded-xl p-12 text-center border border-gray-100">
+          <div className="p-12 text-center">
             <div
               className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto"
               style={{ borderColor: "#48A111", borderTopColor: "transparent" }}

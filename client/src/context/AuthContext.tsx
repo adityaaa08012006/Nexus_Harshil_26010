@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
@@ -51,21 +52,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isHydrating = useRef(false); // Prevent concurrent hydration
 
   // Fetch profile from user_profiles table
   const fetchProfile = useCallback(
     async (userId: string): Promise<UserProfile | null> => {
-      const { data, error } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .eq("id", userId)
+          .single();
 
-      if (error) {
-        console.error("Error fetching profile:", error.message);
+        if (error) {
+          console.error("Error fetching profile:", error.message);
+          return null;
+        }
+        return data as UserProfile;
+      } catch (err) {
+        // Catch AbortError and storage lock errors gracefully
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("AbortError") || msg.includes("Lock broken")) {
+          console.warn("[AuthContext] Storage lock error (non-critical):", msg);
+          return null;
+        }
+        console.error("[AuthContext] Unexpected error fetching profile:", msg);
         return null;
       }
-      return data as UserProfile;
     },
     [],
   );
@@ -73,26 +86,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Hydrate user state from an active Supabase session
   const hydrateFromSession = useCallback(
     async (activeSession: Session | null) => {
-      setSession(activeSession);
-      if (!activeSession) {
-        setUser(null);
+      // Prevent concurrent hydration calls
+      if (isHydrating.current) {
+        console.log("[AuthContext] Already hydrating, skipping...");
         return;
       }
-      const profile = await fetchProfile(activeSession.user.id);
-      // Fallback: build minimal profile from auth metadata if DB row is missing
-      if (!profile) {
-        setUser({
-          id: activeSession.user.id,
-          name:
-            activeSession.user.user_metadata?.name ??
-            activeSession.user.email ??
-            "User",
-          email: activeSession.user.email ?? "",
-          role:
-            (activeSession.user.user_metadata?.role as UserRole) ?? "manager",
-        });
-      } else {
-        setUser(profile);
+
+      isHydrating.current = true;
+      try {
+        setSession(activeSession);
+        if (!activeSession) {
+          setUser(null);
+          return;
+        }
+        const profile = await fetchProfile(activeSession.user.id);
+        // Fallback: build minimal profile from auth metadata if DB row is missing
+        if (!profile) {
+          setUser({
+            id: activeSession.user.id,
+            name:
+              activeSession.user.user_metadata?.name ??
+              activeSession.user.email ??
+              "User",
+            email: activeSession.user.email ?? "",
+            role:
+              (activeSession.user.user_metadata?.role as UserRole) ?? "manager",
+          });
+        } else {
+          setUser(profile);
+        }
+      } finally {
+        isHydrating.current = false;
       }
     },
     [fetchProfile],
@@ -147,11 +171,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
         console.log("[AuthContext] Auth state changed:", event);
-        if (mounted) {
+        if (!mounted) return;
+
+        try {
           // Handle specific auth events
           switch (event) {
             case "SIGNED_IN":
-              console.log("[AuthContext] User signed in");
+              // Login/register functions already handle hydration, skip to avoid race conditions
+              console.log(
+                "[AuthContext] User signed in (handled by login function)",
+              );
               break;
             case "SIGNED_OUT":
               console.log("[AuthContext] User signed out");
@@ -159,25 +188,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               setSession(null);
               break;
             case "TOKEN_REFRESHED":
-              console.log("[AuthContext] Token refreshed");
+              console.log("[AuthContext] Token refreshed, updating session...");
+              // Only hydrate for token refresh to avoid conflicts with login
+              if (!isHydrating.current) {
+                await hydrateFromSession(newSession);
+              }
               break;
             case "USER_UPDATED":
               console.log("[AuthContext] User updated");
+              if (!isHydrating.current) {
+                await hydrateFromSession(newSession);
+              }
               break;
+            default:
+              // For any other event, try to update session
+              if (!isHydrating.current) {
+                await hydrateFromSession(newSession);
+              }
           }
-
-          // Update session state
-          await hydrateFromSession(newSession);
+        } catch (err) {
+          // Catch any async errors from Supabase operations
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg.includes("AbortError") || msg.includes("Lock broken")) {
+            console.warn(
+              "[AuthContext] Storage lock error in auth listener (non-critical):",
+              msg,
+            );
+          } else {
+            console.error(
+              "[AuthContext] Error in auth state change handler:",
+              err,
+            );
+          }
         }
       },
     );
 
     // Auto-refresh session when page becomes visible
     const handleVisibilityChange = () => {
-      if (!document.hidden && mounted) {
+      if (!document.hidden && mounted && !isHydrating.current) {
         console.log("[AuthContext] Page visible, checking session...");
         supabase.auth.getSession().then(({ data }) => {
-          if (data.session && mounted) {
+          if (data.session && mounted && !isHydrating.current) {
             hydrateFromSession(data.session);
           }
         });
@@ -216,7 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password,
       });
 
-      const { error: authError } = (await Promise.race([
+      const { data, error: authError } = (await Promise.race([
         loginPromise,
         timeoutPromise,
       ])) as any;
@@ -226,6 +278,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(authError.message);
       }
       console.log("[AuthContext] Supabase sign in successful");
+
+      // Hydrate user profile from the new session
+      if (data?.session) {
+        await hydrateFromSession(data.session);
+      }
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Login failed";
       const msg =
@@ -272,10 +329,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (data.user && !data.session) {
         // User created but not confirmed - try to sign in immediately
         // This works if email confirmation is disabled in Supabase
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
+        const { data: signInData, error: signInError } =
+          await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
 
         if (signInError) {
           // Email confirmation might be required
@@ -283,6 +341,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             "Account created but requires email verification. Please check your inbox or disable email confirmation in Supabase dashboard (Authentication > Providers > Email > Confirm email: Disable).",
           );
         }
+
+        // Hydrate session after sign-in
+        if (signInData?.session) {
+          await hydrateFromSession(signInData.session);
+        }
+      } else if (data.session) {
+        // User was auto-confirmed, hydrate immediately
+        await hydrateFromSession(data.session);
       }
 
       // The DB trigger (handle_new_user, SECURITY DEFINER) automatically creates
@@ -305,10 +371,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async () => {
     console.log("[AuthContext] Logging out...");
     setError(null);
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
-    console.log("[AuthContext] Logged out successfully");
+    setIsLoading(true);
+    try {
+      // Sign out from Supabase (clears localStorage)
+      await supabase.auth.signOut();
+      // Clear local state
+      setUser(null);
+      setSession(null);
+      console.log("[AuthContext] Logged out successfully");
+    } catch (err) {
+      console.error("[AuthContext] Logout error:", err);
+      // Even if logout fails, clear local state
+      setUser(null);
+      setSession(null);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const clearError = () => setError(null);
