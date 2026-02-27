@@ -3,17 +3,25 @@ import { Warehouse, RefreshCw, Settings, Activity } from "lucide-react";
 import { SensorCard } from "../components/sensors/SensorCard";
 import { useEnvironmentalData } from "../hooks/useEnvironmentalData";
 import { useAuthContext } from "../context/AuthContext";
+import { useWarehouse } from "../context/WarehouseContext";
 
 const ZONES = ["Grain Storage", "Cold Storage", "Dry Storage", "Fresh Produce"];
 
 export const SensorMonitoring: React.FC = () => {
   const { user } = useAuthContext();
+  const {
+    warehouses,
+    selectedWarehouseId,
+    setSelectedWarehouseId,
+    selectedWarehouse,
+    isLoading: warehousesLoading,
+  } = useWarehouse();
   const [selectedZone, setSelectedZone] = useState<string>(ZONES[0]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
 
-  // Get warehouse ID from user profile
-  const warehouseId = user?.warehouse_id || null;
+  // Use selected warehouse ID from context
+  const warehouseId = selectedWarehouseId || null;
 
   // Fetch sensor data with 10-second polling
   const {
@@ -49,6 +57,19 @@ export const SensorMonitoring: React.FC = () => {
     }
   };
 
+  if (warehousesLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading warehouses...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!warehouseId) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -56,10 +77,14 @@ export const SensorMonitoring: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm p-8 text-center">
             <Warehouse className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              No Warehouse Assigned
+              {user?.role === "owner"
+                ? "No Warehouses Available"
+                : "No Warehouse Assigned"}
             </h2>
             <p className="text-gray-600">
-              Please contact your administrator to assign you to a warehouse.
+              {user?.role === "owner"
+                ? "Please add warehouses to view sensor data."
+                : "Please contact your administrator to assign you to a warehouse."}
             </p>
           </div>
         </div>
@@ -116,12 +141,35 @@ export const SensorMonitoring: React.FC = () => {
                   Environmental Monitoring
                 </h1>
                 <p className="text-sm text-gray-600">
-                  Real-time sensor data across warehouse zones
+                  {selectedWarehouse
+                    ? `${selectedWarehouse.name} - ${selectedWarehouse.location}`
+                    : "Real-time sensor data across warehouse zones"}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
+              {/* Warehouse selector for owners */}
+              {user?.role === "owner" && warehouses.length > 0 && (
+                <select
+                  value={selectedWarehouseId ?? ""}
+                  onChange={(e) => setSelectedWarehouseId(e.target.value)}
+                  className="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 bg-white"
+                  style={
+                    {
+                      borderColor: "#E5E7EB",
+                      "--tw-ring-color": "#48A111",
+                    } as React.CSSProperties
+                  }
+                >
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               {/* Simulate button (for testing) */}
               <button
                 onClick={handleSimulate}

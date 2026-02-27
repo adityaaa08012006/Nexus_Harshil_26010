@@ -225,8 +225,11 @@ const CircularFlowSection = () => {
                             `}
                             style={{
                               transitionDelay: `${solution.delay * 300 + 800}ms`,
-                              animation: isVisible ? 'flowPulse 2s ease-in-out infinite' : 'none',
-                              animationDelay: `${solution.delay * 300 + 800}ms`
+                              animationDelay: `${solution.delay * 300 + 800}ms`,
+                              animationName: isVisible ? 'flowPulse' : 'none',
+                              animationDuration: '2s',
+                              animationTimingFunction: 'ease-in-out',
+                              animationIterationCount: 'infinite'
                             }}
                           />
                           
@@ -234,16 +237,24 @@ const CircularFlowSection = () => {
                           {isVisible && (
                             <>
                               <div 
-                                className="absolute w-2 h-2 bg-white rounded-full animate-flowRight"
+                                className="absolute w-2 h-2 bg-white rounded-full"
                                 style={{ 
                                   top: '25%',
+                                  animationName: 'flowRight',
+                                  animationDuration: '2s',
+                                  animationTimingFunction: 'linear',
+                                  animationIterationCount: 'infinite',
                                   animationDelay: `${solution.delay * 300 + 800}ms`
                                 }}
                               />
                               <div 
-                                className="absolute w-2 h-2 bg-white rounded-full animate-flowRight"
+                                className="absolute w-2 h-2 bg-white rounded-full"
                                 style={{ 
                                   top: '75%',
+                                  animationName: 'flowRight',
+                                  animationDuration: '2s',
+                                  animationTimingFunction: 'linear',
+                                  animationIterationCount: 'infinite',
                                   animationDelay: `${solution.delay * 300 + 1300}ms`
                                 }}
                               />

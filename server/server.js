@@ -5,6 +5,7 @@ import cron from "node-cron";
 import authRoutes from "./routes/auth.js";
 import sensorRoutes from "./routes/sensors.js";
 import warehouseRoutes from "./routes/warehouses.js";
+import pdfParseRoutes from "./routes/pdf-parse.js";
 import { createClient } from "@supabase/supabase-js";
 import { calculateRiskScore } from "./utils/riskCalculation.js";
 
@@ -48,10 +49,11 @@ console.log("  ✅ /api/auth");
 app.use("/api/sensors", sensorRoutes);
 console.log("  ✅ /api/sensors");
 app.use("/api/warehouses", warehouseRoutes);
-console.log("  ✅ /api/warehouses");
+app.use("/api/pdf-parse", pdfParseRoutes);
+console.log("  ✅ /api/pdf-parse");
 // app.use('/api/inventory', inventoryRoutes)
 // app.use('/api/allocation', allocationRoutes)
-// app.use('/api/contacts', contactRoutes)
+// app.use('/api/contacts', contactutes)
 // app.use('/api/pdf-parse', pdfParseRoutes)
 
 // Error handling middleware

@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { WarehouseProvider } from "./context/WarehouseContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RoleRoute } from "./components/auth/RoleRoute";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -19,107 +20,105 @@ import { BatchDetails } from "./pages/BatchDetails";
 import { SensorMonitoring } from "./pages/SensorMonitoring";
 import { AlertsPage } from "./pages/AlertsPage";
 import { WarehousesPage } from "./pages/WarehousesPage";
+import { RequirementUpload } from "./pages/RequirementUpload";
+import { QCDashboard } from "./pages/QCDashboard";
+import { QCOrders } from "./pages/QCOrders";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          {/* ── Public routes ── */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/auth" element={<AuthPage />} />
+        <WarehouseProvider>
+          <Routes>
+            {/* ── Public routes ── */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/auth" element={<AuthPage />} />
 
-          {/* ── Owner routes ── */}
-          <Route
-            path="/owner/*"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["owner"]}>
-                  <AppLayout>
-                    <Routes>
-                      <Route path="dashboard" element={<OwnerDashboard />} />
-                      <Route path="warehouses" element={<WarehousesPage />} />
-                      <Route path="inventory" element={<InventoryPage />} />
-                      <Route path="batch/:id" element={<BatchDetails />} />
-                      <Route path="sensors" element={<SensorMonitoring />} />
-                      <Route path="alerts" element={<AlertsPage />} />
-                      <Route
-                        path="*"
-                        element={<Navigate to="dashboard" replace />}
-                      />
-                    </Routes>
-                  </AppLayout>
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
+            {/* ── Owner routes ── */}
+            <Route
+              path="/owner/*"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["owner"]}>
+                    <AppLayout>
+                      <Routes>
+                        <Route path="dashboard" element={<OwnerDashboard />} />
+                        <Route path="warehouses" element={<WarehousesPage />} />
+                        <Route path="inventory" element={<InventoryPage />} />
+                        <Route path="batch/:id" element={<BatchDetails />} />
+                        <Route path="sensors" element={<SensorMonitoring />} />
+                        <Route path="alerts" element={<AlertsPage />} />
+                        <Route
+                          path="*"
+                          element={<Navigate to="dashboard" replace />}
+                        />
+                      </Routes>
+                    </AppLayout>
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
 
-          {/* ── Manager routes ── */}
-          <Route
-            path="/manager/*"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["manager"]}>
-                  <AppLayout>
-                    <Routes>
-                      <Route path="dashboard" element={<ManagerDashboard />} />
-                      <Route path="inventory" element={<InventoryPage />} />
-                      <Route path="sensors" element={<SensorMonitoring />} />
-                      <Route path="alerts" element={<AlertsPage />} />
-                      <Route path="batch/:id" element={<BatchDetails />} />
-                      <Route
-                        path="*"
-                        element={<Navigate to="dashboard" replace />}
-                      />
-                    </Routes>
-                  </AppLayout>
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
+            {/* ── Manager routes ── */}
+            <Route
+              path="/manager/*"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["manager"]}>
+                    <AppLayout>
+                      <Routes>
+                        <Route
+                          path="dashboard"
+                          element={<ManagerDashboard />}
+                        />
+                        <Route path="inventory" element={<InventoryPage />} />
+                        <Route path="sensors" element={<SensorMonitoring />} />
+                        <Route path="alerts" element={<AlertsPage />} />
+                        <Route path="batch/:id" element={<BatchDetails />} />
+                        <Route
+                          path="*"
+                          element={<Navigate to="dashboard" replace />}
+                        />
+                      </Routes>
+                    </AppLayout>
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
 
-          {/* ── QC routes (placeholder for now) ── */}
-          <Route
-            path="/qc/*"
-            element={
-              <ProtectedRoute>
-                <RoleRoute allowedRoles={["qc_rep"]}>
-                  <AppLayout>
-                    <Routes>
-                      <Route path="dashboard" element={<QCPlaceholder />} />
-                      <Route path="inventory" element={<InventoryPage />} />
-                      <Route path="alerts" element={<AlertsPage />} />
-                      <Route path="batch/:id" element={<BatchDetails />} />
-                      <Route
-                        path="*"
-                        element={<Navigate to="dashboard" replace />}
-                      />
-                    </Routes>
-                  </AppLayout>
-                </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
+            {/* ── QC routes (placeholder for now) ── */}
+            <Route
+              path="/qc/*"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["qc_rep"]}>
+                    <AppLayout>
+                      <Routes>
+                        <Route path="dashboard" element={<QCDashboard />} />
+                        <Route path="upload" element={<RequirementUpload />} />
+                        <Route path="orders" element={<QCOrders />} />
+                        <Route path="inventory" element={<InventoryPage />} />
+                        <Route path="alerts" element={<AlertsPage />} />
+                        <Route path="batch/:id" element={<BatchDetails />} />
+                        <Route
+                          path="*"
+                          element={<Navigate to="dashboard" replace />}
+                        />
+                      </Routes>
+                    </AppLayout>
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
 
-          {/* ── Fallback ── */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* ── Fallback ── */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </WarehouseProvider>
       </AuthProvider>
     </Router>
   );
 }
-
-// ── QC Placeholder Dashboard ───────────────────────────────────────────────────
-
-const QCPlaceholder: React.FC = () => (
-  <div className="flex flex-col items-center justify-center h-64">
-    <span className="text-4xl mb-4">🔬</span>
-    <h2 className="text-xl font-bold mb-2" style={{ color: "#25671E" }}>
-      QC Dashboard
-    </h2>
-    <p className="text-sm text-gray-500">Coming soon in Phase III</p>
-  </div>
-);
 
 export default App;
