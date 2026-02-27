@@ -30,9 +30,9 @@
 - Loading states
 
 **Backend:**
-- Database models and MongoDB connection
+- Database tables and Supabase connection
 - All API routes (just placeholders)
-- Authentication system (JWT)
+- Authentication system (JWT/Supabase Auth)
 - Risk calculation implementation
 - Allocation engine logic
 - Gemini AI integration
@@ -49,25 +49,28 @@
 **Objective:** Set up core infrastructure for the application to function
 
 #### 1.1 Database Setup
-- [ ] Create `server/config/database.js` - MongoDB connection module
-- [ ] Define Mongoose schemas in `server/models/`:
-  - `User.js` (name, email, password, role: owner/manager/qc-rep)
-  - `Warehouse.js` (name, location, capacity, ownerId)
-  - `Batch.js` (farmerId, crop, quantity, entryDate, shelfLife, riskScore, zone, warehouseId)
-  - `SensorReading.js` (warehouseId, zone, temperature, humidity, ethylene, co2, ammonia, timestamp)
-  - `AllocationRequest.js` (requesterId, crop, quantity, deadline, location, price, status)
-  - `Contact.js` (type: farmer/buyer, name, phone, email, location, crops, priceHistory)
-  - `Dispatch.js` (batchId, allocationId, destination, dispatchDate, quantity)
+- [ ] Set up Supabase project (create account and new project)
+- [ ] Configure `server/config/supabase.js` - Supabase client initialization
+- [ ] Create database tables using Supabase SQL Editor or migrations:
+  - `users` table (name, email, password, role: owner/manager/qc-rep) - Note: Can use Supabase Auth
+  - `warehouses` table (name, location, capacity, owner_id)
+  - `batches` table (farmer_id, crop, quantity, entry_date, shelf_life, risk_score, zone, warehouse_id)
+  - `sensor_readings` table (warehouse_id, zone, temperature, humidity, ethylene, co2, ammonia, timestamp)
+  - `allocation_requests` table (requester_id, crop, quantity, deadline, location, price, status)
+  - `contacts` table (type: farmer/buyer, name, phone, email, location, crops, price_history)
+  - `dispatches` table (batch_id, allocation_id, destination, dispatch_date, quantity)
+- [ ] Set up Row Level Security (RLS) policies for each table
+- [ ] Configure database indexes for performance
 
 #### 1.2 Authentication System
-- [ ] Install bcryptjs for password hashing
+- [ ] Configure Supabase Authentication (enable email/password auth)
 - [ ] Implement `/api/auth` routes in `server/routes/auth.js`:
-  - POST `/register` - Create new user
-  - POST `/login` - Authenticate and return JWT
-  - POST `/logout` - Invalidate token
+  - POST `/register` - Create new user (using Supabase Auth)
+  - POST `/login` - Authenticate and return session token
+  - POST `/logout` - Sign out user
   - GET `/me` - Get current user profile
-- [ ] Create JWT middleware in `server/middleware/auth.js`
-- [ ] Create role-based authorization middleware
+- [ ] Create Supabase auth middleware in `server/middleware/auth.js`
+- [ ] Create role-based authorization middleware (check user role from database)
 - [ ] Build `AuthPage.tsx` component (frontend)
 - [ ] Complete `useAuth.ts` hook with context
 - [ ] Add protected route wrapper component
@@ -75,7 +78,7 @@
 
 #### 1.3 Environment Setup
 - [ ] Create `.env` file from `.env.example`
-- [ ] Set up MongoDB (local or MongoDB Atlas)
+- [ ] Set up Supabase (create project and get API keys: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)
 - [ ] Configure Gemini API key
 - [ ] Add global error handling middleware
 - [ ] Set up Winston or Morgan for logging
@@ -628,7 +631,7 @@
 #### 10.3 Deployment
 - [ ] Set up production environment:
   - Configure production .env
-  - Set up production MongoDB
+  - Set up production Supabase (production project/database)
   - Configure error tracking (Sentry)
   - Set up monitoring (New Relic/Datadog)
 - [ ] Deploy backend:
@@ -676,16 +679,16 @@
 ### Backend
 - **Runtime:** Node.js 18+
 - **Framework:** Express.js
-- **Database:** MongoDB with Mongoose ODM
-- **Authentication:** JWT with bcryptjs
-- **File Upload:** Multer
+- **Database:** Supabase (PostgreSQL)
+- **Authentication:** Supabase Auth or JWT
+- **File Upload:** Multer + Supabase Storage
 - **AI:** Gemini API (@google/generative-ai)
 - **Validation:** express-validator
 - **Logging:** Morgan / Winston
 
 ### DevOps
 - **Deployment:** Vercel (frontend) + Railway/Render (backend)
-- **Database Hosting:** MongoDB Atlas
+- **Database Hosting:** Supabase
 - **Version Control:** Git + GitHub
 - **Environment Management:** dotenv
 - **Testing:** Jest + React Testing Library
