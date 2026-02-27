@@ -25,14 +25,7 @@ const SEVERITY_CONFIG = {
     text: "#92400E",
     label: "Warning",
   },
-  info: {
-    icon: Info,
-    border: "#3B82F6",
-    bg: "#EFF6FF",
-    text: "#1E40AF",
-    label: "Info",
-  },
-};
+} as const;
 
 export const AlertPanel: React.FC<AlertPanelProps> = ({
   alerts,
@@ -40,7 +33,7 @@ export const AlertPanel: React.FC<AlertPanelProps> = ({
   maxItems = 5,
   isLoading = false,
 }) => {
-  const active = alerts.filter((a) => !a.is_acknowledged).slice(0, maxItems);
+  const active = alerts.filter((a) => !a.acknowledged).slice(0, maxItems);
 
   return (
     <div
@@ -101,7 +94,7 @@ export const AlertPanel: React.FC<AlertPanelProps> = ({
                     style={{ color: cfg.text }}
                   >
                     {alert.zone ? `Zone ${alert.zone} · ` : ""}
-                    {formatRelativeTime(alert.created_at)}
+                    {formatRelativeTime(alert.triggered_at)}
                   </p>
                   {onAcknowledge && (
                     <button

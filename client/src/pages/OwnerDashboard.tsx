@@ -107,9 +107,12 @@ export const OwnerDashboard: React.FC = () => {
       </div>
 
       {/* ── Summary cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Warehouse count */}
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Warehouse count with link */}
+        <div
+          className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => navigate("/owner/warehouses")}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 font-medium">
@@ -121,6 +124,16 @@ export const OwnerDashboard: React.FC = () => {
               >
                 {warehouses.length}
               </p>
+              <button
+                className="text-xs font-medium mt-2 hover:underline"
+                style={{ color: "#48A111" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/owner/warehouses");
+                }}
+              >
+                View all →
+              </button>
             </div>
             <div
               className="w-12 h-12 rounded-lg flex items-center justify-center"
@@ -268,44 +281,7 @@ export const OwnerDashboard: React.FC = () => {
       />
 
       {/* ── Risk chart ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RiskChart batches={batches} />
-
-        {/* Quick warehouse list */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <h3 className="text-sm font-semibold mb-5 text-gray-700">
-            Your Warehouses
-          </h3>
-          {warehouses.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">
-              No warehouses configured yet.
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {warehouses.map((w) => (
-                <button
-                  key={w.id}
-                  onClick={() => setSelectedWarehouseId(w.id)}
-                  className="w-full text-left px-4 py-3 rounded-lg border transition-all hover:shadow-sm"
-                  style={
-                    selectedWarehouseId === w.id
-                      ? { borderColor: "#48A111", backgroundColor: "#F0F9FF" }
-                      : { borderColor: "#E5E7EB", backgroundColor: "#fff" }
-                  }
-                >
-                  <p
-                    className="font-medium text-sm"
-                    style={{ color: "#1F2937" }}
-                  >
-                    {w.name}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">{w.location}</p>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <RiskChart batches={batches} />
 
       {/* ── Read-only inventory table ── */}
       <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">

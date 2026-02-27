@@ -17,6 +17,8 @@ import { OwnerDashboard } from "./pages/OwnerDashboard";
 import { InventoryPage } from "./pages/InventoryPage";
 import { BatchDetails } from "./pages/BatchDetails";
 import { SensorMonitoring } from "./pages/SensorMonitoring";
+import { AlertsPage } from "./pages/AlertsPage";
+import { WarehousesPage } from "./pages/WarehousesPage";
 
 function App() {
   return (
@@ -37,9 +39,11 @@ function App() {
                   <AppLayout>
                     <Routes>
                       <Route path="dashboard" element={<OwnerDashboard />} />
+                      <Route path="warehouses" element={<WarehousesPage />} />
                       <Route path="inventory" element={<InventoryPage />} />
                       <Route path="batch/:id" element={<BatchDetails />} />
                       <Route path="sensors" element={<SensorMonitoring />} />
+                      <Route path="alerts" element={<AlertsPage />} />
                       <Route
                         path="*"
                         element={<Navigate to="dashboard" replace />}
@@ -62,6 +66,7 @@ function App() {
                       <Route path="dashboard" element={<ManagerDashboard />} />
                       <Route path="inventory" element={<InventoryPage />} />
                       <Route path="sensors" element={<SensorMonitoring />} />
+                      <Route path="alerts" element={<AlertsPage />} />
                       <Route path="batch/:id" element={<BatchDetails />} />
                       <Route
                         path="*"
@@ -84,6 +89,7 @@ function App() {
                     <Routes>
                       <Route path="dashboard" element={<QCPlaceholder />} />
                       <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="alerts" element={<AlertsPage />} />
                       <Route path="batch/:id" element={<BatchDetails />} />
                       <Route
                         path="*"

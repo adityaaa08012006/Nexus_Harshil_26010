@@ -12,33 +12,54 @@ const supabaseAdmin = createClient(
  * Usage: router.get('/protected', requireAuth, handler)
  */
 export const requireAuth = async (req, res, next) => {
+  console.log("[AUTH MIDDLEWARE] Checking request to:", req.method, req.path);
   const authHeader = req.headers.authorization ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
 
   if (!token) {
+    console.log("[AUTH MIDDLEWARE] ❌ No token provided");
     return res.status(401).json({ error: "No token provided" });
   }
 
   try {
+    console.log("[AUTH MIDDLEWARE] Validating token with Supabase...");
     const {
       data: { user },
       error,
     } = await supabaseAdmin.auth.getUser(token);
     if (error || !user) {
+      console.log("[AUTH MIDDLEWARE] ❌ Invalid token:", error?.message);
       return res.status(401).json({ error: "Invalid or expired token" });
     }
 
+    console.log("[AUTH MIDDLEWARE] ✅ User authenticated:", user.email);
+
     // Fetch profile for role info
-    const { data: profile } = await supabaseAdmin
+    console.log("[AUTH MIDDLEWARE] Fetching user profile...");
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("user_profiles")
       .select("id, name, email, role, warehouse_id")
       .eq("id", user.id)
       .single();
 
+    if (profileError) {
+      console.log(
+        "[AUTH MIDDLEWARE] ⚠️ Profile fetch error:",
+        profileError.message,
+      );
+    } else {
+      console.log(
+        "[AUTH MIDDLEWARE] Profile loaded - Role:",
+        profile?.role,
+        "Warehouse:",
+        profile?.warehouse_id || "none",
+      );
+    }
+
     req.user = { ...user, profile };
     next();
   } catch (err) {
-    console.error("requireAuth error:", err);
+    console.error("[AUTH MIDDLEWARE] ❌ Exception:", err);
     res.status(500).json({ error: "Authentication error" });
   }
 };

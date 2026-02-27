@@ -1,50 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useInventory } from "../hooks/useInventory";
 import { useAuthContext } from "../context/AuthContext";
-import { supabase } from "../lib/supabase";
-import type { Alert } from "../lib/supabase";
 import { MetricCards } from "../components/dashboard/MetricCards";
 import { RiskChart } from "../components/dashboard/RiskChart";
-import { AlertPanel } from "../components/dashboard/AlertPanel";
 import { InventoryTable } from "../components/dashboard/InventoryTable";
 
 export const ManagerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { batches, stats, isLoading, error } = useInventory();
-
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [alertsLoading, setAlertsLoading] = useState(true);
-
-  // ── Load alerts for this warehouse ──────────────────────────────────────────
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      if (!user?.warehouse_id) {
-        setAlertsLoading(false);
-        return;
-      }
-      setAlertsLoading(true);
-      const { data } = await supabase
-        .from("alerts")
-        .select("*")
-        .eq("warehouse_id", user.warehouse_id)
-        .eq("acknowledged", false)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      setAlerts(data ?? []);
-      setAlertsLoading(false);
-    };
-    fetchAlerts();
-  }, [user?.warehouse_id]);
-
-  const handleAcknowledge = async (alertId: string) => {
-    await supabase
-      .from("alerts")
-      .update({ acknowledged: true })
-      .eq("id", alertId);
-    setAlerts((prev) => prev.filter((a) => a.id !== alertId));
-  };
 
   // Top 5 high-risk batches for the spotlight table
   const highRiskBatches = [...batches]
@@ -122,16 +87,8 @@ export const ManagerDashboard: React.FC = () => {
         totalQuantity={stats.totalQuantity}
       />
 
-      {/* ── Chart + Alerts row ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RiskChart batches={batches} />
-        <AlertPanel
-          alerts={alerts}
-          isLoading={alertsLoading}
-          onAcknowledge={handleAcknowledge}
-          maxItems={5}
-        />
-      </div>
+      {/* ── Risk Chart ── */}
+      <RiskChart batches={batches} />
 
       {/* ── High-risk spotlight table ── */}
       {highRiskBatches.length > 0 && (

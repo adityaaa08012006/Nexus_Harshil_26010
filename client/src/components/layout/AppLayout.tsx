@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useAlertCount } from "../../hooks/useAlertCount";
 
 // ─── Role-Based Nav ────────────────────────────────────────────────────────────
 
@@ -191,6 +192,12 @@ const ownerNav: NavItem[] = [
     icon: <SensorsIcon />,
   },
   {
+    id: "alerts",
+    label: "Alerts",
+    path: "/owner/alerts",
+    icon: <BellIcon />,
+  },
+  {
     id: "inventory",
     label: "All Inventory",
     path: "/owner/inventory",
@@ -237,6 +244,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { count: alertCount } = useAlertCount();
 
   const navItems = isOwner() ? ownerNav : isManager() ? managerNav : qcNav;
 
@@ -321,6 +329,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               const isActive =
                 activePath === item.path ||
                 activePath.startsWith(item.path + "/");
+              const showBadge = item.id === "alerts" && alertCount > 0;
               return (
                 <button
                   key={item.id}
@@ -354,7 +363,20 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                   }}
                 >
                   <span className="flex-shrink-0">{item.icon}</span>
-                  <span>{item.label}</span>
+                  <span className="flex-1">{item.label}</span>
+                  {showBadge && (
+                    <span
+                      className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-bold"
+                      style={{
+                        backgroundColor: "#DC2626",
+                        color: "#fff",
+                        minWidth: "20px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {alertCount > 99 ? "99+" : alertCount}
+                    </span>
+                  )}
                 </button>
               );
             })}

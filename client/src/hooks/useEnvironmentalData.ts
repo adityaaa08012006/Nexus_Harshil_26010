@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "../lib/supabase";
 
 // ============================================================================
 // Types
@@ -89,8 +90,11 @@ export const useEnvironmentalData = (
     if (!warehouseId) return;
 
     try {
-      const token = localStorage.getItem("supabase.auth.token");
-      if (!token) {
+      // Get the current session from Supabase
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         throw new Error("No authentication token found");
       }
 
@@ -101,7 +105,7 @@ export const useEnvironmentalData = (
       const response = await fetch(url, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${JSON.parse(token).access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
           "Content-Type": "application/json",
         },
       });
@@ -125,8 +129,11 @@ export const useEnvironmentalData = (
     if (!warehouseId) return;
 
     try {
-      const token = localStorage.getItem("supabase.auth.token");
-      if (!token) {
+      // Get the current session from Supabase
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         throw new Error("No authentication token found");
       }
 
@@ -135,7 +142,7 @@ export const useEnvironmentalData = (
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${JSON.parse(token).access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
             "Content-Type": "application/json",
           },
         },
@@ -160,8 +167,11 @@ export const useEnvironmentalData = (
     if (!warehouseId) return;
 
     try {
-      const token = localStorage.getItem("supabase.auth.token");
-      if (!token) {
+      // Get the current session from Supabase
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         throw new Error("No authentication token found");
       }
 
@@ -170,7 +180,7 @@ export const useEnvironmentalData = (
         {
           method: "GET",
           headers: {
-            Authorization: `Bearer ${JSON.parse(token).access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
             "Content-Type": "application/json",
           },
         },
@@ -215,8 +225,11 @@ export const useEnvironmentalData = (
       if (!warehouseId) return;
 
       try {
-        const token = localStorage.getItem("supabase.auth.token");
-        if (!token) {
+        // Get the current session from Supabase
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.access_token) {
           throw new Error("No authentication token found");
         }
 
@@ -225,7 +238,7 @@ export const useEnvironmentalData = (
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${JSON.parse(token).access_token}`,
+              Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -255,8 +268,11 @@ export const useEnvironmentalData = (
   // ─── Acknowledge Alert ────────────────────────────────────────────────────
   const acknowledgeAlert = useCallback(async (alertId: string) => {
     try {
-      const token = localStorage.getItem("supabase.auth.token");
-      if (!token) {
+      // Get the current session from Supabase
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) {
         throw new Error("No authentication token found");
       }
 
@@ -265,7 +281,7 @@ export const useEnvironmentalData = (
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${JSON.parse(token).access_token}`,
+            Authorization: `Bearer ${session.access_token}`,
             "Content-Type": "application/json",
           },
         },
@@ -291,8 +307,11 @@ export const useEnvironmentalData = (
       if (!warehouseId) return;
 
       try {
-        const token = localStorage.getItem("supabase.auth.token");
-        if (!token) {
+        // Get the current session from Supabase
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.access_token) {
           throw new Error("No authentication token found");
         }
 
@@ -301,7 +320,7 @@ export const useEnvironmentalData = (
           {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${JSON.parse(token).access_token}`,
+              Authorization: `Bearer ${session.access_token}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({ criticalChance }),

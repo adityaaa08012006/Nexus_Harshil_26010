@@ -122,18 +122,26 @@ export interface BatchUpdate {
 }
 
 // ─── Alert types ──────────────────────────────────────────────────────────────
-export type AlertSeverity = "info" | "warning" | "critical";
-export type AlertType = "temperature" | "humidity" | "gas" | "risk" | "system";
+export type AlertSeverity = "warning" | "critical";
+export type AlertType =
+  | "temperature"
+  | "humidity"
+  | "ethylene"
+  | "co2"
+  | "ammonia";
 
 export interface Alert {
   id: string;
   warehouse_id: string;
-  zone?: string | null;
-  type: AlertType;
+  zone: string;
+  alert_type: AlertType;
   severity: AlertSeverity;
   message: string;
-  is_acknowledged: boolean;
+  current_value: number;
+  threshold_value: number;
+  acknowledged: boolean;
   acknowledged_by?: string | null;
   acknowledged_at?: string | null;
+  triggered_at: string;
   created_at: string;
 }

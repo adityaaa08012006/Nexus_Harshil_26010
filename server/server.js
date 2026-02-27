@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cron from "node-cron";
 import authRoutes from "./routes/auth.js";
 import sensorRoutes from "./routes/sensors.js";
+import warehouseRoutes from "./routes/warehouses.js";
 import { createClient } from "@supabase/supabase-js";
 import { calculateRiskScore } from "./utils/riskCalculation.js";
 
@@ -21,7 +22,11 @@ const supabaseAdmin = createClient(
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      process.env.CLIENT_URL,
+    ].filter(Boolean),
     credentials: true,
   }),
 );
@@ -37,8 +42,13 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+console.log("\n🚀 Registering API routes...");
 app.use("/api/auth", authRoutes);
+console.log("  ✅ /api/auth");
 app.use("/api/sensors", sensorRoutes);
+console.log("  ✅ /api/sensors");
+app.use("/api/warehouses", warehouseRoutes);
+console.log("  ✅ /api/warehouses");
 // app.use('/api/inventory', inventoryRoutes)
 // app.use('/api/allocation', allocationRoutes)
 // app.use('/api/contacts', contactRoutes)
@@ -46,6 +56,7 @@ app.use("/api/sensors", sensorRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error("\n[ERROR HANDLER] Unhandled error:");
   console.error(err.stack);
   res.status(500).json({
     error: "Something went wrong!",
@@ -114,9 +125,19 @@ cron.schedule("0 * * * *", async () => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📡 API Health: http://localhost:${PORT}/api/health`);
-  console.log(`⏰  Risk recalculation cron: every hour at :00`);
+  console.log("\n" + "=".repeat(60));
+  console.log("🚀 Nexus Warehouse Management - Server Started");
+  console.log("=".repeat(60));
+  console.log(`🔗 Port: ${PORT}`);
+  console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
+  console.log("\n🔑 Available API Endpoints:");
+  console.log("  - POST /api/auth/signup");
+  console.log("  - POST /api/auth/signin");
+  console.log("  - GET  /api/warehouses (requires auth)");
+  console.log("  - GET  /api/warehouses/:id (requires auth)");
+  console.log("  - GET  /api/sensors/* (requires auth)");
+  console.log("\n⏰  Risk recalculation cron: every hour at :00");
+  console.log("=".repeat(60) + "\n");
 });
 
 export default app;
