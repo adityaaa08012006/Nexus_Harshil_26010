@@ -1,48 +1,116 @@
-import React from 'react';
+import React from "react";
+import { formatNumber } from "../../utils/formatters";
 
 interface MetricCardProps {
-  title: string;
+  label: string;
   value: string | number;
-  icon?: React.ReactNode;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
+  sub?: string;
+  icon: string;
+  accentColor?: string;
+  trend?: { value: number; label: string };
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon, trend }) => {
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-        {icon && <div className="text-green-600">{icon}</div>}
-      </div>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
+const MetricCard: React.FC<MetricCardProps> = ({
+  label,
+  value,
+  sub,
+  icon,
+  accentColor = "#25671E",
+  trend,
+}) => (
+  <div
+    className="rounded-2xl p-5 flex flex-col gap-2 shadow-sm border"
+    style={{ backgroundColor: "#F7F0F0", borderColor: `${accentColor}25` }}
+  >
+    <div className="flex items-center justify-between">
+      <span className="text-2xl">{icon}</span>
       {trend && (
-        <p className={`text-sm ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
-          {trend.isPositive ? '↑' : '↓'} {Math.abs(trend.value)}% from last week
-        </p>
+        <span
+          className="text-xs font-semibold px-2 py-0.5 rounded-full"
+          style={{
+            backgroundColor: trend.value >= 0 ? "#48A11120" : "#DC262620",
+            color: trend.value >= 0 ? "#48A111" : "#DC2626",
+          }}
+        >
+          {trend.value >= 0 ? "▲" : "▼"} {Math.abs(trend.value)}% {trend.label}
+        </span>
       )}
     </div>
-  );
-};
+    <p className="text-3xl font-extrabold" style={{ color: accentColor }}>
+      {typeof value === "number" ? formatNumber(value) : value}
+    </p>
+    <p className="text-sm font-semibold text-gray-600">{label}</p>
+    {sub && <p className="text-xs text-gray-400">{sub}</p>}
+  </div>
+);
 
 interface MetricCardsProps {
-  metrics: {
-    totalInventory: number;
-    highRiskPercentage: number;
-    storageUtilization: number;
-    activeAlerts: number;
-  };
+  totalBatches: number;
+  freshCount: number;
+  moderateCount: number;
+  highRiskCount: number;
+  totalQuantity: number;
+  storageUtilization?: number;
+  warehouseName?: string;
 }
 
-export const MetricCards: React.FC<MetricCardsProps> = ({ metrics }) => {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <MetricCard title="Total Inventory" value={`${metrics.totalInventory} units`} />
-      <MetricCard title="High-Risk Batch %" value={`${metrics.highRiskPercentage}%`} />
-      <MetricCard title="Storage Utilization" value={`${metrics.storageUtilization}%`} />
-      <MetricCard title="Active Alerts" value={metrics.activeAlerts} />
-    </div>
-  );
-};
+export const MetricCards: React.FC<MetricCardsProps> = ({
+  totalBatches,
+  freshCount,
+  moderateCount,
+  highRiskCount,
+  totalQuantity,
+  storageUtilization,
+  warehouseName,
+}) => (
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <MetricCard
+      label="Total Batches"
+      value={totalBatches}
+      sub={warehouseName}
+      icon="📦"
+      accentColor="#25671E"
+    />
+    <MetricCard
+      label="Fresh Batches"
+      value={freshCount}
+      sub="Risk ≤ 30%"
+      icon="✅"
+      accentColor="#48A111"
+    />
+    <MetricCard
+      label="Moderate Risk"
+      value={moderateCount}
+      sub="Risk 31–70%"
+      icon="⚠️"
+      accentColor="#F2B50B"
+    />
+    <MetricCard
+      label="High Risk"
+      value={highRiskCount}
+      sub="Risk > 70%"
+      icon="🚨"
+      accentColor="#DC2626"
+    />
+    <MetricCard
+      label="Total Stock"
+      value={`${formatNumber(Math.round(totalQuantity))} kg`}
+      icon="🌾"
+      accentColor="#25671E"
+    />
+    {storageUtilization != null && (
+      <MetricCard
+        label="Storage Utilization"
+        value={`${storageUtilization}%`}
+        icon="🏭"
+        accentColor={
+          storageUtilization > 85
+            ? "#DC2626"
+            : storageUtilization > 65
+              ? "#F2B50B"
+              : "#48A111"
+        }
+      />
+    )}
+  </div>
+);

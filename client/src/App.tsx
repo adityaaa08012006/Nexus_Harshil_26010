@@ -5,46 +5,23 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import { AuthProvider, useAuthContext } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { RoleRoute } from "./components/auth/RoleRoute";
+import { AppLayout } from "./components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import { AuthPage } from "./pages/AuthPage";
-import { Dashboard } from "./pages/Dashboard";
+import { ManagerDashboard } from "./pages/ManagerDashboard";
+import { OwnerDashboard } from "./pages/OwnerDashboard";
+import { InventoryPage } from "./pages/InventoryPage";
 import { BatchDetails } from "./pages/BatchDetails";
-
-// ── Placeholder dashboard shells (replace with real pages later) ───────────────
-const DashboardShell: React.FC<{ role: string }> = ({ role }) => {
-  const { user, logout } = useAuthContext();
-  return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center gap-6"
-      style={{ backgroundColor: "#F7F0F0" }}
-    >
-      <span className="text-5xl">🌾</span>
-      <h1 className="text-3xl font-extrabold" style={{ color: "#25671E" }}>
-        {role} Dashboard
-      </h1>
-      <p className="text-sm" style={{ color: "rgba(37,103,30,0.6)" }}>
-        Logged in as <strong>{user?.name}</strong> ({user?.email})
-      </p>
-      <button
-        onClick={logout}
-        className="px-6 py-2 rounded-xl text-sm font-bold"
-        style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
-      >
-        Sign out
-      </button>
-    </div>
-  );
-};
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
-          {/* ── Public ── */}
+          {/* ── Public routes ── */}
           <Route path="/" element={<HomePage />} />
           <Route path="/auth" element={<AuthPage />} />
 
@@ -54,7 +31,17 @@ function App() {
             element={
               <ProtectedRoute>
                 <RoleRoute allowedRoles={["owner"]}>
-                  <DashboardShell role="Owner" />
+                  <AppLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<OwnerDashboard />} />
+                      <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="batch/:id" element={<BatchDetails />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="dashboard" replace />}
+                      />
+                    </Routes>
+                  </AppLayout>
                 </RoleRoute>
               </ProtectedRoute>
             }
@@ -66,38 +53,40 @@ function App() {
             element={
               <ProtectedRoute>
                 <RoleRoute allowedRoles={["manager"]}>
-                  <DashboardShell role="Manager" />
+                  <AppLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<ManagerDashboard />} />
+                      <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="batch/:id" element={<BatchDetails />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="dashboard" replace />}
+                      />
+                    </Routes>
+                  </AppLayout>
                 </RoleRoute>
               </ProtectedRoute>
             }
           />
 
-          {/* ── QC routes ── */}
+          {/* ── QC routes (placeholder for now) ── */}
           <Route
             path="/qc/*"
             element={
               <ProtectedRoute>
                 <RoleRoute allowedRoles={["qc_rep"]}>
-                  <DashboardShell role="QC Representative" />
+                  <AppLayout>
+                    <Routes>
+                      <Route path="dashboard" element={<QCPlaceholder />} />
+                      <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="batch/:id" element={<BatchDetails />} />
+                      <Route
+                        path="*"
+                        element={<Navigate to="dashboard" replace />}
+                      />
+                    </Routes>
+                  </AppLayout>
                 </RoleRoute>
-              </ProtectedRoute>
-            }
-          />
-
-          {/* ── Legacy dashboard (protected, any role) ── */}
-          <Route
-            path="/dashboard/*"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/batch-details"
-            element={
-              <ProtectedRoute>
-                <BatchDetails />
               </ProtectedRoute>
             }
           />
@@ -109,5 +98,17 @@ function App() {
     </Router>
   );
 }
+
+// ── QC Placeholder Dashboard ───────────────────────────────────────────────────
+
+const QCPlaceholder: React.FC = () => (
+  <div className="flex flex-col items-center justify-center h-64">
+    <span className="text-4xl mb-4">🔬</span>
+    <h2 className="text-xl font-bold mb-2" style={{ color: "#25671E" }}>
+      QC Dashboard
+    </h2>
+    <p className="text-sm text-gray-500">Coming soon in Phase III</p>
+  </div>
+);
 
 export default App;

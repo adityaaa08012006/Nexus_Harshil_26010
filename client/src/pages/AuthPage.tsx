@@ -87,24 +87,41 @@ const Field: React.FC<FieldProps> = ({ label, id, ...rest }) => (
 // ─── Login Form ───────────────────────────────────────────────────────────────
 
 const LoginForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
-  const { login, error, clearError, isLoading, roleRedirectPath } =
-    useAuthContext();
+  const {
+    login,
+    error,
+    clearError,
+    isLoading: authLoading,
+    roleRedirectPath,
+  } = useAuthContext();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[LoginForm] Submit triggered", { email, password: "***" });
     clearError();
+    setIsSubmitting(true);
     try {
+      console.log("[LoginForm] Calling login function...");
       await login(email, password);
+      console.log("[LoginForm] Login successful, navigating...");
       navigate(roleRedirectPath(), { replace: true });
-    } catch {
+    } catch (err) {
+      console.error("[LoginForm] Login error:", err);
       // error shown via context
+    } finally {
+      setIsSubmitting(false);
+      console.log("[LoginForm] Submit completed");
     }
   };
+
+  // Only disable during submission, not during auth context's initial load
+  const isDisabled = isSubmitting;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -184,11 +201,11 @@ const LoginForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
 
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isDisabled}
         className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
         style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
       >
-        {isLoading ? "Signing in…" : "Sign In →"}
+        {isSubmitting ? "Signing in…" : "Sign In →"}
       </button>
 
       <p
@@ -238,7 +255,12 @@ const ROLES: {
 ];
 
 const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
-  const { register, error, clearError, isLoading } = useAuthContext();
+  const {
+    register,
+    error,
+    clearError,
+    isLoading: authLoading,
+  } = useAuthContext();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -247,6 +269,7 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
   const [confirm, setConfirm] = useState("");
   const [role, setRole] = useState<UserRole>("manager");
   const [localError, setLocalError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -260,6 +283,7 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
       setLocalError("Password must be at least 6 characters");
       return;
     }
+    setIsSubmitting(true);
     try {
       await register(name, email, password, role);
       // After signup Supabase may send a confirmation email;
@@ -273,10 +297,13 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
       navigate(path, { replace: true });
     } catch {
       // shown via context error
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const displayError = localError || error;
+  const isDisabled = isSubmitting;
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -356,11 +383,11 @@ const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
 
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isDisabled}
         className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
         style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
       >
-        {isLoading ? "Creating account…" : "Create Account →"}
+        {isSubmitting ? "Creating account…" : "Create Account →"}
       </button>
 
       <p
@@ -393,6 +420,12 @@ export const AuthPage: React.FC = () => {
 
   const isNetworkError =
     !!error && (error.includes("Cannot reach") || error.includes("fetch"));
+
+  // Clear errors when switching between login and register
+  const switchMode = (newMode: "login" | "register") => {
+    clearError();
+    setMode(newMode);
+  };
 
   // Already logged in → redirect to dashboard
   if (!isLoading && isAuthenticated) {
@@ -528,7 +561,7 @@ export const AuthPage: React.FC = () => {
             <button
               key={t}
               type="button"
-              onClick={() => setMode(t)}
+              onClick={() => switchMode(t)}
               className="px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
               style={{
                 backgroundColor: mode === t ? "#25671E" : "transparent",
@@ -576,9 +609,9 @@ export const AuthPage: React.FC = () => {
           }}
         >
           {mode === "login" ? (
-            <LoginForm onSwitch={() => setMode("register")} />
+            <LoginForm onSwitch={() => switchMode("register")} />
           ) : (
-            <RegisterForm onSwitch={() => setMode("login")} />
+            <RegisterForm onSwitch={() => switchMode("login")} />
           )}
         </div>
 

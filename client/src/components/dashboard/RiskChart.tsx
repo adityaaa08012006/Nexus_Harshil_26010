@@ -1,37 +1,69 @@
-import React from 'react';
+import React from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+import { Batch } from "../../lib/supabase";
 
 interface RiskChartProps {
-  data: Array<{
-    batchId: string;
-    riskScore: number;
-  }>;
+  batches: Batch[];
 }
 
-export const RiskChart: React.FC<RiskChartProps> = ({ data }) => {
-  const getColorClass = (score: number) => {
-    if (score < 30) return 'bg-green-500';
-    if (score < 70) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+export const RiskChart: React.FC<RiskChartProps> = ({ batches }) => {
+  const fresh = batches.filter((b) => b.risk_score <= 30).length;
+  const moderate = batches.filter(
+    (b) => b.risk_score > 30 && b.risk_score <= 70,
+  ).length;
+  const high = batches.filter((b) => b.risk_score > 70).length;
+
+  const pieData = [
+    { name: "Fresh", value: fresh, color: "#48A111" },
+    { name: "Moderate", value: moderate, color: "#F2B50B" },
+    { name: "High Risk", value: high, color: "#DC2626" },
+  ].filter((d) => d.value > 0);
+
+  if (batches.length === 0) {
+    return (
+      <div
+        className="rounded-2xl p-6 shadow-sm border flex items-center justify-center h-48"
+        style={{ backgroundColor: "#F7F0F0", borderColor: "#25671E20" }}
+      >
+        <p className="text-gray-400 text-sm">No batch data yet</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Risk Score Distribution</h3>
-      <div className="space-y-4">
-        {data.map((batch) => (
-          <div key={batch.batchId} className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700 w-24">{batch.batchId}</span>
-            <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
-              <div
-                className={`h-full ${getColorClass(batch.riskScore)} transition-all duration-300 flex items-center justify-end pr-2`}
-                style={{ width: `${batch.riskScore}%` }}
-              >
-                <span className="text-xs text-white font-medium">{batch.riskScore}%</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div
+      className="rounded-2xl p-6 shadow-sm border"
+      style={{ backgroundColor: "#F7F0F0", borderColor: "#25671E20" }}
+    >
+      <h3 className="text-base font-bold mb-4" style={{ color: "#25671E" }}>
+        Risk Distribution
+      </h3>
+      <ResponsiveContainer width="100%" height={200}>
+        <PieChart>
+          <Pie
+            data={pieData}
+            cx="50%"
+            cy="50%"
+            innerRadius={55}
+            outerRadius={80}
+            paddingAngle={3}
+            dataKey="value"
+          >
+            {pieData.map((entry, i) => (
+              <Cell key={i} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip formatter={(v: number) => [`${v} batches`]} />
+          <Legend iconType="circle" iconSize={10} />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 };

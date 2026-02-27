@@ -126,9 +126,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
         if (mounted) {
-          setIsLoading(true);
+          // Don't touch isLoading here - let login/register/logout manage it
+          // This prevents race conditions with button states
           await hydrateFromSession(newSession);
-          setIsLoading(false);
         }
       },
     );
@@ -142,26 +142,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // ─── Auth Actions ────────────────────────────────────────────────────────────
 
   const login = async (email: string, password: string) => {
+    console.log("[AuthContext] Login called", { email, password: "***" });
     setError(null);
     setIsLoading(true);
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      console.log("[AuthContext] Calling Supabase signInWithPassword...");
+
+      // Add timeout to detect hanging requests
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(
+          () =>
+            reject(new Error("Request timeout - Supabase may be unreachable")),
+          10000,
+        );
+      });
+
+      const loginPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
-      if (authError) throw new Error(authError.message);
+
+      const { error: authError } = (await Promise.race([
+        loginPromise,
+        timeoutPromise,
+      ])) as any;
+
+      if (authError) {
+        console.error("[AuthContext] Supabase auth error:", authError);
+        throw new Error(authError.message);
+      }
+      console.log("[AuthContext] Supabase sign in successful");
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Login failed";
-      const msg = raw.toLowerCase().includes("fetch")
-        ? "Cannot reach Supabase — check your internet connection or resume your project at supabase.com."
-        : raw.toLowerCase().includes("429") ||
-            raw.toLowerCase().includes("too many")
-          ? "Too many login attempts. Please wait a few minutes and try again."
-          : raw;
+      const msg =
+        raw.toLowerCase().includes("fetch") ||
+        raw.toLowerCase().includes("timeout")
+          ? "Cannot reach Supabase — check your internet connection or your Supabase project may be paused. Visit supabase.com to check project status."
+          : raw.toLowerCase().includes("429") ||
+              raw.toLowerCase().includes("too many")
+            ? "Too many login attempts. Please wait a few minutes and try again."
+            : raw;
+      console.error("[AuthContext] Login error:", msg);
       setError(msg);
       throw new Error(msg);
     } finally {
       setIsLoading(false);
+      console.log("[AuthContext] Login completed");
     }
   };
 
@@ -174,18 +200,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
     setIsLoading(true);
     try {
-      // 1. Create Supabase Auth user
+      // Create Supabase Auth user with auto-confirmation for testing
+      // Note: Email verification is disabled for testing purposes
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { name, role } },
+        options: {
+          data: { name, role },
+          // Skip email verification for testing
+          emailRedirectTo: undefined,
+        },
       });
+
       if (signUpError) throw new Error(signUpError.message);
 
+      // Check if user was auto-confirmed (requires Supabase dashboard setting)
+      if (data.user && !data.session) {
+        // User created but not confirmed - try to sign in immediately
+        // This works if email confirmation is disabled in Supabase
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (signInError) {
+          // Email confirmation might be required
+          throw new Error(
+            "Account created but requires email verification. Please check your inbox or disable email confirmation in Supabase dashboard (Authentication > Providers > Email > Confirm email: Disable).",
+          );
+        }
+      }
+
       // The DB trigger (handle_new_user, SECURITY DEFINER) automatically creates
-      // the user_profiles row on auth.users INSERT — no client-side write needed.
-      // Attempting an upsert here without a session (email confirmation flow)
-      // results in a 401 because auth.uid() is null until the user confirms.
+      // the user_profiles row on auth.users INSERT when the user is confirmed.
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Registration failed";
       const msg = raw.toLowerCase().includes("fetch")

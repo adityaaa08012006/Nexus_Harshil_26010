@@ -8,7 +8,7 @@ const router = Router();
 // Supabase admin client (bypasses RLS)
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
 // ── POST /api/auth/register ───────────────────────────────────────────────────
