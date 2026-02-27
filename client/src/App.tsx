@@ -29,6 +29,8 @@ import { AllocationManagePage } from "./pages/AllocationManagePage";
 import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 import { FarmerManagement } from "./pages/FarmerManagement";
 import { DispatchHistory } from "./pages/DispatchHistory";
+import { ContactsPage } from "./pages/ContactsPage";
+import { QCContactInfo } from "./pages/QCContactInfo";
 import ClickSpark from "./components/home/ClickSpark";
 
 function App() {
@@ -82,6 +84,10 @@ function App() {
                             element={<FarmerManagement />}
                           />
                           <Route
+                            path="contacts"
+                            element={<ContactsPage />}
+                          />
+                          <Route
                             path="*"
                             element={<Navigate to="dashboard" replace />}
                           />
@@ -121,6 +127,10 @@ function App() {
                             element={<FarmerManagement />}
                           />
                           <Route
+                            path="contacts"
+                            element={<ContactsPage />}
+                          />
+                          <Route
                             path="*"
                             element={<Navigate to="dashboard" replace />}
                           />
@@ -147,6 +157,7 @@ function App() {
                           <Route path="pdf-history" element={<PdfHistory />} />
                           <Route path="orders" element={<QCOrders />} />
                         <Route path="tracking" element={<QCOrderTracking />} />
+                          <Route path="contacts" element={<QCContactInfo />} />
                           <Route path="inventory" element={<InventoryPage />} />
                           <Route path="alerts" element={<AlertsPage />} />
                           <Route path="batch/:id" element={<BatchDetails />} />
