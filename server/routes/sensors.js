@@ -22,20 +22,25 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
   try {
     const { warehouseId } = req.params;
     const userId = req.user.id;
+    const profile = req.user.profile; // Profile already fetched by auth middleware
 
-    // Verify user has access to this warehouse
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("role, warehouse_id")
-      .eq("id", userId)
-      .single();
+    console.log(
+      `[SENSOR READINGS] Request for warehouse ${warehouseId} by user ${req.user.email}`,
+    );
+    console.log(
+      `[SENSOR READINGS] User role: ${profile?.role}, warehouse_id: ${profile?.warehouse_id}`,
+    );
 
     if (!profile) {
+      console.log("[SENSOR READINGS] ❌ No profile found for user");
       return res.status(404).json({ error: "User profile not found" });
     }
 
     // Check access permissions
     if (profile.role === "manager" && profile.warehouse_id !== warehouseId) {
+      console.log(
+        `[SENSOR READINGS] ❌ Manager access denied - assigned to ${profile.warehouse_id}, requested ${warehouseId}`,
+      );
       return res.status(403).json({ error: "Access denied to this warehouse" });
     }
 
@@ -48,13 +53,18 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
         .single();
 
       if (!warehouse || warehouse.owner_id !== userId) {
+        console.log(
+          `[SENSOR READINGS] ❌ Owner access denied - doesn't own warehouse ${warehouseId}`,
+        );
         return res
           .status(403)
           .json({ error: "Access denied to this warehouse" });
       }
+      console.log(`[SENSOR READINGS] ✅ Owner access granted`);
     }
 
-    if (profile.role === "qc") {
+    if (profile.role === "qc_rep") {
+      console.log(`[SENSOR READINGS] ❌ QC rep cannot access sensor data`);
       return res
         .status(403)
         .json({ error: "QC representatives cannot access sensor data" });
@@ -62,6 +72,10 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
 
     // Get latest reading for each zone
     const zones = getAllZones();
+    console.log(
+      `[SENSOR READINGS] Fetching latest reading for ${zones.length} zones:`,
+      zones,
+    );
     const readings = [];
 
     for (const zone of zones) {
@@ -74,13 +88,26 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
         .limit(1)
         .single();
 
-      if (data) {
+      if (error) {
+        console.log(
+          `[SENSOR READINGS] No reading found for zone "${zone}":`,
+          error.message,
+        );
+      } else if (data) {
+        console.log(`[SENSOR READINGS] ✅ Found reading for zone "${zone}"`);
         readings.push(data);
       }
     }
 
+    console.log(
+      `[SENSOR READINGS] Total readings collected: ${readings.length} out of ${zones.length} zones`,
+    );
+
     // If no readings exist, generate and store simulated data
     if (readings.length === 0) {
+      console.log(
+        `[SENSOR READINGS] No existing readings for warehouse ${warehouseId}, generating simulated data`,
+      );
       const simulatedReadings = generateWarehouseReadings(warehouseId, 0.02);
 
       // Insert readings using service role (bypasses RLS)
@@ -90,15 +117,24 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
         .select();
 
       if (insertError) {
-        console.error("Error inserting simulated readings:", insertError);
+        console.error(
+          "[SENSOR READINGS] Error inserting simulated readings:",
+          insertError,
+        );
         return res
           .status(500)
           .json({ error: "Failed to generate sensor data" });
       }
 
+      console.log(
+        `[SENSOR READINGS] Generated and inserted ${insertedReadings.length} simulated readings`,
+      );
       return res.json({ readings: insertedReadings });
     }
 
+    console.log(
+      `[SENSOR READINGS] Returning ${readings.length} existing readings for warehouse ${warehouseId}`,
+    );
     res.json({ readings });
   } catch (error) {
     console.error("Error fetching sensor readings:", error);
@@ -115,19 +151,19 @@ router.get("/readings/:warehouseId/history", requireAuth, async (req, res) => {
     const { warehouseId } = req.params;
     const { zone, startTime, endTime, limit = 100 } = req.query;
     const userId = req.user.id;
+    const profile = req.user.profile; // Use profile from auth middleware
 
-    // Verify access (same as above)
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("role, warehouse_id")
-      .eq("id", userId)
-      .single();
+    console.log(
+      `[SENSOR HISTORY] Request for warehouse ${warehouseId} by user ${req.user.email}`,
+    );
 
     if (!profile) {
+      console.log("[SENSOR HISTORY] ❌ No profile found");
       return res.status(404).json({ error: "User profile not found" });
     }
 
     if (profile.role === "manager" && profile.warehouse_id !== warehouseId) {
+      console.log(`[SENSOR HISTORY] ❌ Manager access denied`);
       return res.status(403).json({ error: "Access denied" });
     }
 
@@ -139,8 +175,10 @@ router.get("/readings/:warehouseId/history", requireAuth, async (req, res) => {
         .single();
 
       if (!warehouse || warehouse.owner_id !== userId) {
+        console.log(`[SENSOR HISTORY] ❌ Owner access denied`);
         return res.status(403).json({ error: "Access denied" });
       }
+      console.log(`[SENSOR HISTORY] ✅ Owner access granted`);
     }
 
     // Build query
@@ -188,20 +226,20 @@ router.get(
     try {
       const { warehouseId, zone } = req.params;
       const { limit = 50 } = req.query;
-
-      // Verify access (reuse logic)
       const userId = req.user.id;
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("role, warehouse_id")
-        .eq("id", userId)
-        .single();
+      const profile = req.user.profile; // Use profile from auth middleware
+
+      console.log(
+        `[SENSOR ZONE] Request for zone ${zone} in warehouse ${warehouseId} by user ${req.user.email}`,
+      );
 
       if (!profile) {
+        console.log("[SENSOR ZONE] ❌ No profile found");
         return res.status(404).json({ error: "User profile not found" });
       }
 
       if (profile.role === "manager" && profile.warehouse_id !== warehouseId) {
+        console.log(`[SENSOR ZONE] ❌ Manager access denied`);
         return res.status(403).json({ error: "Access denied" });
       }
 
@@ -234,6 +272,9 @@ router.get(
 router.get("/thresholds/:warehouseId", requireAuth, async (req, res) => {
   try {
     const { warehouseId } = req.params;
+    console.log(
+      `[SENSOR THRESHOLDS] Request for warehouse ${warehouseId} by user ${req.user.email}`,
+    );
 
     const { data: thresholds, error } = await supabase
       .from("sensor_thresholds")
@@ -241,10 +282,13 @@ router.get("/thresholds/:warehouseId", requireAuth, async (req, res) => {
       .eq("warehouse_id", warehouseId);
 
     if (error) {
-      console.error("Error fetching thresholds:", error);
+      console.error("[SENSOR THRESHOLDS] ❌ Error:", error.message);
       return res.status(500).json({ error: "Failed to fetch thresholds" });
     }
 
+    console.log(
+      `[SENSOR THRESHOLDS] ✅ Found ${thresholds?.length || 0} threshold(s)`,
+    );
     res.json({ thresholds });
   } catch (error) {
     console.error("Error fetching thresholds:", error);
@@ -259,6 +303,7 @@ router.get("/thresholds/:warehouseId", requireAuth, async (req, res) => {
 router.post("/thresholds", requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
+    const profile = req.user.profile; // Use profile from auth middleware
     const {
       warehouse_id,
       zone,
@@ -271,24 +316,26 @@ router.post("/thresholds", requireAuth, async (req, res) => {
       ammonia_max,
     } = req.body;
 
-    // Verify user has permission to update thresholds
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("role, warehouse_id")
-      .eq("id", userId)
-      .single();
+    console.log(
+      `[UPDATE THRESHOLD] Request for zone ${zone} in warehouse ${warehouse_id} by user ${req.user.email}`,
+    );
 
     if (!profile) {
+      console.log("[UPDATE THRESHOLD] ❌ No profile found");
       return res.status(404).json({ error: "User profile not found" });
     }
 
-    if (profile.role === "qc") {
+    if (profile.role === "qc_rep") {
+      console.log("[UPDATE THRESHOLD] ❌ QC rep cannot modify thresholds");
       return res
         .status(403)
         .json({ error: "QC representatives cannot modify thresholds" });
     }
 
     if (profile.role === "manager" && profile.warehouse_id !== warehouse_id) {
+      console.log(
+        `[UPDATE THRESHOLD] ❌ Manager access denied - assigned to ${profile.warehouse_id}`,
+      );
       return res.status(403).json({ error: "Access denied to this warehouse" });
     }
 
@@ -300,10 +347,14 @@ router.post("/thresholds", requireAuth, async (req, res) => {
         .single();
 
       if (!warehouse || warehouse.owner_id !== userId) {
+        console.log(
+          `[UPDATE THRESHOLD] ❌ Owner access denied - doesn't own warehouse`,
+        );
         return res
           .status(403)
           .json({ error: "Access denied to this warehouse" });
       }
+      console.log(`[UPDATE THRESHOLD] ✅ Owner access granted`);
     }
 
     // Upsert threshold (update if exists, insert if not)
@@ -347,6 +398,9 @@ router.get("/alerts/:warehouseId", requireAuth, async (req, res) => {
   try {
     const { warehouseId } = req.params;
     const { acknowledged = "false" } = req.query;
+    console.log(
+      `[SENSOR ALERTS] Request for warehouse ${warehouseId} by user ${req.user.email}, acknowledged=${acknowledged}`,
+    );
 
     const showAll = acknowledged === "all";
     const showAcknowledged = acknowledged === "true";
@@ -364,10 +418,15 @@ router.get("/alerts/:warehouseId", requireAuth, async (req, res) => {
     const { data: alerts, error } = await query;
 
     if (error) {
-      console.error("Error fetching alerts:", error);
+      console.error("[SENSOR ALERTS] ❌ Error:", error.message);
+      console.error(
+        "[SENSOR ALERTS] Error details:",
+        JSON.stringify(error, null, 2),
+      );
       return res.status(500).json({ error: "Failed to fetch alerts" });
     }
 
+    console.log(`[SENSOR ALERTS] ✅ Found ${alerts?.length || 0} alert(s)`);
     res.json({ alerts });
   } catch (error) {
     console.error("Error fetching alerts:", error);
@@ -383,6 +442,9 @@ router.post("/alerts/:alertId/acknowledge", requireAuth, async (req, res) => {
   try {
     const { alertId } = req.params;
     const userId = req.user.id;
+    console.log(
+      `[ACKNOWLEDGE ALERT] User ${req.user.email} acknowledging alert ${alertId}`,
+    );
 
     const { data: alert, error } = await supabase
       .from("sensor_alerts")
@@ -396,13 +458,16 @@ router.post("/alerts/:alertId/acknowledge", requireAuth, async (req, res) => {
       .single();
 
     if (error) {
-      console.error("Error acknowledging alert:", error);
+      console.error("[ACKNOWLEDGE ALERT] ❌ Error:", error.message);
       return res.status(500).json({ error: "Failed to acknowledge alert" });
     }
 
+    console.log(
+      `[ACKNOWLEDGE ALERT] ✅ Alert ${alertId} acknowledged successfully`,
+    );
     res.json({ alert, message: "Alert acknowledged" });
   } catch (error) {
-    console.error("Error acknowledging alert:", error);
+    console.error("[ACKNOWLEDGE ALERT] Exception:", error);
     res.status(500).json({ error: "Failed to acknowledge alert" });
   }
 });
@@ -415,12 +480,16 @@ router.post("/simulate/:warehouseId", requireAuth, async (req, res) => {
   try {
     const { warehouseId } = req.params;
     const { criticalChance = 0.1 } = req.body; // Higher chance for testing
+    console.log(
+      `[SIMULATE DATA] User ${req.user.email} simulating data for warehouse ${warehouseId}, criticalChance=${criticalChance}`,
+    );
 
     // Generate new readings
     const readings = generateWarehouseReadings(
       warehouseId,
       parseFloat(criticalChance),
     );
+    console.log(`[SIMULATE DATA] Generated ${readings.length} readings`);
 
     // Insert readings using service role
     const { data: insertedReadings, error: insertError } = await supabaseAdmin
@@ -429,15 +498,25 @@ router.post("/simulate/:warehouseId", requireAuth, async (req, res) => {
       .select();
 
     if (insertError) {
-      console.error("Error inserting readings:", insertError);
+      console.error(
+        "[SIMULATE DATA] ❌ Error inserting readings:",
+        insertError.message,
+      );
       return res.status(500).json({ error: "Failed to simulate sensor data" });
     }
+    console.log(
+      `[SIMULATE DATA] ✅ Inserted ${insertedReadings.length} readings`,
+    );
 
     // Check for threshold breaches and create alerts
     const { data: thresholds } = await supabaseAdmin
       .from("sensor_thresholds")
       .select("*")
       .eq("warehouse_id", warehouseId);
+
+    console.log(
+      `[SIMULATE DATA] Found ${thresholds?.length || 0} thresholds to check`,
+    );
 
     if (thresholds && thresholds.length > 0) {
       const allAlerts = [];
@@ -452,7 +531,11 @@ router.post("/simulate/:warehouseId", requireAuth, async (req, res) => {
 
       // Insert alerts if any
       if (allAlerts.length > 0) {
+        console.log(`[SIMULATE DATA] Inserting ${allAlerts.length} alerts`);
         await supabaseAdmin.from("sensor_alerts").insert(allAlerts);
+        console.log(`[SIMULATE DATA] ✅ Alerts created successfully`);
+      } else {
+        console.log(`[SIMULATE DATA] No threshold breaches detected`);
       }
 
       return res.json({
@@ -467,7 +550,7 @@ router.post("/simulate/:warehouseId", requireAuth, async (req, res) => {
       message: "Sensor data simulated successfully",
     });
   } catch (error) {
-    console.error("Error simulating sensor data:", error);
+    console.error("[SIMULATE DATA] Exception:", error);
     res.status(500).json({ error: "Failed to simulate sensor data" });
   }
 });
