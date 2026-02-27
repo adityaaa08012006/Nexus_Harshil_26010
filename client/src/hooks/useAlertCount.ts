@@ -19,15 +19,34 @@ export const useAlertCount = () => {
 
     const fetchCount = async () => {
       try {
-        const { count: alertCount, error } = await supabase
+        let totalCount = 0;
+
+        // Fetch sensor alerts count
+        const { count: sensorAlertCount, error: sensorError } = await supabase
           .from("sensor_alerts")
           .select("*", { count: "exact", head: true })
           .eq("warehouse_id", user.warehouse_id)
           .eq("acknowledged", false);
 
-        if (!error && alertCount !== null) {
-          setCount(alertCount);
+        if (!sensorError && sensorAlertCount !== null) {
+          totalCount += sensorAlertCount;
         }
+
+        // Fetch order alerts count for managers
+        if (user.role === "manager" && user.warehouse_id) {
+          const { count: orderAlertCount, error: orderError } = await supabase
+            .from("alerts")
+            .select("*", { count: "exact", head: true })
+            .eq("type", "order")
+            .eq("warehouse_id", user.warehouse_id)
+            .eq("is_acknowledged", false);
+
+          if (!orderError && orderAlertCount !== null) {
+            totalCount += orderAlertCount;
+          }
+        }
+
+        setCount(totalCount);
       } catch (error) {
         console.error("Error fetching alert count:", error);
       } finally {

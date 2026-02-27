@@ -288,6 +288,7 @@ router.post("/publish/:id", requireAuth, async (req, res) => {
       unit: item.unit || "kg",
       deadline: item.deadline ? new Date(item.deadline).toISOString() : null,
       location: item.location || "Not specified",
+      warehouse_id: item.warehouse_id || null,
       price: item.price ? parseFloat(item.price) : null,
       status: "pending",
       notes: item.notes || (item.grade ? `Grade: ${item.grade}` : null),
@@ -309,6 +310,23 @@ router.post("/publish/:id", requireAuth, async (req, res) => {
         error: "Failed to create allocation requests",
         details: insertError.message,
       });
+    }
+
+    // Create alerts for managers about new orders
+    try {
+      const alertsToCreate = createdRequests.map((req) => ({
+        warehouse_id: req.warehouse_id || null,
+        zone: req.location,
+        type: "order",
+        severity: "info",
+        message: `New order request for ${req.quantity}${req.unit} of ${req.crop}${req.variety ? ` (${req.variety})` : ""} - ${req.request_id}`,
+        is_acknowledged: false,
+      }));
+
+      await supabaseAdmin.from("alerts").insert(alertsToCreate);
+    } catch (alertErr) {
+      console.error(`${logPrefix} Alert creation error:`, alertErr.message);
+      // Don't fail the request if alert creation fails
     }
 
     // Update parsed data status to published

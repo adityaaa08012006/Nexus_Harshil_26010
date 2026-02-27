@@ -64,12 +64,19 @@ export const ManagerDashboard: React.FC = () => {
     try {
       setOrdersLoading(true);
 
-      // Fetch pending and reviewing orders (orders that need to be fulfilled)
-      const { data: orders, error: ordersError } = await supabase
+      // Fetch pending and reviewing orders for this manager's warehouse only
+      let query = supabase
         .from("allocation_requests")
         .select("*")
         .in("status", ["pending", "reviewing"])
         .order("created_at", { ascending: false });
+
+      // Filter by manager's warehouse_id
+      if (user?.warehouse_id) {
+        query = query.eq("warehouse_id", user.warehouse_id);
+      }
+
+      const { data: orders, error: ordersError } = await query;
 
       if (ordersError) throw ordersError;
 

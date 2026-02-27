@@ -59,6 +59,7 @@ router.post("/", requireAuth, async (req, res) => {
         unit,
         deadline: deadline || null,
         location,
+        warehouse_id: warehouse_id || null,
         price: price ? Number(price) : null,
         notes: notes || null,
         status: "pending",
@@ -69,6 +70,21 @@ router.post("/", requireAuth, async (req, res) => {
     if (error) {
       console.error("[allocation] Insert error:", error.message);
       return res.status(500).json({ error: error.message });
+    }
+
+    // Create an alert for managers about the new order
+    try {
+      await supabaseAdmin.from("alerts").insert({
+        warehouse_id: warehouse_id || null, // Alert for specific warehouse manager
+        zone: location,
+        type: "order",
+        severity: "info",
+        message: `New order request for ${quantity}${unit} of ${crop}${variety ? ` (${variety})` : ""} - ${data.request_id}`,
+        is_acknowledged: false,
+      });
+    } catch (alertErr) {
+      // Log but don't fail the request if alert creation fails
+      console.error("[allocation] Alert creation error:", alertErr.message);
     }
 
     res.status(201).json(data);
@@ -155,9 +171,9 @@ router.put(
       }
 
       if (request.status !== "pending" && request.status !== "reviewing") {
-        return res
-          .status(400)
-          .json({ error: `Cannot approve a request with status "${request.status}".` });
+        return res.status(400).json({
+          error: `Cannot approve a request with status "${request.status}".`,
+        });
       }
 
       // 2. Fetch the batch
@@ -217,7 +233,10 @@ router.put(
         });
 
       if (dispatchErr) {
-        console.error("[allocation] Dispatch insert error:", dispatchErr.message);
+        console.error(
+          "[allocation] Dispatch insert error:",
+          dispatchErr.message,
+        );
         // Non-fatal — the batch deduction already succeeded
       }
 

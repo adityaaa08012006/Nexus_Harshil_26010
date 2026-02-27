@@ -146,6 +146,29 @@ export interface Alert {
   created_at: string;
 }
 
+// ─── Order Alert types (from alerts table) ───────────────────────────────────
+export type OrderAlertType =
+  | "temperature"
+  | "humidity"
+  | "gas"
+  | "risk"
+  | "system"
+  | "order";
+export type OrderAlertSeverity = "info" | "warning" | "critical";
+
+export interface OrderAlert {
+  id: string;
+  warehouse_id: string | null;
+  zone: string | null;
+  type: OrderAlertType;
+  severity: OrderAlertSeverity;
+  message: string;
+  is_acknowledged: boolean;
+  acknowledged_by?: string | null;
+  acknowledged_at?: string | null;
+  created_at: string;
+}
+
 // ─── Allocation types ─────────────────────────────────────────────────────────
 export type AllocationStatus =
   | "pending"
@@ -165,6 +188,7 @@ export interface AllocationRequest {
   unit: string;
   deadline?: string | null;
   location: string;
+  warehouse_id?: string | null;
   price?: number | null;
   status: AllocationStatus;
   notes?: string | null;
@@ -185,12 +209,20 @@ export interface AllocationInsert {
   unit?: string;
   deadline?: string;
   location: string;
+  warehouse_id?: string;
+  price?: number;
+  notes?: string;
+}
   price?: number;
   notes?: string;
 }
 
 // ─── Dispatch types ───────────────────────────────────────────────────────────
-export type DispatchStatus = "pending" | "in-transit" | "delivered" | "cancelled";
+export type DispatchStatus =
+  | "pending"
+  | "in-transit"
+  | "delivered"
+  | "cancelled";
 
 export interface Dispatch {
   id: string;
