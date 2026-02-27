@@ -15,7 +15,7 @@ interface UseAllocationsReturn {
   approveRequest: (
     id: string,
     batchId: string,
-  ) => Promise<{ error: string | null }>;
+  ) => Promise<{ error: string | null; data?: any }>;
   rejectRequest: (
     id: string,
     reason?: string,
@@ -112,7 +112,7 @@ export const useAllocations = (): UseAllocationsReturn => {
   const approveRequest = async (
     id: string,
     batchId: string,
-  ): Promise<{ error: string | null }> => {
+  ): Promise<{ error: string | null; data?: any }> => {
     try {
       const res = await fetch(`${API_BASE}/${id}/approve`, {
         method: "PUT",
@@ -123,7 +123,8 @@ export const useAllocations = (): UseAllocationsReturn => {
         const body = await res.json().catch(() => ({}));
         return { error: body.error || `HTTP ${res.status}` };
       }
-      return { error: null };
+      const data = await res.json();
+      return { error: null, data };
     } catch (err) {
       return {
         error: err instanceof Error ? err.message : "Failed to approve",

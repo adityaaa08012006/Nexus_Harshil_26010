@@ -238,6 +238,12 @@ const managerNav: NavItem[] = [
     path: "/manager/farmers",
     icon: <FarmerIcon />,
   },
+  {
+    id: "dispatch",
+    label: "Dispatches",
+    path: "/manager/dispatch",
+    icon: <ClipboardIcon />,
+  },
 ];
 
 const ownerNav: NavItem[] = [
@@ -289,6 +295,12 @@ const ownerNav: NavItem[] = [
     path: "/owner/farmers",
     icon: <FarmerIcon />,
   },
+  {
+    id: "dispatch",
+    label: "Dispatches",
+    path: "/owner/dispatch",
+    icon: <ClipboardIcon />,
+  },
 ];
 
 const qcNav: NavItem[] = [
@@ -309,6 +321,12 @@ const qcNav: NavItem[] = [
     label: "My Orders",
     path: "/qc/orders",
     icon: <FileTextIcon />,
+  },
+  {
+    id: "tracking",
+    label: "Tracking",
+    path: "/qc/tracking",
+    icon: <ClipboardIcon />,
   },
   {
     id: "view",

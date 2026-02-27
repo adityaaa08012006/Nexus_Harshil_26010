@@ -9,6 +9,7 @@ import { Router } from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { supabaseAdmin } from "../config/supabase.js";
 import { getGeminiModel } from "../config/gemini.js";
+import { rankBatches } from "../utils/allocationEngine.js";
 
 const router = Router();
 
@@ -123,6 +124,50 @@ router.get("/", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("[allocation] GET /:", err.message);
     res.status(500).json({ error: "Failed to fetch allocation requests." });
+  }
+});
+
+// ─── GET /api/allocation/ranked-batches  ───────────────────────────────────
+// Returns batches ranked by the smart allocation engine for a given request.
+// Query params: request_id (UUID of the allocation_requests row)
+router.get("/ranked-batches", requireAuth, async (req, res) => {
+  try {
+    const { request_id } = req.query;
+    if (!request_id) {
+      return res.status(400).json({ error: "request_id is required." });
+    }
+
+    // 1. Fetch the allocation request
+    const { data: request, error: reqErr } = await supabaseAdmin
+      .from("allocation_requests")
+      .select("*")
+      .eq("id", request_id)
+      .single();
+
+    if (reqErr || !request) {
+      return res.status(404).json({ error: "Allocation request not found." });
+    }
+
+    // 2. Fetch active batches matching the crop
+    const { data: batches, error: batchErr } = await supabaseAdmin
+      .from("batches")
+      .select("*")
+      .eq("status", "active")
+      .ilike("crop", request.crop);
+
+    if (batchErr) throw batchErr;
+
+    if (!batches || batches.length === 0) {
+      return res.json({ ranked: [], message: "No active matching batches." });
+    }
+
+    // 3. Rank using the allocation engine
+    const ranked = rankBatches(batches, request);
+
+    res.json({ ranked });
+  } catch (err) {
+    console.error("[allocation] GET /ranked-batches:", err.message);
+    res.status(500).json({ error: "Failed to rank batches." });
   }
 });
 
@@ -286,17 +331,24 @@ router.put(
       if (updateBatchErr) throw updateBatchErr;
 
       // 4. Create a dispatch record
-      const { error: dispatchErr } = await supabaseAdmin
+      const dispatchId = generateDispatchId();
+      const estimatedDelivery = new Date();
+      estimatedDelivery.setDate(estimatedDelivery.getDate() + 3); // +3 days estimate
+
+      const { data: dispatchRecord, error: dispatchErr } = await supabaseAdmin
         .from("dispatches")
         .insert({
-          dispatch_id: generateDispatchId(),
+          dispatch_id: dispatchId,
           batch_id: batch_id,
           allocation_id: request.id,
           destination: request.location,
           quantity: requestedQty,
           unit: request.unit,
           status: "pending",
-        });
+          estimated_delivery: estimatedDelivery.toISOString(),
+        })
+        .select()
+        .single();
 
       if (dispatchErr) {
         console.error(
@@ -324,9 +376,12 @@ router.put(
         allocation: updated,
         batch: { ...batch, ...batchUpdate },
         dispatch: {
+          dispatch_id: dispatchRecord?.dispatch_id ?? dispatchId,
           batch_id,
           quantity: requestedQty,
           destination: request.location,
+          estimated_delivery: estimatedDelivery.toISOString(),
+          status: "pending",
         },
       });
     } catch (err) {
@@ -366,6 +421,110 @@ router.put(
     } catch (err) {
       console.error("[allocation] PUT /:id/reject:", err.message);
       res.status(500).json({ error: "Failed to reject allocation." });
+    }
+  },
+);
+
+// ─── GET /api/allocation/dispatches  –  List dispatch history ───────────────
+
+router.get("/dispatches/list", requireAuth, async (req, res) => {
+  try {
+    const { status } = req.query;
+
+    let query = supabaseAdmin
+      .from("dispatches")
+      .select(`
+        *,
+        batch:batches!batch_id(batch_id, crop, variety, zone, warehouse_id),
+        allocation:allocation_requests!allocation_id(request_id, requester_id, crop, variety, location,
+          requester:user_profiles!requester_id(name, email, role)
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (status && status !== "all") {
+      query = query.eq("status", status);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    res.json(data ?? []);
+  } catch (err) {
+    console.error("[allocation] GET /dispatches/list:", err.message);
+    res.status(500).json({ error: "Failed to fetch dispatches." });
+  }
+});
+
+// ─── GET /api/allocation/dispatches/my  –  QC user's own dispatches ─────────
+
+router.get("/dispatches/my", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // First get the user's allocation_request IDs
+    const { data: myRequests, error: reqErr } = await supabaseAdmin
+      .from("allocation_requests")
+      .select("id")
+      .eq("requester_id", userId);
+
+    if (reqErr) throw reqErr;
+
+    const requestIds = (myRequests ?? []).map((r) => r.id);
+
+    if (requestIds.length === 0) {
+      return res.json([]);
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("dispatches")
+      .select(`
+        *,
+        batch:batches!batch_id(batch_id, crop, variety, zone, warehouse_id),
+        allocation:allocation_requests!allocation_id(request_id, requester_id, crop, variety, location, quantity, unit, deadline, status,
+          requester:user_profiles!requester_id(name, email, role)
+        )
+      `)
+      .in("allocation_id", requestIds)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    res.json(data ?? []);
+  } catch (err) {
+    console.error("[allocation] GET /dispatches/my:", err.message);
+    res.status(500).json({ error: "Failed to fetch your dispatches." });
+  }
+});
+
+// ─── PUT /api/allocation/dispatches/:id/status  –  Update dispatch status ──
+
+router.put(
+  "/dispatches/:id/status",
+  requireAuth,
+  requireRole(["manager", "owner"]),
+  async (req, res) => {
+    try {
+      const { status } = req.body;
+      const validStatuses = ["pending", "in-transit", "delivered", "cancelled"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from("dispatches")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", req.params.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      if (!data) return res.status(404).json({ error: "Dispatch not found." });
+
+      res.json({ message: "Dispatch status updated.", dispatch: data });
+    } catch (err) {
+      console.error("[allocation] PUT /dispatches/:id/status:", err.message);
+      res.status(500).json({ error: "Failed to update dispatch status." });
     }
   },
 );

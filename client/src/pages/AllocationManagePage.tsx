@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAllocations } from "../hooks/useAllocations";
 import { useInventory } from "../hooks/useInventory";
 import { useAuthContext } from "../context/AuthContext";
+import { MessageButton } from "../components/common/MessageThread";
 import type { AllocationRequest, Batch } from "../lib/supabase";
 
 // ─── Status badge ───────────────────────────────────────────────────────────
@@ -44,7 +45,7 @@ interface ApproveDialogProps {
   isOpen: boolean;
   request: AllocationRequest | null;
   batches: Batch[];
-  onConfirm: (batchId: string) => Promise<void>;
+  onConfirm: (batchId: string) => Promise<any>;
   onCancel: () => void;
 }
 
@@ -59,6 +60,16 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Post-dispatch confirmation state ─────────────────────────────────────
+  const [dispatchResult, setDispatchResult] = useState<{
+    dispatch_id: string;
+    batch_id: string;
+    quantity: number;
+    destination: string;
+    estimated_delivery: string;
+    status: string;
+  } | null>(null);
 
   // ── Gemini suggestion state ──────────────────────────────────────────────
   const [aiLoading, setAiLoading] = useState(false);
@@ -84,7 +95,10 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
     setError(null);
     setSubmitting(true);
     try {
-      await onConfirm(selectedBatch);
+      const result = await onConfirm(selectedBatch);
+      if (result?.dispatch) {
+        setDispatchResult(result.dispatch);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Approval failed");
     } finally {
@@ -129,6 +143,70 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+
+        {/* ── Post-Dispatch Confirmation ── */}
+        {dispatchResult ? (
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: "#D1FAE5" }}>
+                <svg className="w-7 h-7" fill="none" stroke="#065F46" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Dispatch Created!</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Order <span className="font-mono">{request.request_id}</span> has been approved and dispatched.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-green-200 overflow-hidden">
+              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ backgroundColor: "#F0FDF4", color: "#25671E" }}>
+                Dispatch Summary
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Dispatch ID</span>
+                  <span className="font-mono font-medium text-gray-900">{dispatchResult.dispatch_id}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Quantity</span>
+                  <span className="font-medium text-gray-900">{dispatchResult.quantity} {request.unit}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Destination</span>
+                  <span className="font-medium text-gray-900">{dispatchResult.destination}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Crop</span>
+                  <span className="font-medium text-gray-900">{request.crop}{request.variety ? ` (${request.variety})` : ""}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Estimated Delivery</span>
+                  <span className="font-medium" style={{ color: "#48A111" }}>
+                    {new Date(dispatchResult.estimated_delivery).toLocaleDateString("en-IN", {
+                      day: "numeric", month: "long", year: "numeric",
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Status</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "#FEF3C7", color: "#92400E" }}>
+                    {dispatchResult.status === "pending" ? "Pending Shipment" : dispatchResult.status}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => { setDispatchResult(null); onCancel(); }}
+              className="w-full px-4 py-2.5 text-sm font-medium rounded-lg text-white transition-opacity hover:opacity-90"
+              style={{ backgroundColor: "#48A111" }}
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+        <>
         <h3 className="text-base font-bold text-gray-900 mb-1">
           Approve Allocation
         </h3>
@@ -323,6 +401,8 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
             {submitting ? "Approving..." : "Approve & Deduct"}
           </button>
         </div>
+        </>
+        )}
       </div>
     </div>
   );
@@ -425,9 +505,10 @@ export const AllocationManagePage: React.FC = () => {
 
   const handleApprove = async (batchId: string) => {
     if (!approveTarget) return;
-    const { error } = await approveRequest(approveTarget.id, batchId);
+    const { error, data } = await approveRequest(approveTarget.id, batchId);
     if (error) throw new Error(error);
-    setApproveTarget(null);
+    // Return dispatch info so the ApproveDialog can display confirmation
+    return data;
   };
 
   const handleReject = async (reason: string) => {
@@ -592,9 +673,20 @@ export const AllocationManagePage: React.FC = () => {
                             >
                               Reject
                             </button>
+                            <MessageButton
+                              allocationId={a.id}
+                              allocationRequestId={a.request_id}
+                              variant="button"
+                            />
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <div className="flex gap-2 justify-end">
+                            <MessageButton
+                              allocationId={a.id}
+                              allocationRequestId={a.request_id}
+                              variant="icon"
+                            />
+                          </div>
                         )}
                       </td>
                     </tr>

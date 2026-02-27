@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { useAllocations } from "../hooks/useAllocations";
+import { MessageButton } from "../components/common/MessageThread";
 import type { AllocationInsert } from "../lib/supabase";
 import {
   FileText,
@@ -16,6 +17,7 @@ import {
   Search,
   Filter,
   PenLine,
+  Truck,
 } from "lucide-react";
 
 interface Order {
@@ -31,6 +33,8 @@ interface Order {
   notes: string | null;
   created_at: string;
   updated_at: string;
+  dispatch_status?: string | null;
+  estimated_delivery?: string | null;
 }
 
 export const QCOrders: React.FC = () => {
@@ -62,7 +66,31 @@ export const QCOrders: React.FC = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+
+      // Fetch dispatch info for these orders to get delivery status
+      const orderIds = (data || []).map((o: any) => o.id);
+      let dispatchMap: Record<string, { status: string; estimated_delivery: string | null }> = {};
+      if (orderIds.length > 0) {
+        const { data: dispatches } = await supabase
+          .from("dispatches")
+          .select("allocation_id, status, estimated_delivery")
+          .in("allocation_id", orderIds);
+        if (dispatches) {
+          for (const d of dispatches) {
+            if (d.allocation_id) {
+              dispatchMap[d.allocation_id] = { status: d.status, estimated_delivery: d.estimated_delivery };
+            }
+          }
+        }
+      }
+
+      const enriched = (data || []).map((o: any) => ({
+        ...o,
+        dispatch_status: dispatchMap[o.id]?.status ?? null,
+        estimated_delivery: dispatchMap[o.id]?.estimated_delivery ?? null,
+      }));
+
+      setOrders(enriched);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -73,9 +101,9 @@ export const QCOrders: React.FC = () => {
   const filterOrders = () => {
     let filtered = [...orders];
 
-    // Status filter
+    // Status filter (uses effective status)
     if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => order.status === statusFilter);
+      filtered = filtered.filter((order) => getEffectiveStatus(order) === statusFilter);
     }
 
     // Search filter
@@ -93,6 +121,17 @@ export const QCOrders: React.FC = () => {
     setFilteredOrders(filtered);
   };
 
+  // Compute effective status: overlay dispatch status on top of allocation status
+  const getEffectiveStatus = (order: Order): string => {
+    if (order.dispatch_status) {
+      if (order.dispatch_status === "delivered") return "delivered";
+      if (order.dispatch_status === "in-transit") return "in-transit";
+      if (order.dispatch_status === "pending") return "dispatched";
+      if (order.dispatch_status === "cancelled") return order.status; // fall back
+    }
+    return order.status;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -103,6 +142,10 @@ export const QCOrders: React.FC = () => {
         return { bg: "#DBEAFE", text: "#1E40AF", border: "#93C5FD" };
       case "dispatched":
         return { bg: "#DDD6FE", text: "#5B21B6", border: "#C4B5FD" };
+      case "in-transit":
+        return { bg: "#E0E7FF", text: "#4338CA", border: "#A5B4FC" };
+      case "delivered":
+        return { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" };
       case "completed":
         return { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" };
       case "cancelled":
@@ -118,8 +161,11 @@ export const QCOrders: React.FC = () => {
       case "reviewing":
         return <Clock className="w-4 h-4" />;
       case "allocated":
-      case "dispatched":
         return <Package className="w-4 h-4" />;
+      case "dispatched":
+      case "in-transit":
+        return <Truck className="w-4 h-4" />;
+      case "delivered":
       case "completed":
         return <CheckCircle className="w-4 h-4" />;
       case "cancelled":
@@ -130,14 +176,17 @@ export const QCOrders: React.FC = () => {
   };
 
   const getStatusCounts = () => {
+    const effective = orders.map(getEffectiveStatus);
     return {
       all: orders.length,
-      pending: orders.filter((o) => o.status === "pending").length,
-      reviewing: orders.filter((o) => o.status === "reviewing").length,
-      allocated: orders.filter((o) => o.status === "allocated").length,
-      dispatched: orders.filter((o) => o.status === "dispatched").length,
-      completed: orders.filter((o) => o.status === "completed").length,
-      cancelled: orders.filter((o) => o.status === "cancelled").length,
+      pending: effective.filter((s) => s === "pending").length,
+      reviewing: effective.filter((s) => s === "reviewing").length,
+      allocated: effective.filter((s) => s === "allocated").length,
+      dispatched: effective.filter((s) => s === "dispatched").length,
+      "in-transit": effective.filter((s) => s === "in-transit").length,
+      delivered: effective.filter((s) => s === "delivered").length,
+      completed: effective.filter((s) => s === "completed").length,
+      cancelled: effective.filter((s) => s === "cancelled").length,
     };
   };
 
@@ -219,6 +268,10 @@ export const QCOrders: React.FC = () => {
               <option value="dispatched">
                 Dispatched ({counts.dispatched})
               </option>
+              <option value="in-transit">
+                In Transit ({counts["in-transit"]})
+              </option>
+              <option value="delivered">Delivered ({counts.delivered})</option>
               <option value="completed">Completed ({counts.completed})</option>
               <option value="cancelled">Cancelled ({counts.cancelled})</option>
             </select>
@@ -253,7 +306,9 @@ export const QCOrders: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredOrders.map((order) => {
-            const colors = getStatusColor(order.status);
+            const effectiveStatus = getEffectiveStatus(order);
+            const colors = getStatusColor(effectiveStatus);
+            const statusLabel = effectiveStatus === "in-transit" ? "In Transit" : effectiveStatus.charAt(0).toUpperCase() + effectiveStatus.slice(1);
             return (
               <div
                 key={order.id}
@@ -284,9 +339,8 @@ export const QCOrders: React.FC = () => {
                         borderColor: colors.border,
                       }}
                     >
-                      {getStatusIcon(order.status)}
-                      {order.status.charAt(0).toUpperCase() +
-                        order.status.slice(1)}
+                      {getStatusIcon(effectiveStatus)}
+                      {statusLabel}
                     </span>
                   </div>
                 </div>
@@ -341,14 +395,40 @@ export const QCOrders: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Estimated delivery info */}
+                  {order.estimated_delivery && (
+                    <div className="pt-3 border-t border-gray-100 flex items-center gap-2">
+                      <Truck className="w-4 h-4 text-green-600 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500">Estimated Delivery</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {new Date(order.estimated_delivery).toLocaleDateString(
+                            "en-IN",
+                            { day: "numeric", month: "long", year: "numeric" },
+                          )}
+                          {effectiveStatus === "delivered" && (
+                            <span className="ml-2 text-green-600 text-xs font-semibold">✓ Delivered</span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
                     <span>
                       Ordered{" "}
                       {new Date(order.created_at).toLocaleDateString("en-IN")}
                     </span>
-                    <span className="text-green-600 font-medium hover:underline">
-                      View Details →
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <MessageButton
+                        allocationId={order.id}
+                        allocationRequestId={order.request_id}
+                        variant="button"
+                      />
+                      <span className="text-green-600 font-medium hover:underline">
+                        View Details →
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

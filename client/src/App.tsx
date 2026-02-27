@@ -23,9 +23,11 @@ import { WarehousesPage } from "./pages/WarehousesPage";
 import { RequirementUpload } from "./pages/RequirementUpload";
 import { QCDashboard } from "./pages/QCDashboard";
 import { QCOrders } from "./pages/QCOrders";
+import { QCOrderTracking } from "./pages/QCOrderTracking";
 import { AllocationManagePage } from "./pages/AllocationManagePage";
 import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 import { FarmerManagement } from "./pages/FarmerManagement";
+import { DispatchHistory } from "./pages/DispatchHistory";
 import ClickSpark from "./components/home/ClickSpark";
 
 function App() {
@@ -61,6 +63,7 @@ function App() {
                         <Route path="sensors" element={<SensorMonitoring />} />
                         <Route path="alerts" element={<AlertsPage />} />
                         <Route path="allocations" element={<AllocationManagePage />} />
+                        <Route path="dispatch" element={<DispatchHistory />} />
                         <Route path="farmers" element={<FarmerManagement />} />
                       <Route
                           path="*"
@@ -90,6 +93,7 @@ function App() {
                         <Route path="alerts" element={<AlertsPage />} />
                         <Route path="batch/:id" element={<BatchDetails />} />
                         <Route path="allocations" element={<AllocationManagePage />} />
+                        <Route path="dispatch" element={<DispatchHistory />} />
                         <Route path="farmers" element={<FarmerManagement />} />
                       <Route
                           path="*"
@@ -113,6 +117,7 @@ function App() {
                         <Route path="dashboard" element={<QCDashboard />} />
                         <Route path="upload" element={<RequirementUpload />} />
                         <Route path="orders" element={<QCOrders />} />
+                        <Route path="tracking" element={<QCOrderTracking />} />
                         <Route path="inventory" element={<InventoryPage />} />
                         <Route path="alerts" element={<AlertsPage />} />
                         <Route path="batch/:id" element={<BatchDetails />} />
