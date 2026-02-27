@@ -41,24 +41,13 @@ CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('owner', 'manager', 'qc-rep')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 -- Warehouses table
 CREATE TABLE IF NOT EXISTS warehouses (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     location TEXT NOT NULL,
     capacity INTEGER NOT NULL,
-    owner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    owner_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -106,7 +95,7 @@ CREATE TABLE IF NOT EXISTS sensor_readings (
 CREATE TABLE IF NOT EXISTS allocation_requests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     request_id VARCHAR(50) UNIQUE NOT NULL,
-    requester_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    requester_id UUID REFERENCES user_profiles(id) ON DELETE CASCADE,
     crop VARCHAR(100) NOT NULL,
     variety VARCHAR(100),
     quantity NUMERIC(10, 2) NOT NULL,
@@ -429,3 +418,43 @@ CREATE POLICY "Users can update alerts to acknowledge" ON alerts
 -- INSERT INTO users (name, email, password, role) VALUES
 -- ('John Doe', 'john@example.com', '$2a$10$hashedpassword', 'manager'),
 -- ('Jane Smith', 'jane@example.com', '$2a$10$hashedpassword', 'owner');
+
+-- ─── SEED DATA ────────────────────────────────────────────────────────────────
+-- Run this block AFTER registering at least one owner and one manager account
+-- via the Auth page so the auth.users rows exist.
+-- Replace the UUIDs below with the actual user IDs from your Supabase Auth table.
+--
+-- HOW TO FIND YOUR USER IDs:
+--   Supabase Dashboard → Authentication → Users → copy the "UID" column value
+--
+-- STEP 1: Seed the demo warehouse (replace <OWNER_UUID> with the owner's UID)
+-- INSERT INTO warehouses (id, name, location, capacity, owner_id) VALUES
+-- (
+--   '00000000-0000-0000-0000-000000000001',
+--   'Godam Warehouse – Pune',
+--   'Plot 42, MIDC Industrial Area, Pune, Maharashtra 411019',
+--   50000,
+--   '<OWNER_UUID>'   -- ← paste owner UID here
+-- );
+--
+-- STEP 2: Link the manager to the warehouse
+-- UPDATE user_profiles
+--   SET warehouse_id = '00000000-0000-0000-0000-000000000001'
+--   WHERE id = '<MANAGER_UUID>';  -- ← paste manager UID here
+--
+-- STEP 3: Seed demo batches (uses the warehouse ID above)
+-- INSERT INTO batches
+--   (batch_id, farmer_id, farmer_name, farmer_contact, crop, variety,
+--    quantity, unit, entry_date, shelf_life, risk_score, zone, warehouse_id,
+--    status, temperature, humidity)
+-- VALUES
+--   ('B-2026-001','F-1001','Rajan Patil',  '+91 98765 11001','Tomatoes',   'Roma',        480,  'kg', NOW() - INTERVAL '5 days',  12, 72, 'A-1','00000000-0000-0000-0000-000000000001','active', 26.5, 78),
+--   ('B-2026-002','F-1002','Sunita Desai', '+91 98765 11002','Potatoes',   'Kufri Jyoti', 1200, 'kg', NOW() - INTERVAL '10 days', 60, 18, 'B-1','00000000-0000-0000-0000-000000000001','active', 12.0, 55),
+--   ('B-2026-003','F-1003','Mohan Singh',  '+91 98765 11003','Apples',     'Shimla',      650,  'kg', NOW() - INTERVAL '3 days',  45, 24, 'C-1','00000000-0000-0000-0000-000000000001','active', 4.0,  62),
+--   ('B-2026-004','F-1004','Kavita Joshi', '+91 98765 11004','Onions',     'Nasik Red',   2000, 'kg', NOW() - INTERVAL '20 days', 90, 45, 'B-2','00000000-0000-0000-0000-000000000001','active', 18.0, 60),
+--   ('B-2026-005','F-1005','Amit Sharma',  '+91 98765 11005','Bananas',    'Cavendish',   300,  'kg', NOW() - INTERVAL '4 days',  10, 81, 'A-2','00000000-0000-0000-0000-000000000001','active', 24.0, 82),
+--   ('B-2026-006','F-1006','Priya Nair',   '+91 98765 11006','Cabbage',    'Golden Acre', 400,  'kg', NOW() - INTERVAL '7 days',  21, 58, 'A-1','00000000-0000-0000-0000-000000000001','active', 8.0,  70),
+--   ('B-2026-007','F-1007','Vijay Kulkarni','+91 98765 11007','Wheat',     'HD-2967',     5000, 'kg', NOW() - INTERVAL '15 days', 365, 8, 'D-1','00000000-0000-0000-0000-000000000001','active', 20.0, 45),
+--   ('B-2026-008','F-1008','Rekha Mehta',  '+91 98765 11008','Grapes',     'Thompson',    220,  'kg', NOW() - INTERVAL '6 days',  14, 63, 'C-2','00000000-0000-0000-0000-000000000001','active', 2.0,  85),
+--   ('B-2026-009','F-1009','Suresh Yadav', '+91 98765 11009','Cauliflower','Snowball',    350,  'kg', NOW() - INTERVAL '9 days',  18, 76, 'A-2','00000000-0000-0000-0000-000000000001','active', 6.0,  68),
+--   ('B-2026-010','F-1010','Anita Gupta',  '+91 98765 11010','Rice',       'Basmati',     8000, 'kg', NOW() - INTERVAL '30 days', 365, 12, 'D-2','00000000-0000-0000-0000-000000000001','active', 22.0, 48);

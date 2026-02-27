@@ -4,7 +4,7 @@ import "dotenv/config";
 // Admin client bypasses RLS — only use server-side
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY, // service role key, NOT anon key
+  process.env.SUPABASE_SERVICE_ROLE_KEY, // service role key, NOT anon key
 );
 
 /**

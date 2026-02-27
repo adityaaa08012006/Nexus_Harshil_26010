@@ -1,62 +1,126 @@
-import React from 'react';
-
-interface Alert {
-  id: string;
-  type: 'warning' | 'danger' | 'info';
-  message: string;
-  timestamp: string;
-}
+import React from "react";
+import { Alert } from "../../lib/supabase";
+import { formatRelativeTime } from "../../utils/formatters";
+import { AlertCircle, AlertTriangle, Info } from "lucide-react";
 
 interface AlertPanelProps {
   alerts: Alert[];
+  onAcknowledge?: (id: string) => void;
+  maxItems?: number;
+  isLoading?: boolean;
 }
 
-export const AlertPanel: React.FC<AlertPanelProps> = ({ alerts }) => {
-  const getAlertStyles = (type: Alert['type']) => {
-    switch (type) {
-      case 'danger':
-        return 'bg-red-50 border-red-500 text-red-800';
-      case 'warning':
-        return 'bg-yellow-50 border-yellow-500 text-yellow-800';
-      case 'info':
-        return 'bg-blue-50 border-blue-500 text-blue-800';
-    }
-  };
+const SEVERITY_CONFIG = {
+  critical: {
+    icon: AlertCircle,
+    border: "#DC2626",
+    bg: "#FEF2F2",
+    text: "#991B1B",
+    label: "Critical",
+  },
+  warning: {
+    icon: AlertTriangle,
+    border: "#F2B50B",
+    bg: "#FFFBEB",
+    text: "#92400E",
+    label: "Warning",
+  },
+  info: {
+    icon: Info,
+    border: "#3B82F6",
+    bg: "#EFF6FF",
+    text: "#1E40AF",
+    label: "Info",
+  },
+};
 
-  const getAlertIcon = (type: Alert['type']) => {
-    switch (type) {
-      case 'danger':
-        return '🚨';
-      case 'warning':
-        return '⚠️';
-      case 'info':
-        return 'ℹ️';
-    }
-  };
+export const AlertPanel: React.FC<AlertPanelProps> = ({
+  alerts,
+  onAcknowledge,
+  maxItems = 5,
+  isLoading = false,
+}) => {
+  const active = alerts.filter((a) => !a.is_acknowledged).slice(0, maxItems);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Active Alerts</h3>
-      <div className="space-y-3">
-        {alerts.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-4">No active alerts</p>
-        ) : (
-          alerts.map((alert) => (
-            <div
-              key={alert.id}
-              className={`border-l-4 p-4 rounded-r-md ${getAlertStyles(alert.type)} min-h-[44px]`}
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-xl">{getAlertIcon(alert.type)}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{alert.message}</p>
-                  <p className="text-xs mt-1 opacity-75">{alert.timestamp}</p>
-                </div>
-              </div>
-            </div>
-          ))
+    <div
+      className="rounded-xl p-6 shadow-sm border"
+      style={{ backgroundColor: "white", borderColor: "#E5E7EB" }}
+    >
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-sm font-semibold text-gray-700">
+          Alerts & Notifications
+        </h3>
+        {active.length > 0 && (
+          <span
+            className="text-xs font-semibold px-2 py-1 rounded-full"
+            style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }}
+          >
+            {active.length}
+          </span>
         )}
       </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <div
+            className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
+            style={{ borderColor: "#48A111", borderTopColor: "transparent" }}
+          />
+        </div>
+      ) : active.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 py-8">
+          <div className="p-3 rounded-full bg-green-50">
+            <AlertCircle size={24} className="text-green-600" />
+          </div>
+          <p className="text-sm text-gray-500">All clear — no active alerts</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {active.map((alert) => {
+            const cfg = SEVERITY_CONFIG[alert.severity];
+            const Icon = cfg.icon;
+            return (
+              <div
+                key={alert.id}
+                className="rounded-lg p-3 flex items-start gap-3 border"
+                style={{ borderColor: cfg.border, backgroundColor: cfg.bg }}
+              >
+                <div className="flex-shrink-0 mt-0.5">
+                  <Icon size={18} style={{ color: cfg.text }} strokeWidth={2} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p
+                    className="text-sm font-medium leading-snug"
+                    style={{ color: cfg.text }}
+                  >
+                    {alert.message}
+                  </p>
+                  <p
+                    className="text-xs mt-1.5 opacity-70"
+                    style={{ color: cfg.text }}
+                  >
+                    {alert.zone ? `Zone ${alert.zone} · ` : ""}
+                    {formatRelativeTime(alert.created_at)}
+                  </p>
+                  {onAcknowledge && (
+                    <button
+                      onClick={() => onAcknowledge(alert.id)}
+                      className="text-xs font-medium px-3 py-1 rounded-md transition-colors hover:opacity-80 mt-2"
+                      style={{
+                        backgroundColor: "#48A111",
+                        color: "white",
+                      }}
+                    >
+                      Acknowledge
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
