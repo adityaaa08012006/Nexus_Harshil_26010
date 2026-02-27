@@ -1,140 +1,106 @@
-import { Building2, Package, Truck } from 'lucide-react';
-
 const PotentialUsersCarousel = () => {
-  const users = [
+  const logos = [
     {
       id: 1,
-      company: "BigBasket",
-      type: "E-Commerce Platform",
-      icon: Building2,
-      logo: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=zeptonow.com',
+      alt: 'Zepto'
     },
     {
       id: 2,
-      company: "FreshMart",
-      type: "Cold Storage",
-      icon: Package,
-      logo: "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=compass-group.com',
+      alt: 'Compass'
     },
     {
       id: 3,
-      company: "Zepto",
-      type: "Quick Commerce",
-      icon: Truck,
-      logo: "https://images.unsplash.com/photo-1556742111-a301076d9d18?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=countrydelight.in',
+      alt: 'Country Delight'
     },
     {
       id: 4,
-      company: "Reliance Fresh",
-      type: "Retail Chain",
-      icon: Building2,
-      logo: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=flipkart.com',
+      alt: 'Flipkart'
     },
     {
       id: 5,
-      company: "Nature's Basket",
-      type: "Premium Organic",
-      icon: Package,
-      logo: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=jumbotail.com',
+      alt: 'Jumbotail'
     },
     {
       id: 6,
-      company: "Swiggy Instamart",
-      type: "Quick Commerce",
-      icon: Truck,
-      logo: "https://images.unsplash.com/photo-1593113598332-cd588b8f2e83?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=bbdaily.com',
+      alt: 'Milkbasket'
     },
     {
       id: 7,
-      company: "JioMart",
-      type: "E-Commerce",
-      icon: Building2,
-      logo: "https://images.unsplash.com/photo-1556740738-b6a63e27c4df?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=relianceretail.com',
+      alt: 'Reliance Retail'
     },
     {
       id: 8,
-      company: "Milkbasket",
-      type: "Daily Essentials",
-      icon: Package,
-      logo: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400"
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=sodexo.com',
+      alt: 'Sodexo'
+    },
+    {
+      id: 9,
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=swiggy.com',
+      alt: 'Swiggy'
+    },
+    {
+      id: 10,
+      src: 'https://www.google.com/s2/favicons?sz=128&domain_url=zomato.com',
+      alt: 'Zomato'
     }
   ];
 
   return (
-    <section className="py-8 md:py-12 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 md:mb-8">
+    <section className="py-8 md:py-12 bg-gray-50 overflow-hidden font-sans antialiased text-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4 md:mb-6">
         <div className="text-center">
-          <p className="text-godam-sun font-semibold mb-2 text-sm md:text-base uppercase tracking-wider">Trusted by Leading Brands</p>
-          <h2 className="text-2xl md:text-4xl font-bold text-godam-forest">Our Potential Users</h2>
+          <h6 className="text-xl md:text-2xl font-semibold text-godam-forest">Our Potiental Users</h6>
         </div>
       </div>
 
-      {/* Scrolling Container with CSS Animation */}
       <div className="relative">
-        <div className="carousel-container">
-          <div className="carousel-track">
-            {/* Render users twice for seamless loop */}
-            {[...users, ...users].map((user, index) => {
-              const Icon = user.icon;
-              return (
-                <div
-                  key={`${user.id}-${index}`}
-                  className="carousel-card flex-shrink-0 w-56 md:w-64 bg-white rounded-xl md:rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-2 border-gray-100"
-                >
-                  {/* Logo Image */}
-                  <div className="h-24 md:h-32 bg-gray-100 relative overflow-hidden">
-                    <img 
-                      src={user.logo} 
-                      alt={user.company}
-                      className="w-full h-full object-cover opacity-80"
-                    />
-                    <div className="absolute inset-0 bg-black/30"></div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 md:p-6">
-                    <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
-                      <div className="w-10 h-10 md:w-12 md:h-12 bg-godam-leaf rounded-full flex items-center justify-center shadow-md">
-                        <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-base md:text-lg font-bold text-godam-forest">{user.company}</h3>
-                        <p className="text-xs text-gray-500 font-medium">{user.type}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        <div className="logo-loop-container">
+          <div className="logo-loop-track">
+            {[...logos, ...logos].map((logo, index) => (
+              <div key={`${logo.id}-${index}`} className="logo-loop-item">
+                <img
+                  className="logo-loop-image"
+                  src={logo.src}
+                  alt={logo.alt}
+                  onError={(event) => {
+                    const target = event.currentTarget;
+                    target.onerror = null;
+                    target.src = '/logo1.png';
+                  }}
+                />
+                <span className="logo-loop-name">{logo.alt}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* CSS for infinite scroll animation */}
       <style>{`
-        .carousel-container {
+        .logo-loop-container {
           overflow: hidden;
           width: 100%;
         }
 
-        .carousel-track {
+        .logo-loop-track {
           display: flex;
-          gap: 1rem;
-          animation: scroll 40s linear infinite;
+          align-items: center;
+          gap: 1.25rem;
+          animation: logoScroll 28s linear infinite;
           width: max-content;
         }
 
-        @media (min-width: 768px) {
-          .carousel-track {
-            gap: 1.5rem;
-          }
-        }
-
-        .carousel-track:hover {
+        .logo-loop-track:hover {
           animation-play-state: paused;
         }
 
-        @keyframes scroll {
+        @keyframes logoScroll {
           0% {
             transform: translateX(0);
           }
@@ -143,14 +109,33 @@ const PotentialUsersCarousel = () => {
           }
         }
 
-        .carousel-card {
-          min-width: 14rem;
+        .logo-loop-item {
+          min-width: 170px;
+          height: 88px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background: #ffffff;
+          border-radius: 12px;
+          padding: 10px 14px;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+          gap: 6px;
         }
 
-        @media (min-width: 768px) {
-          .carousel-card {
-            min-width: 16rem;
-          }
+        .logo-loop-image {
+          max-height: 34px;
+          width: auto;
+          max-width: 130px;
+          object-fit: contain;
+        }
+
+        .logo-loop-name {
+          font-size: 12px;
+          line-height: 1;
+          font-weight: 600;
+          color: #1f2937;
+          white-space: nowrap;
         }
       `}</style>
     </section>

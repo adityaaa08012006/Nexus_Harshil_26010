@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import type { UserRole } from "../lib/supabase";
-import logo from "../assets/logo.png";
+import logo from "../assets/public/logo1.png";
 
 // ─── Role Selection Card ──────────────────────────────────────────────────────
 

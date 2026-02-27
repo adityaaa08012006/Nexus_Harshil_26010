@@ -26,11 +26,19 @@ import { QCOrders } from "./pages/QCOrders";
 import { AllocationManagePage } from "./pages/AllocationManagePage";
 import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 import { FarmerManagement } from "./pages/FarmerManagement";
+import ClickSpark from "./components/home/ClickSpark";
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
+    <ClickSpark
+      sparkColor='#48A111'
+      sparkSize={10}
+      sparkRadius={15}
+      sparkCount={8}
+      duration={400}
+    >
+      <Router>
+        <AuthProvider>
         <WarehouseProvider>
           <Routes>
             {/* ── Public routes ── */}
@@ -124,7 +132,8 @@ function App() {
           </Routes>
         </WarehouseProvider>
       </AuthProvider>
-    </Router>
+      </Router>
+    </ClickSpark>
   );
 }
 

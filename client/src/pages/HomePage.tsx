@@ -1,375 +1,40 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import logo from "../assets/logo.png";
+import logo from "../assets/public/logo1.png";
+import GlassNavbar from '../components/home/GlassNavbar';
 import { 
-  ShoppingCart, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Search,
   Leaf,
   TrendingUp,
   Shield,
   Users,
   CheckCircle,
-  Play,
   ArrowRight,
-  Clock,
-  User,
-  Star,
-  X,
-  Building2,
+  Mail,
+  MapPin,
+  Phone,
   Package,
-  Truck,
-  Menu
+  Star
 } from 'lucide-react';
 // import ProblemStatementSection from '../components/landing/ProblemStatementSection';
 import CircularFlowSection from '../components/landing/CircularFlowSection';
 import PotentialUsersCarousel from '../components/landing/PotentialUsersCarousel';
 import HeroSlider from '../components/home/HeroSlider';
-
-// Modal Component
-const UserModal = ({ isOpen, onClose, user }: { isOpen: boolean; onClose: () => void; user: any }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center rounded-t-3xl">
-          <h3 className="text-2xl font-bold text-godam-forest">User Details</h3>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
-          >
-            <X size={24} className="text-gray-600" />
-          </button>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-8 p-8">
-          {/* Left Side - Company Info */}
-          <div className="space-y-6">
-            <div className="flex flex-col items-center text-center p-6 bg-godam-leaf rounded-2xl">
-              <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
-                <user.icon className="text-godam-leaf" size={64} />
-              </div>
-              <h4 className="text-2xl font-bold text-white mb-2">{user.company}</h4>
-              <span className="px-4 py-2 bg-white bg-opacity-20 text-white rounded-full text-sm font-semibold">
-                {user.type}
-              </span>
-            </div>
-
-            <div className="bg-gray-50 rounded-2xl p-6 space-y-4">
-              <h5 className="text-lg font-bold text-godam-forest mb-4">Contact Information</h5>
-              <div className="flex items-center gap-3">
-                <User className="text-godam-leaf" size={20} />
-                <div>
-                  <p className="text-sm text-gray-500">Contact Person</p>
-                  <p className="font-semibold text-gray-800">{user.contact.name}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Mail className="text-godam-leaf" size={20} />
-                <div>
-                  <p className="text-sm text-gray-500">Email</p>
-                  <p className="font-semibold text-gray-800">{user.contact.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Phone className="text-godam-leaf" size={20} />
-                <div>
-                  <p className="text-sm text-gray-500">Phone</p>
-                  <p className="font-semibold text-gray-800">{user.contact.phone}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <MapPin className="text-godam-leaf" size={20} />
-                <div>
-                  <p className="text-sm text-gray-500">Location</p>
-                  <p className="font-semibold text-gray-800">{user.contact.location}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Side - About */}
-          <div className="space-y-6">
-            <div>
-              <h5 className="text-2xl font-bold text-godam-forest mb-4">About {user.company}</h5>
-              <p className="text-gray-700 leading-relaxed mb-6">{user.about}</p>
-            </div>
-
-            <div className="bg-godam-leaf bg-opacity-10 rounded-2xl p-6">
-              <h5 className="text-xl font-bold text-godam-forest mb-4 flex items-center gap-2">
-                <CheckCircle className="text-godam-leaf" size={24} />
-                How They Can Use Godam
-              </h5>
-              <ul className="space-y-3">
-                {user.benefits.map((benefit: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <ArrowRight className="text-godam-leaf flex-shrink-0 mt-1" size={18} />
-                    <span className="text-gray-700">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-gray-50 rounded-2xl p-6">
-              <h5 className="text-lg font-bold text-godam-forest mb-3">Key Features for {user.type}</h5>
-              <div className="grid grid-cols-2 gap-3">
-                {user.features.map((feature: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2 bg-white p-3 rounded-lg">
-                    <CheckCircle className="text-godam-leaf flex-shrink-0" size={16} />
-                    <span className="text-sm text-gray-700 font-medium">{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button className="w-full py-4 bg-godam-leaf text-white rounded-full font-bold text-lg hover:bg-godam-forest transition shadow-lg">
-              Contact {user.company}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import SplitText from '../components/home/SplitText';
+import BlurText from '../components/home/BlurText';
 
 export default function HomePage() {
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const potentialUsers = [
-    {
-      id: 1,
-      company: "BigBasket Warehouses",
-      type: "Warehouse Owner",
-      icon: Building2,
-      logo: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400",
-      contact: {
-        name: "Rajesh Kumar",
-        email: "rajesh.k@bigbasket.com",
-        phone: "+91 98765 12345",
-        location: "Bangalore, Karnataka"
-      },
-      about: "BigBasket operates the largest network of fresh produce warehouses across India, managing over 50+ storage facilities. They handle everything from farm-fresh vegetables to grains and dairy products, serving millions of customers daily through their e-commerce platform.",
-      benefits: [
-        "Monitor all 50+ warehouses from a single dashboard with real-time visibility",
-        "Reduce spoilage by 25% through AI-powered risk scoring and predictive alerts",
-        "Optimize storage capacity utilization across multiple facilities",
-        "Generate comprehensive performance analytics and ROI reports",
-        "Track waste reduction metrics and cost savings across the entire network"
-      ],
-      features: ["Multi-Warehouse Dashboard", "Analytics & Reports", "Risk Monitoring", "Utilization Tracking"]
-    },
-    {
-      id: 2,
-      company: "FreshMart Cold Storage",
-      type: "Warehouse Manager",
-      icon: Package,
-      logo: "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=400",
-      contact: {
-        name: "Priya Sharma",
-        email: "priya@freshmart.in",
-        phone: "+91 98765 67890",
-        location: "Mumbai, Maharashtra"
-      },
-      about: "FreshMart operates premium cold storage facilities specializing in preserving fresh fruits, vegetables, and dairy products. With state-of-art technology and a commitment to quality, they ensure optimal storage conditions for agricultural produce.",
-      benefits: [
-        "Real-time sensor monitoring of temperature, humidity, and gas levels in each zone",
-        "Automated alerts for threshold breaches preventing spoilage incidents",
-        "Track individual batch freshness with precision scoring system",
-        "Smart allocation engine matches high-risk inventory with immediate demand",
-        "Maintain detailed farmer contact database and market price references",
-        "Generate maintenance reports and compliance documentation effortlessly"
-      ],
-      features: ["Sensor Monitoring", "Batch Tracking", "Smart Allocation", "Farmer Contacts"]
-    },
-    {
-      id: 3,
-      company: "Zepto Quick Commerce",
-      type: "Quick Commerce Rep",
-      icon: Truck,
-      logo: "https://images.unsplash.com/photo-1605902711622-cfb43c4437c7?w=400",
-      contact: {
-        name: "Arjun Patel",
-        email: "arjun.p@zepto.com",
-        phone: "+91 98765 11223",
-        location: "Delhi NCR"
-      },
-      about: "Zepto is a leading quick commerce platform delivering groceries and fresh produce in 10 minutes. They partner with multiple warehouses to ensure ultra-fast delivery of fresh products to customers across major cities.",
-      benefits: [
-        "Upload requirement PDFs and let AI parse order details automatically",
-        "Edit and confirm quantities, deadlines, and pricing in structured forms",
-        "Receive intelligent batch suggestions prioritizing freshness and proximity",
-        "Track order status in real-time from warehouse to delivery",
-        "Maintain order history and reorder frequently purchased items instantly",
-        "Direct communication channel with warehouse managers for coordination"
-      ],
-      features: ["AI PDF Parsing", "Order Tracking", "Smart Suggestions", "Order History"]
-    },
-    {
-      id: 4,
-      company: "Reliance Fresh Distribution",
-      type: "Warehouse Owner",
-      icon: Building2,
-      logo: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=400",
-      contact: {
-        name: "Amit Desai",
-        email: "amit.desai@reliancefresh.com",
-        phone: "+91 98765 33445",
-        location: "Ahmedabad, Gujarat"
-      },
-      about: "Reliance Fresh operates one of India's largest retail chains with an extensive network of distribution centers. They manage massive volumes of fresh produce and groceries across 200+ cities nationwide.",
-      benefits: [
-        "Centralized control over nationwide warehouse network",
-        "Benchmark performance across regions and identify top performers",
-        "Predict demand patterns and optimize inventory distribution",
-        "Reduce operational costs through data-driven decision making",
-        "Ensure compliance and quality standards across all facilities"
-      ],
-      features: ["Enterprise Dashboard", "Predictive Analytics", "Compliance Tracking", "Network Optimization"]
-    },
-    {
-      id: 5,
-      company: "Nature's Basket Premium",
-      type: "Warehouse Manager",
-      icon: Package,
-      logo: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400",
-      contact: {
-        name: "Sneha Reddy",
-        email: "sneha@naturesbasket.in",
-        phone: "+91 98765 55667",
-        location: "Hyderabad, Telangana"
-      },
-      about: "Nature's Basket specializes in premium organic produce and imported goods. Their warehouse management focuses on maintaining the highest quality standards while minimizing waste of expensive inventory.",
-      benefits: [
-        "Premium product tracking with detailed freshness profiles",
-        "Specialized handling protocols for organic and imported items",
-        "Enhanced quality control with custom sensor parameters",
-        "Priority allocation for high-value perishables",
-        "Detailed reporting for organic certification compliance"
-      ],
-      features: ["Premium Tracking", "Quality Control", "Compliance Reports", "Custom Alerts"]
-    },
-    {
-      id: 6,
-      company: "Swiggy Instamart Logistics",
-      type: "Quick Commerce Rep",
-      icon: Truck,
-      logo: "https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400",
-      contact: {
-        name: "Vikram Singh",
-        email: "vikram@swiggy.com",
-        phone: "+91 98765 77889",
-        location: "Pune, Maharashtra"
-      },
-      about: "Swiggy Instamart delivers groceries and essentials in minutes, partnering with local warehouses for rapid fulfillment. Their success depends on efficient coordination with storage facilities and fresh inventory availability.",
-      benefits: [
-        "Streamlined ordering process with AI-powered requirement extraction",
-        "Real-time inventory visibility across partner warehouses",
-        "Fresher products through smart batch selection algorithms",
-        "Faster order confirmation and reduced coordination time",
-        "Historical analytics for better demand forecasting"
-      ],
-      features: ["Quick Ordering", "Multi-Warehouse Access", "Freshness Priority", "Demand Analytics"]
-    }
-  ];
-
-  const openModal = (user: any) => {
-    setSelectedUser(user);
-    setIsModalOpen(true);
+  const handleAnimationComplete = () => {
+    console.log('All letters have animated!');
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedUser(null);
+  const handleBlurAnimationComplete = () => {
+    console.log('Animation completed!');
   };
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-white">
       {/* Main Navigation - Mobile Responsive */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="flex justify-between items-center h-20 md:h-28">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
-              <img src={logo} alt="Godam Solutions" className="h-16 md:h-24 w-auto object-contain" />
-            </Link>
-
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-2">
-              <Link to="/" className="px-4 lg:px-6 py-3 text-godam-forest text-base lg:text-lg font-semibold hover:bg-godam-leaf hover:text-white rounded-full transition">Home</Link>
-              <Link to="/about" className="px-4 lg:px-6 py-3 text-gray-700 text-base lg:text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">About</Link>
-              <Link to="/solutions" className="px-4 lg:px-6 py-3 text-gray-700 text-base lg:text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">Solutions</Link>
-              <Link to="/contact" className="px-4 lg:px-6 py-3 text-gray-700 text-base lg:text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">Contact</Link>
-            </div>
-
-            {/* Desktop Auth Button */}
-            <div className="hidden md:flex items-center gap-3">
-              <Link 
-                to="/auth?tab=register" 
-                className="px-6 lg:px-8 py-2.5 lg:py-3.5 bg-godam-leaf text-white text-base lg:text-lg rounded-full font-semibold hover:bg-godam-forest transition shadow-lg"
-              >
-                Log In / Sign Up
-              </Link>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
-          </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden pb-4 border-t border-gray-100">
-              <div className="flex flex-col space-y-2 pt-4">
-                <Link 
-                  to="/" 
-                  className="px-4 py-3 text-godam-forest text-base font-semibold bg-godam-leaf/10 rounded-lg transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Home
-                </Link>
-                <Link 
-                  to="/about" 
-                  className="px-4 py-3 text-gray-700 text-base font-medium hover:bg-gray-50 rounded-lg transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  About
-                </Link>
-                <Link 
-                  to="/solutions" 
-                  className="px-4 py-3 text-gray-700 text-base font-medium hover:bg-gray-50 rounded-lg transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Solutions
-                </Link>
-                <Link 
-                  to="/contact" 
-                  className="px-4 py-3 text-gray-700 text-base font-medium hover:bg-gray-50 rounded-lg transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Contact
-                </Link>
-                <Link 
-                  to="/auth?tab=register" 
-                  className="mx-4 px-6 py-3 bg-godam-leaf text-white text-base rounded-full font-semibold hover:bg-godam-forest transition shadow-lg text-center"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Log In / Sign Up
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </nav>
+      <GlassNavbar />
 
       {/* Hero Slider */}
       <HeroSlider />
@@ -401,13 +66,38 @@ export default function HomePage() {
 
             {/* Content */}
             <div className="order-1 md:order-2">
-              <p className="text-godam-sun font-semibold mb-2 text-sm md:text-base">ABOUT US</p>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-godam-forest mb-4 md:mb-6">
-                Warehouse & Organic<br />Post-Harvest Solutions
-              </h2>
-              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6 leading-relaxed">
-                India loses millions in post-harvest waste annually. Godam Solutions transforms traditional warehouses into intelligent optimization hubs using IoT sensors, AI-powered allocation, and real-time monitoring.
-              </p>
+              <BlurText
+                text="ABOUT US"
+                delay={100}
+                animateBy="words"
+                direction="top"
+                onAnimationComplete={handleBlurAnimationComplete}
+                className="text-godam-sun font-semibold mb-2 text-sm md:text-base"
+              />
+              <SplitText
+                text="Warehouse & Organic Post-Harvest Solutions"
+                className="text-2xl sm:text-3xl md:text-4xl font-bold text-godam-forest mb-4 md:mb-6"
+                delay={50}
+                duration={1.25}
+                ease="power3.out"
+                splitType="chars"
+                from={{ opacity: 0, y: 40 }}
+                to={{ opacity: 1, y: 0 }}
+                threshold={0.1}
+                rootMargin="-100px"
+                textAlign="left"
+                tag="h2"
+                onLetterAnimationComplete={handleAnimationComplete}
+                showCallback
+              />
+              <BlurText
+                text="India loses millions in post-harvest waste annually. Godam Solutions transforms traditional warehouses into intelligent optimization hubs using IoT sensors, AI-powered allocation, and real-time monitoring."
+                delay={100}
+                animateBy="words"
+                direction="top"
+                onAnimationComplete={handleBlurAnimationComplete}
+                className="text-sm md:text-base text-gray-600 mb-4 md:mb-6 leading-relaxed"
+              />
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 <div className="flex items-start gap-3">
@@ -415,8 +105,20 @@ export default function HomePage() {
                     <Leaf className="text-godam-sun" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-godam-forest mb-1 text-sm md:text-base">Growing Smartly</h4>
-                    <p className="text-xs md:text-sm text-gray-600">Optimized storage capacity utilization</p>
+                    <BlurText
+                      text="Growing Smartly"
+                      delay={100}
+                      animateBy="words"
+                      direction="top"
+                      className="font-bold text-godam-forest mb-1 text-sm md:text-base"
+                    />
+                    <BlurText
+                      text="Optimized storage capacity utilization"
+                      delay={100}
+                      animateBy="words"
+                      direction="top"
+                      className="text-xs md:text-sm text-gray-600"
+                    />
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
@@ -424,17 +126,33 @@ export default function HomePage() {
                     <TrendingUp className="text-godam-leaf" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-godam-forest mb-1 text-sm md:text-base">Top-tier Efficiency</h4>
-                    <p className="text-xs md:text-sm text-gray-600">20% reduction in spoilage waste</p>
+                    <BlurText
+                      text="Top-tier Efficiency"
+                      delay={100}
+                      animateBy="words"
+                      direction="top"
+                      className="font-bold text-godam-forest mb-1 text-sm md:text-base"
+                    />
+                    <BlurText
+                      text="20% reduction in spoilage waste"
+                      delay={100}
+                      animateBy="words"
+                      direction="top"
+                      className="text-xs md:text-sm text-gray-600"
+                    />
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white rounded-lg shadow-sm">
                 <CheckCircle className="text-godam-leaf flex-shrink-0" size={20} />
-                <p className="text-sm md:text-base text-gray-700">
-                  Trusted by <span className="font-bold text-godam-forest">50+ warehouses</span> across India
-                </p>
+                <BlurText
+                  text="Trusted by 50+ warehouses across India"
+                  delay={100}
+                  animateBy="words"
+                  direction="top"
+                  className="text-sm md:text-base text-gray-700"
+                />
               </div>
 
               <button className="mt-6 md:mt-8 w-full sm:w-auto px-6 md:px-8 py-2.5 md:py-3 bg-godam-leaf text-white rounded-full font-bold hover:bg-godam-forest transition shadow-lg text-sm md:text-base">
@@ -636,7 +354,7 @@ export default function HomePage() {
           </div>
 
           <div className="mt-10 md:mt-16 bg-godam-leaf rounded-2xl md:rounded-3xl p-6 md:p-12 text-center text-white">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">🌾 Join the Agricultural Revolution</h3>
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">Join the Agricultural Revolution</h3>
             <p className="text-base md:text-xl mb-6 md:mb-8 text-white text-opacity-90 max-w-3xl mx-auto">
               Help us eliminate ₹92,651 crores in annual post-harvest losses and build a sustainable future for Indian agriculture.
             </p>
@@ -651,9 +369,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Modal */}
-      <UserModal isOpen={isModalOpen} onClose={closeModal} user={selectedUser} />
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white pt-10 md:pt-16 pb-6 md:pb-8">
