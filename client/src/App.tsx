@@ -15,6 +15,7 @@ import { ManagerDashboard } from "./pages/ManagerDashboard";
 import { OwnerDashboard } from "./pages/OwnerDashboard";
 import { InventoryPage } from "./pages/InventoryPage";
 import { BatchDetails } from "./pages/BatchDetails";
+import { SensorMonitoring } from "./pages/SensorMonitoring";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
                       <Route path="dashboard" element={<OwnerDashboard />} />
                       <Route path="inventory" element={<InventoryPage />} />
                       <Route path="batch/:id" element={<BatchDetails />} />
+                      <Route path="sensors" element={<SensorMonitoring />} />
                       <Route
                         path="*"
                         element={<Navigate to="dashboard" replace />}
@@ -57,6 +59,7 @@ function App() {
                     <Routes>
                       <Route path="dashboard" element={<ManagerDashboard />} />
                       <Route path="inventory" element={<InventoryPage />} />
+                      <Route path="sensors" element={<SensorMonitoring />} />
                       <Route path="batch/:id" element={<BatchDetails />} />
                       <Route
                         path="*"

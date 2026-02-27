@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cron from "node-cron";
 import authRoutes from "./routes/auth.js";
+import sensorRoutes from "./routes/sensors.js";
 import { createClient } from "@supabase/supabase-js";
 import { calculateRiskScore } from "./utils/riskCalculation.js";
 
@@ -37,8 +38,8 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/sensors", sensorRoutes);
 // app.use('/api/inventory', inventoryRoutes)
-// app.use('/api/sensors', sensorRoutes)
 // app.use('/api/allocation', allocationRoutes)
 // app.use('/api/contacts', contactRoutes)
 // app.use('/api/pdf-parse', pdfParseRoutes)
