@@ -53,23 +53,39 @@ export const ManagerDashboard: React.FC = () => {
       setOrdersLoading(true);
 
       // Fetch pending and reviewing orders (orders that need to be fulfilled)
-      const { data, error: ordersError } = await supabase
+      const { data: orders, error: ordersError } = await supabase
         .from("allocation_requests")
-        .select(
-          `
-          *,
-          requester:user_profiles!requester_id (
-            name,
-            email
-          )
-        `,
-        )
+        .select("*")
         .in("status", ["pending", "reviewing"])
         .order("created_at", { ascending: false })
         .limit(10);
 
       if (ordersError) throw ordersError;
-      setIncomingOrders(data || []);
+
+      // Fetch requester details separately and manually join
+      if (orders && orders.length > 0) {
+        const requesterIds = [
+          ...new Set(orders.map((o) => o.requester_id).filter(Boolean)),
+        ];
+
+        const { data: profiles } = await supabase
+          .from("user_profiles")
+          .select("id, name, email")
+          .in("id", requesterIds);
+
+        const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
+        const ordersWithRequester = orders.map((order) => ({
+          ...order,
+          requester: order.requester_id
+            ? profileMap.get(order.requester_id)
+            : null,
+        }));
+
+        setIncomingOrders(ordersWithRequester);
+      } else {
+        setIncomingOrders([]);
+      }
     } catch (error) {
       console.error("Error fetching incoming orders:", error);
     } finally {

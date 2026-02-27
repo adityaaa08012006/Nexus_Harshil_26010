@@ -183,7 +183,7 @@ router.get("/parsed/:id", requireAuth, async (req, res) => {
 
     console.log(`${logPrefix} Fetching parsed data:`, id);
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("parsed_requirements")
       .select("*")
       .eq("id", id)
@@ -262,7 +262,7 @@ router.post("/publish/:id", requireAuth, async (req, res) => {
     console.log(`${logPrefix} Publishing parsed data:`, id);
 
     // Get parsed data
-    const { data: parsedData, error: fetchError } = await supabase
+    const { data: parsedData, error: fetchError } = await supabaseAdmin
       .from("parsed_requirements")
       .select("*")
       .eq("id", id)
@@ -270,8 +270,13 @@ router.post("/publish/:id", requireAuth, async (req, res) => {
       .single();
 
     if (fetchError || !parsedData) {
+      console.error(`${logPrefix} Failed to fetch parsed data:`, fetchError);
       return res.status(404).json({ error: "Parsed data not found" });
     }
+
+    console.log(
+      `${logPrefix} Found parsed data with ${parsedData.parsed_items?.length || 0} items`,
+    );
 
     // Create allocation requests for each item
     const allocationRequests = parsedData.parsed_items.map((item, index) => ({
@@ -341,7 +346,7 @@ router.get("/history", requireAuth, async (req, res) => {
 
     console.log(`${logPrefix} Fetching upload history for user:`, userId);
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from("parsed_requirements")
       .select("id, filename, status, created_at, parsed_items")
       .eq("user_id", userId)
