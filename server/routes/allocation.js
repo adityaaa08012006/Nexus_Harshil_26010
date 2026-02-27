@@ -8,6 +8,7 @@
 import { Router } from "express";
 import { requireAuth, requireRole } from "../middleware/auth.js";
 import { supabaseAdmin } from "../config/supabase.js";
+import { getGeminiModel } from "../config/gemini.js";
 
 const router = Router();
 
@@ -106,6 +107,71 @@ router.get("/", requireAuth, async (req, res) => {
   } catch (err) {
     console.error("[allocation] GET /:", err.message);
     res.status(500).json({ error: "Failed to fetch allocation requests." });
+  }
+});
+
+// ─── GET /api/allocation/suggest-farmers  ──────────────────────────────────
+// Returns AI-generated sourcing suggestion when no batch fully matches an order.
+// Query params: crop (required), quantity (required), unit (optional)
+router.get("/suggest-farmers", requireAuth, async (req, res) => {
+  try {
+    const { crop, quantity, unit = "kg" } = req.query;
+    if (!crop || !quantity) {
+      return res
+        .status(400)
+        .json({ error: "crop and quantity are required query parameters." });
+    }
+
+    // 1. Find farmers that grow this crop (case-insensitive fuzzy match)
+    const { data: farmers, error: farmersError } = await supabaseAdmin
+      .from("contacts")
+      .select(
+        "id, name, phone, email, location, growing_crop, crop_variety, expected_quantity, warehouse_id",
+      )
+      .ilike("growing_crop", `%${crop}%`);
+
+    if (farmersError) throw farmersError;
+
+    if (!farmers || farmers.length === 0) {
+      return res.json({
+        suggestion:
+          `No registered farmers found who grow ${crop}. ` +
+          `Consider reaching out to nearby agricultural cooperatives or mandi boards.`,
+        farmers: [],
+      });
+    }
+
+    // 2. Ask Gemini (same model as PDF parsing)
+    const model = getGeminiModel();
+
+    const farmerList = farmers
+      .map(
+        (f, i) =>
+          `${i + 1}. ${f.name} | Location: ${f.location} | Crop: ${f.growing_crop}${f.crop_variety ? ` (${f.crop_variety})` : ""} | Expected quantity: ${f.expected_quantity ? f.expected_quantity + " kg" : "unknown"}`,
+      )
+      .join("\n");
+
+    const prompt = `
+You are a procurement assistant for an agricultural warehouse management system.
+A buyer needs ${quantity} ${unit} of ${crop}, but no stock batch is available in the warehouse.
+
+The following registered farmers grow ${crop}:
+${farmerList}
+
+Based on this information:
+1. Recommend which farmer(s) can most likely fulfil this order and why.
+2. Suggest a procurement strategy (e.g. combine multiple farmers, partial sourcing timeline).
+3. Keep your response concise and actionable (3-5 sentences max).
+Do NOT repeat the farmer list — just reference them by name.
+`.trim();
+
+    const result = await model.generateContent(prompt);
+    const suggestion = result.response.text();
+
+    return res.json({ suggestion, farmers });
+  } catch (err) {
+    console.error("[allocation] GET /suggest-farmers:", err.message);
+    res.status(500).json({ error: "Failed to generate sourcing suggestion." });
   }
 });
 

@@ -7,10 +7,21 @@ import { RiskProgressBar } from "../components/common/RiskProgressBar";
 import { getDaysRemaining, getRiskLevel } from "../utils/riskCalculation";
 import { formatDate } from "../utils/formatters";
 
+interface FarmerContact {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  location: string | null;
+  growing_crop: string | null;
+  crop_variety: string | null;
+}
+
 export const BatchDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [batch, setBatch] = useState<Batch | null>(null);
+  const [farmer, setFarmer] = useState<FarmerContact | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +41,15 @@ export const BatchDetails: React.FC = () => {
         setError(fetchErr.message);
       } else {
         setBatch(data);
+        // Fetch linked farmer from contacts table
+        if (data?.farmer_id) {
+          const { data: farmerData } = await supabase
+            .from("contacts")
+            .select("id, name, phone, email, location, growing_crop, crop_variety")
+            .eq("id", data.farmer_id)
+            .single();
+          setFarmer(farmerData ?? null);
+        }
       }
       setIsLoading(false);
     };
@@ -239,19 +259,30 @@ export const BatchDetails: React.FC = () => {
           >
             Farmer Information
           </h2>
-          <dl className="space-y-3">
-            <DetailRow label="Farmer ID" value={batch.farmer_id} mono />
-            {batch.farmer_name && (
-              <DetailRow label="Name" value={batch.farmer_name} />
-            )}
-            {batch.farmer_contact && (
-              <DetailRow label="Contact" value={batch.farmer_contact} />
-            )}
-          </dl>
-
-          {!batch.farmer_name && !batch.farmer_contact && (
+          {farmer ? (
+            <dl className="space-y-3">
+              <DetailRow label="Name" value={farmer.name} />
+              {farmer.phone && (
+                <DetailRow label="Phone" value={farmer.phone} />
+              )}
+              {farmer.email && (
+                <DetailRow label="Email" value={farmer.email} />
+              )}
+              {farmer.location && (
+                <DetailRow label="Location" value={farmer.location} />
+              )}
+              {farmer.growing_crop && (
+                <DetailRow label="Crop" value={farmer.growing_crop} />
+              )}
+              {farmer.crop_variety && (
+                <DetailRow label="Variety" value={farmer.crop_variety} />
+              )}
+            </dl>
+          ) : (
             <p className="text-sm text-gray-400 italic">
-              No additional farmer details available
+              {batch?.farmer_id
+                ? "Loading farmer details..."
+                : "No farmer linked to this batch"}
             </p>
           )}
         </div>

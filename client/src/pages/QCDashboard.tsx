@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { useAllocations } from "../hooks/useAllocations";
+import type { AllocationInsert } from "../lib/supabase";
 import {
   Upload,
   FileText,
@@ -11,6 +13,7 @@ import {
   AlertCircle,
   TrendingUp,
   Calendar,
+  PenLine,
 } from "lucide-react";
 
 interface OrderStats {
@@ -36,6 +39,7 @@ interface RecentOrder {
 export const QCDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { createRequest } = useAllocations();
   const [stats, setStats] = useState<OrderStats>({
     total: 0,
     pending: 0,
@@ -44,6 +48,7 @@ export const QCDashboard: React.FC = () => {
   });
   const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [manualOrderOpen, setManualOrderOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -153,7 +158,7 @@ export const QCDashboard: React.FC = () => {
       </div>
 
       {/* ── Quick Actions ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Upload PDF Card */}
         <button
           onClick={() => navigate("/qc/upload")}
@@ -170,6 +175,33 @@ export const QCDashboard: React.FC = () => {
               <p className="text-sm text-green-100 leading-relaxed">
                 Upload PDF documents to extract and place new agricultural
                 product orders using AI
+              </p>
+            </div>
+          </div>
+        </button>
+
+        {/* Manual Order Card */}
+        <button
+          onClick={() => setManualOrderOpen(true)}
+          className="bg-white hover:bg-gray-50 rounded-xl p-6 border-2 border-dashed transition-all hover:shadow-md text-left"
+          style={{ borderColor: "#48A111" }}
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center"
+                  style={{ backgroundColor: "#F0FDF4" }}
+                >
+                  <PenLine className="w-6 h-6" style={{ color: "#48A111" }} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Manual Order
+                </h3>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Enter crop, quantity and location directly without uploading a
+                document
               </p>
             </div>
           </div>
@@ -407,6 +439,250 @@ export const QCDashboard: React.FC = () => {
             </table>
           </div>
         )}
+      </div>
+
+      {/* ── Manual Order Modal ── */}
+      {manualOrderOpen && (
+        <ManualOrderModal
+          onClose={() => setManualOrderOpen(false)}
+          onSuccess={fetchDashboardData}
+          createRequest={createRequest}
+        />
+      )}
+    </div>
+  );
+};
+
+// ─── Manual Order Modal ────────────────────────────────────────────────────
+
+interface ManualOrderModalProps {
+  onClose: () => void;
+  onSuccess: () => void;
+  createRequest: (data: AllocationInsert) => Promise<void>;
+}
+
+const CROP_OPTIONS_LIST = [
+  "Tomatoes", "Potatoes", "Onions", "Apples", "Bananas",
+  "Cabbage", "Wheat", "Grapes", "Cauliflower", "Rice",
+  "Maize", "Soybean", "Sugarcane", "Carrots", "Peas", "Other",
+];
+
+const UNIT_OPTIONS_LIST = ["kg", "tonnes", "quintal", "boxes", "crates"];
+
+const ManualOrderModal: React.FC<ManualOrderModalProps> = ({
+  onClose,
+  onSuccess,
+  createRequest,
+}) => {
+  const [formData, setFormData] = useState<AllocationInsert>({
+    crop: "",
+    quantity: 0,
+    location: "",
+    unit: "kg",
+  });
+  const [useCustomCrop, setUseCustomCrop] = useState(false);
+  const [customCrop, setCustomCrop] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      const resolvedCrop =
+        useCustomCrop || formData.crop === "Other" ? customCrop : formData.crop;
+      if (!resolvedCrop) throw new Error("Please enter a crop name");
+      if (!formData.quantity || formData.quantity <= 0)
+        throw new Error("Please enter a valid quantity");
+      if (!formData.location) throw new Error("Please enter a delivery location");
+      await createRequest({ ...formData, crop: resolvedCrop });
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#F0FDF4" }}
+              >
+                <PenLine className="w-5 h-5" style={{ color: "#48A111" }} />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Manual Order</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors text-xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+
+          {error && (
+            <div className="mb-4 rounded-lg p-3 text-sm bg-red-50 text-red-700 border border-red-200">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Crop */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Crop *
+              </label>
+              {!useCustomCrop ? (
+                <select
+                  value={formData.crop}
+                  onChange={(e) => {
+                    setFormData((p) => ({ ...p, crop: e.target.value }));
+                    if (e.target.value === "Other") setUseCustomCrop(true);
+                  }}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select a crop…</option>
+                  {CROP_OPTIONS_LIST.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customCrop}
+                    onChange={(e) => setCustomCrop(e.target.value)}
+                    placeholder="Enter crop name"
+                    required
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setUseCustomCrop(false); setCustomCrop(""); setFormData((p) => ({ ...p, crop: "" })); }}
+                    className="px-3 py-2 text-xs text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    List
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Variety (optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Variety <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={formData.variety ?? ""}
+                onChange={(e) => setFormData((p) => ({ ...p, variety: e.target.value || undefined }))}
+                placeholder="e.g. Roma, Kufri Jyoti…"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            {/* Quantity + Unit */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity *
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={formData.quantity || ""}
+                  onChange={(e) => setFormData((p) => ({ ...p, quantity: parseFloat(e.target.value) || 0 }))}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit *
+                </label>
+                <select
+                  value={formData.unit}
+                  onChange={(e) => setFormData((p) => ({ ...p, unit: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  {UNIT_OPTIONS_LIST.map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Delivery Location *
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                placeholder="City or address"
+                required
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            {/* Deadline (optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Deadline <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="date"
+                value={formData.deadline ?? ""}
+                onChange={(e) => setFormData((p) => ({ ...p, deadline: e.target.value || undefined }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            {/* Notes (optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Notes <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <textarea
+                value={formData.notes ?? ""}
+                onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value || undefined }))}
+                rows={2}
+                placeholder="Any special requirements…"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: "#48A111" }}
+              >
+                {submitting ? "Submitting…" : "Place Order"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

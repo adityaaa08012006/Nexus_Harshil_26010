@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { useAllocations } from "../hooks/useAllocations";
+import type { AllocationInsert } from "../lib/supabase";
 import {
   FileText,
   Clock,
@@ -13,6 +15,7 @@ import {
   ArrowLeft,
   Search,
   Filter,
+  PenLine,
 } from "lucide-react";
 
 interface Order {
@@ -33,11 +36,13 @@ interface Order {
 export const QCOrders: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { createRequest } = useAllocations();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [manualOrderOpen, setManualOrderOpen] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -166,13 +171,23 @@ export const QCOrders: React.FC = () => {
               Track all your placed orders and their fulfillment status
             </p>
           </div>
-          <button
-            onClick={() => navigate("/qc/upload")}
-            className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-all hover:opacity-90 shadow-sm"
-            style={{ backgroundColor: "#48A111" }}
-          >
-            + New Order
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setManualOrderOpen(true)}
+              className="px-4 py-2 text-sm font-medium rounded-lg border-2 transition-all hover:bg-green-50 flex items-center gap-1.5"
+              style={{ borderColor: "#48A111", color: "#48A111" }}
+            >
+              <PenLine className="w-4 h-4" />
+              Manual
+            </button>
+            <button
+              onClick={() => navigate("/qc/upload")}
+              className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-all hover:opacity-90 shadow-sm"
+              style={{ backgroundColor: "#48A111" }}
+            >
+              + Upload PDF
+            </button>
+          </div>
         </div>
 
         {/* ── Filters ── */}
@@ -341,6 +356,243 @@ export const QCOrders: React.FC = () => {
           })}
         </div>
       )}
+
+      {/* ── Manual Order Modal ── */}
+      {manualOrderOpen && (
+        <QCManualOrderModal
+          onClose={() => setManualOrderOpen(false)}
+          onSuccess={fetchOrders}
+          createRequest={createRequest}
+        />
+      )}
+    </div>
+  );
+};
+
+// ─── Manual Order Modal (local) ────────────────────────────────────────────
+
+interface QCManualOrderModalProps {
+  onClose: () => void;
+  onSuccess: () => void;
+  createRequest: (data: AllocationInsert) => Promise<void>;
+}
+
+const CROP_LIST = [
+  "Tomatoes", "Potatoes", "Onions", "Apples", "Bananas",
+  "Cabbage", "Wheat", "Grapes", "Cauliflower", "Rice",
+  "Maize", "Soybean", "Sugarcane", "Carrots", "Peas", "Other",
+];
+const UNIT_LIST = ["kg", "tonnes", "quintal", "boxes", "crates"];
+
+const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
+  onClose,
+  onSuccess,
+  createRequest,
+}) => {
+  const [formData, setFormData] = useState<AllocationInsert>({
+    crop: "",
+    quantity: 0,
+    location: "",
+    unit: "kg",
+  });
+  const [useCustomCrop, setUseCustomCrop] = useState(false);
+  const [customCrop, setCustomCrop] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      const resolvedCrop =
+        useCustomCrop || formData.crop === "Other" ? customCrop : formData.crop;
+      if (!resolvedCrop) throw new Error("Please select or enter a crop");
+      if (!formData.quantity || formData.quantity <= 0)
+        throw new Error("Please enter a valid quantity");
+      if (!formData.location)
+        throw new Error("Please enter a delivery location");
+      await createRequest({ ...formData, crop: resolvedCrop });
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "#F0FDF4" }}
+              >
+                <PenLine className="w-5 h-5" style={{ color: "#48A111" }} />
+              </div>
+              <h2 className="text-lg font-bold text-gray-900">Manual Order</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+            >
+              ×
+            </button>
+          </div>
+
+          {error && (
+            <div className="mb-4 rounded-lg p-3 text-sm bg-red-50 text-red-700 border border-red-200">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Crop *
+              </label>
+              {!useCustomCrop ? (
+                <select
+                  value={formData.crop}
+                  onChange={(e) => {
+                    setFormData((p) => ({ ...p, crop: e.target.value }));
+                    if (e.target.value === "Other") setUseCustomCrop(true);
+                  }}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select a crop…</option>
+                  {CROP_LIST.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customCrop}
+                    onChange={(e) => setCustomCrop(e.target.value)}
+                    placeholder="Enter crop name"
+                    required
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setUseCustomCrop(false); setCustomCrop(""); setFormData((p) => ({ ...p, crop: "" })); }}
+                    className="px-3 py-2 text-xs text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    List
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Variety <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={formData.variety ?? ""}
+                onChange={(e) => setFormData((p) => ({ ...p, variety: e.target.value || undefined }))}
+                placeholder="e.g. Roma, Kufri Jyoti…"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity *
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={formData.quantity || ""}
+                  onChange={(e) => setFormData((p) => ({ ...p, quantity: parseFloat(e.target.value) || 0 }))}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit *
+                </label>
+                <select
+                  value={formData.unit}
+                  onChange={(e) => setFormData((p) => ({ ...p, unit: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  {UNIT_LIST.map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Delivery Location *
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                placeholder="City or address"
+                required
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Deadline <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="date"
+                value={formData.deadline ?? ""}
+                onChange={(e) => setFormData((p) => ({ ...p, deadline: e.target.value || undefined }))}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Notes <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <textarea
+                value={formData.notes ?? ""}
+                onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value || undefined }))}
+                rows={2}
+                placeholder="Any special requirements…"
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-all hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: "#48A111" }}
+              >
+                {submitting ? "Submitting…" : "Place Order"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

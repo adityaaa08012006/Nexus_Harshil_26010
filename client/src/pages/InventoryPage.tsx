@@ -36,9 +36,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     batch_id: batch?.batch_id ?? "",
-    farmer_id: batch?.farmer_id ?? "",
-    farmer_name: batch?.farmer_name ?? "",
-    farmer_contact: batch?.farmer_contact ?? "",
+    farmer_id: batch?.farmer_id ?? null as string | null,
     crop: batch?.crop ?? "",
     variety: batch?.variety ?? "",
     quantity: batch?.quantity ?? 0,
@@ -80,9 +78,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
       setCustomCrop(isCustom ? batch.crop : "");
       setFormData({
         batch_id: batch.batch_id,
-        farmer_id: batch.farmer_id,
-        farmer_name: batch.farmer_name ?? "",
-        farmer_contact: batch.farmer_contact ?? "",
+        farmer_id: batch.farmer_id ?? null,
         crop: isCustom ? "Other" : batch.crop,
         variety: batch.variety ?? "",
         quantity: batch.quantity,
@@ -92,6 +88,8 @@ const BatchModal: React.FC<BatchModalProps> = ({
         temperature: batch.temperature ?? null,
         humidity: batch.humidity ?? null,
       });
+      // Pre-select the farmer in the dropdown when editing
+      setSelectedFarmerId(batch.farmer_id ?? "");
     } else {
       // Generate batch ID for new batches
       const timestamp = Date.now().toString(36);
@@ -99,6 +97,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
       setFormData((prev) => ({
         ...prev,
         batch_id: `B-${timestamp}-${random}`.toUpperCase(),
+        farmer_id: null,
       }));
       setUseCustomCrop(false);
       setCustomCrop("");
@@ -106,18 +105,17 @@ const BatchModal: React.FC<BatchModalProps> = ({
     }
   }, [batch]);
 
-  // When a farmer is selected from the database, auto-fill fields
+  // When a farmer is selected, store their UUID and auto-fill crop info
   const handleFarmerSelect = (farmerId: string) => {
     setSelectedFarmerId(farmerId);
+    setFormData((prev) => ({ ...prev, farmer_id: farmerId || null }));
     if (!farmerId) return;
     const farmer = farmers.find((f) => f.id === farmerId);
     if (farmer) {
       const isCustom = farmer.growing_crop && !CROP_OPTIONS.includes(farmer.growing_crop as any);
       setFormData((prev) => ({
         ...prev,
-        farmer_id: farmerId.substring(0, 8).toUpperCase(),
-        farmer_name: farmer.name,
-        farmer_contact: farmer.phone ?? "",
+        farmer_id: farmerId,
         crop: isCustom ? "Other" : (farmer.growing_crop ?? prev.crop),
         variety: farmer.crop_variety ?? prev.variety,
       }));
@@ -143,8 +141,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
       if (batch) {
         // Update existing batch
         await onSubmit({
-          farmer_name: formData.farmer_name || undefined,
-          farmer_contact: formData.farmer_contact || undefined,
+          farmer_id: formData.farmer_id ?? undefined,
           crop: resolvedCrop,
           variety: formData.variety || undefined,
           quantity: formData.quantity,
@@ -158,9 +155,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
         // Create new batch
         await onSubmit({
           batch_id: formData.batch_id,
-          farmer_id: formData.farmer_id,
-          farmer_name: formData.farmer_name || undefined,
-          farmer_contact: formData.farmer_contact || undefined,
+          farmer_id: formData.farmer_id ?? undefined,
           crop: resolvedCrop,
           variety: formData.variety || undefined,
           quantity: formData.quantity,
@@ -271,79 +266,33 @@ const BatchModal: React.FC<BatchModalProps> = ({
             </div>
           )}
 
-          {/* Farmer info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Farmer ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.farmer_id}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    farmer_id: e.target.value,
-                  }))
-                }
-                required
-                disabled={!!batch}
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 disabled:bg-gray-100"
-                style={
-                  {
-                    borderColor: "#E5E7EB",
-                    "--tw-ring-color": "#48A111",
-                  } as React.CSSProperties
-                }
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Farmer Name
-              </label>
-              <input
-                type="text"
-                value={formData.farmer_name}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    farmer_name: e.target.value,
-                  }))
-                }
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
-                style={
-                  {
-                    borderColor: "#E5E7EB",
-                    "--tw-ring-color": "#48A111",
-                  } as React.CSSProperties
-                }
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Farmer Contact
-            </label>
-            <input
-              type="text"
-              value={formData.farmer_contact}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  farmer_contact: e.target.value,
-                }))
-              }
-              placeholder="+91 XXXXX XXXXX"
-              className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
-              style={
-                {
-                  borderColor: "#E5E7EB",
-                  "--tw-ring-color": "#48A111",
-                } as React.CSSProperties
-              }
-            />
-          </div>
+          {/* Selected farmer preview */}
+          {selectedFarmerId && (() => {
+            const f = farmers.find((fa) => fa.id === selectedFarmerId);
+            return f ? (
+              <div
+                className="rounded-lg p-3 text-sm border flex items-center gap-3"
+                style={{ backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }}
+              >
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: "#48A111" }}>
+                  {f.name.charAt(0)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900">{f.name}</p>
+                  <p className="text-xs text-gray-500">
+                    {[f.phone, f.location].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleFarmerSelect("")}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : null;
+          })()}
 
           {/* Crop info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

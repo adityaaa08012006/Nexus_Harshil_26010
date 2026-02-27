@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAllocations } from "../hooks/useAllocations";
 import { useInventory } from "../hooks/useInventory";
+import { useAuthContext } from "../context/AuthContext";
 import type { AllocationRequest, Batch } from "../lib/supabase";
 
 // ─── Status badge ───────────────────────────────────────────────────────────
@@ -28,6 +29,17 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 
 // ─── Approve Dialog ─────────────────────────────────────────────────────────
 
+interface AiFarmer {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  location: string;
+  growing_crop: string | null;
+  crop_variety: string | null;
+  expected_quantity: number | null;
+}
+
 interface ApproveDialogProps {
   isOpen: boolean;
   request: AllocationRequest | null;
@@ -43,9 +55,16 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
   onConfirm,
   onCancel,
 }) => {
+  const { session } = useAuthContext();
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Gemini suggestion state ──────────────────────────────────────────────
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+  const [aiFarmers, setAiFarmers] = useState<AiFarmer[]>([]);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   if (!isOpen || !request) return null;
 
@@ -73,9 +92,43 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
     }
   };
 
+  const handleGetSuggestion = async () => {
+    if (!request) return;
+    setAiLoading(true);
+    setAiSuggestion(null);
+    setAiFarmers([]);
+    setAiError(null);
+    try {
+      const params = new URLSearchParams({
+        crop: request.crop,
+        quantity: String(request.quantity),
+        unit: request.unit,
+      });
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
+      const res = await fetch(
+        `http://localhost:5000/api/allocation/suggest-farmers?${params}`,
+        { headers },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      setAiSuggestion(data.suggestion);
+      setAiFarmers(data.farmers ?? []);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "Failed to get suggestion");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
         <h3 className="text-base font-bold text-gray-900 mb-1">
           Approve Allocation
         </h3>
@@ -95,8 +148,128 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
         )}
 
         {matching.length === 0 ? (
-          <div className="text-sm text-gray-500 py-6 text-center">
-            No matching batches with sufficient quantity found.
+          <div className="space-y-4">
+            {/* No stock notice */}
+            <div className="rounded-lg p-4 bg-amber-50 border border-amber-200 text-sm text-amber-800">
+              <p className="font-medium mb-1">No matching stock available</p>
+              <p className="text-amber-700">
+                No active batch has sufficient {request.crop} to fulfil this
+                order ({request.quantity} {request.unit}).
+              </p>
+            </div>
+
+            {/* AI Suggestion trigger */}
+            {!aiSuggestion && !aiLoading && (
+              <button
+                onClick={handleGetSuggestion}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed text-sm font-medium transition-all hover:bg-green-50"
+                style={{ borderColor: "#48A111", color: "#25671E" }}
+              >
+                <span>✨</span>
+                AI Sourcing Suggestion — find farmers who can supply
+              </button>
+            )}
+
+            {aiLoading && (
+              <div className="flex items-center justify-center gap-2 py-6 text-sm text-gray-500">
+                <div
+                  className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                  style={{ borderColor: "#48A111", borderTopColor: "transparent" }}
+                />
+                Asking AI for sourcing options…
+              </div>
+            )}
+
+            {aiError && (
+              <div className="rounded-lg p-3 text-sm bg-red-50 text-red-700 border border-red-200">
+                {aiError}
+              </div>
+            )}
+
+            {aiSuggestion && (
+              <div className="rounded-lg border border-green-200 overflow-hidden">
+                {/* Header */}
+                <div
+                  className="flex items-center gap-2 px-4 py-3 text-sm font-semibold"
+                  style={{ backgroundColor: "#F0FDF4", color: "#25671E" }}
+                >
+                  <span>✨</span>
+                  AI Sourcing Suggestion
+                </div>
+
+                {/* Suggestion text */}
+                <div className="px-4 py-3 text-sm text-gray-700 leading-relaxed border-b border-green-100">
+                  {aiSuggestion}
+                </div>
+
+                {/* Farmer list */}
+                {aiFarmers.length > 0 && (
+                  <div className="px-4 py-3 space-y-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      Matching Registered Farmers
+                    </p>
+                    {aiFarmers.map((f) => (
+                      <div
+                        key={f.id}
+                        className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100"
+                      >
+                        {/* Avatar */}
+                        <div
+                          className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                          style={{ backgroundColor: "#48A111" }}
+                        >
+                          {f.name
+                            .split(" ")
+                            .map((n: string) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            {f.name}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {f.location}
+                          </p>
+                          <div className="flex flex-wrap gap-3 mt-1">
+                            {f.phone && (
+                              <a
+                                href={`tel:${f.phone}`}
+                                className="text-xs hover:underline"
+                                style={{ color: "#48A111" }}
+                              >
+                                📞 {f.phone}
+                              </a>
+                            )}
+                            {f.expected_quantity && (
+                              <span className="text-xs text-gray-500">
+                                ~{f.expected_quantity} kg available
+                              </span>
+                            )}
+                            {f.crop_variety && (
+                              <span className="text-xs text-gray-400">
+                                Variety: {f.crop_variety}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Refresh */}
+                <div className="px-4 py-2 border-t border-green-100">
+                  <button
+                    onClick={handleGetSuggestion}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    ↺ Refresh suggestion
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
@@ -132,7 +305,7 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
           </div>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-3 pt-4">
           <button
             onClick={onCancel}
             disabled={submitting}

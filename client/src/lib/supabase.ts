@@ -65,9 +65,7 @@ export type BatchStatus = "active" | "dispatched" | "expired";
 export interface Batch {
   id: string;
   batch_id: string;
-  farmer_id: string;
-  farmer_name?: string | null;
-  farmer_contact?: string | null;
+  farmer_id: string | null;   // UUID FK → contacts(id)
   crop: string;
   variety?: string | null;
   quantity: number;
@@ -91,9 +89,7 @@ export interface Batch {
 
 export interface BatchInsert {
   batch_id: string;
-  farmer_id: string;
-  farmer_name?: string;
-  farmer_contact?: string;
+  farmer_id?: string | null;   // UUID FK → contacts(id)
   crop: string;
   variety?: string;
   quantity: number;
@@ -106,8 +102,7 @@ export interface BatchInsert {
 }
 
 export interface BatchUpdate {
-  farmer_name?: string;
-  farmer_contact?: string;
+  farmer_id?: string | null;   // UUID FK → contacts(id)
   crop?: string;
   variety?: string;
   quantity?: number;
