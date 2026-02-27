@@ -185,7 +185,7 @@ export default function HeroSection() {
           >
             <Link
               to="/auth?tab=register"
-              className="group px-8 py-4 bg-gradient-to-r from-godam-forest to-godam-leaf text-white font-heading font-semibold rounded-2xl shadow-godam-lg transition-all duration-300 hover:scale-[1.04] hover:shadow-godam active:scale-[0.97] flex items-center space-x-2"
+              className="group px-8 py-4 bg-godam-forest text-white font-heading font-semibold rounded-2xl shadow-godam-lg transition-all duration-300 hover:scale-[1.04] hover:shadow-godam active:scale-[0.97] flex items-center space-x-2"
             >
               <span>Get Started Free</span>
               <svg

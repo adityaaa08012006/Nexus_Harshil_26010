@@ -14,8 +14,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error("[Supabase Client] Missing environment variables!");
   console.error("[Supabase Client] URL exists:", !!supabaseUrl);
   console.error("[Supabase Client] Key exists:", !!supabaseAnonKey);
-  throw new Error(
-    "Missing Supabase environment variables. Check your .env.local file.",
+  console.warn(
+    "Missing Supabase environment variables. Some features will be disabled. Check your .env file.",
   );
 }
 

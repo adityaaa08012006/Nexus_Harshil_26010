@@ -86,7 +86,7 @@ export default function ProblemSection() {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold text-white mb-6">
             The ₹92,000 Crore
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">
+            <span className="text-red-400">
               Problem
             </span>
           </h2>
@@ -107,7 +107,7 @@ export default function ProblemSection() {
             >
               <div className={`relative h-full bg-white/[0.04] backdrop-blur-md border ${stat.borderColor} rounded-3xl p-8 transition-all duration-500 hover:bg-white/[0.08] hover:scale-[1.02] hover:shadow-2xl`}>
                 {/* Glow */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${stat.glowColor} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-${stat.glowColor.split('-')[0]}-500 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
                 <div className="relative z-10">
                   <div className="mb-5 group-hover:scale-110 transition-transform duration-500">
@@ -138,9 +138,9 @@ export default function ProblemSection() {
         <div ref={bottomRef} className="scroll-reveal mt-16 text-center">
           <div className="inline-flex items-center space-x-3 px-6 py-4 bg-white/[0.04] backdrop-blur-md border border-godam-leaf/20 rounded-2xl cursor-default">
             <div className="flex -space-x-2">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-godam-forest to-godam-leaf border-2 border-white/10" />
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-godam-sun to-orange-500 border-2 border-white/10" />
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-godam-leaf to-godam-forest border-2 border-white/10" />
+              <div className="w-9 h-9 rounded-full bg-godam-forest border-2 border-white/10" />
+              <div className="w-9 h-9 rounded-full bg-godam-sun border-2 border-white/10" />
+              <div className="w-9 h-9 rounded-full bg-godam-leaf border-2 border-white/10" />
             </div>
             <div className="text-left">
               <p className="text-white font-semibold text-sm">Ready for a solution?</p>

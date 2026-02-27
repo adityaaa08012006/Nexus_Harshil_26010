@@ -72,7 +72,7 @@ function StatCard({ stat, delay }: { stat: (typeof stats)[0]; delay: number }) {
 
   return (
     <div className="group relative" ref={ref}>
-      <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-15 transition-all duration-500`} />
+      <div className={`absolute inset-0 bg-${stat.gradient.split('-')[0]}-500 rounded-3xl blur-xl opacity-0 group-hover:opacity-15 transition-all duration-500`} />
       <div className={`relative bg-white rounded-3xl p-8 shadow-sm hover:shadow-godam transition-all duration-500 border border-gray-100 ${stat.border}`}>
         <div className={`${stat.color} mb-5`}>{stat.icon}</div>
         <div className="text-5xl font-heading font-extrabold text-gray-900 mb-2">
@@ -92,7 +92,7 @@ export default function ImpactSection() {
   const compareRef = useScrollReveal<HTMLDivElement>({ threshold: 0.1 });
 
   return (
-    <section id="impact" className="relative py-24 md:py-36 overflow-hidden bg-gradient-to-b from-white via-godam-cream/30 to-godam-cream">
+    <section id="impact" className="relative py-24 md:py-36 overflow-hidden bg-white">
       {/* Decorative blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-64 h-64 bg-godam-leaf/10 rounded-full blur-[100px] animate-float" />
@@ -130,7 +130,7 @@ export default function ImpactSection() {
         <div ref={compareRef} className="scroll-reveal bg-white rounded-3xl shadow-glass overflow-hidden border border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Before */}
-            <div className="p-8 md:p-12 bg-gradient-to-br from-red-50/60 to-orange-50/60 md:border-r border-gray-100">
+            <div className="p-8 md:p-12 bg-red-50/60 md:border-r border-gray-100">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-11 h-11 bg-red-100 rounded-2xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,7 +159,7 @@ export default function ImpactSection() {
             </div>
 
             {/* After */}
-            <div className="p-8 md:p-12 bg-gradient-to-br from-godam-leaf/5 to-godam-forest/5">
+            <div className="p-8 md:p-12 bg-godam-leaf/5">
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-11 h-11 bg-godam-leaf/15 rounded-2xl flex items-center justify-center">
                   <svg className="w-5 h-5 text-godam-forest" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +189,7 @@ export default function ImpactSection() {
           </div>
 
           {/* Bottom Banner */}
-          <div className="bg-gradient-to-r from-godam-forest to-godam-leaf p-5 text-center">
+          <div className="bg-godam-forest p-5 text-center">
             <p className="text-white font-heading font-semibold text-base">
               Join <span className="text-godam-sun font-bold">50+ warehouses</span> already reducing waste with Godam Solutions
             </p>
