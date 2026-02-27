@@ -1,8 +1,10 @@
-// PDF Parsing Routes with Gemini AI
+// PDF/Image/Word Parsing Routes with Gemini AI
 import express from "express";
 import multer from "multer";
+import mammoth from "mammoth";
 import {
   extractTextFromPDF,
+  extractTextFromImage,
   parseRequirementWithGemini,
 } from "../config/gemini.js";
 import { supabase, supabaseAdmin } from "../config/supabase.js";
@@ -17,44 +19,83 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["application/pdf"];
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+    ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF files are allowed"), false);
+      cb(new Error("Only PDF, JPG, PNG, and DOCX files are allowed"), false);
     }
   },
 });
 
 // ── POST /api/pdf-parse/upload ─────────────────────────────────────────────
-// Upload PDF and parse with Gemini AI
+// Upload document (PDF/Image/Word) and parse with Gemini AI
+// ── POST /api/pdf-parse/upload ─────────────────────────────────────────────
+// Upload document (PDF/Image/Word) and parse with Gemini AI
 router.post("/upload", requireAuth, upload.single("pdf"), async (req, res) => {
-  const logPrefix = "[PDF UPLOAD]";
+  const logPrefix = "[DOCUMENT UPLOAD]";
 
   try {
     console.log(`${logPrefix} Received upload request from user:`, req.user.id);
 
     if (!req.file) {
-      return res.status(400).json({ error: "No PDF file uploaded" });
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
     const userId = req.user.id;
-    const pdfBuffer = req.file.buffer;
+    const fileBuffer = req.file.buffer;
     const originalName = req.file.originalname;
+    const mimeType = req.file.mimetype;
 
     console.log(
       `${logPrefix} File received:`,
       originalName,
-      `(${req.file.size} bytes)`,
+      `(${req.file.size} bytes, ${mimeType})`,
     );
 
-    // Step 1: Extract text from PDF using Gemini
-    console.log(`${logPrefix} Extracting text from PDF...`);
-    const extractionResult = await extractTextFromPDF(pdfBuffer);
+    let extractionResult;
+
+    // Step 1: Extract text based on file type
+    if (mimeType === "application/pdf") {
+      console.log(`${logPrefix} Processing PDF...`);
+      extractionResult = await extractTextFromPDF(fileBuffer);
+    } else if (
+      mimeType === "image/jpeg" ||
+      mimeType === "image/jpg" ||
+      mimeType === "image/png"
+    ) {
+      console.log(`${logPrefix} Processing image with OCR...`);
+      extractionResult = await extractTextFromImage(fileBuffer, mimeType);
+    } else if (
+      mimeType ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      console.log(`${logPrefix} Processing Word document...`);
+      try {
+        const result = await mammoth.extractRawText({ buffer: fileBuffer });
+        extractionResult = {
+          success: true,
+          text: result.value,
+        };
+      } catch (error) {
+        extractionResult = {
+          success: false,
+          error: error.message,
+        };
+      }
+    } else {
+      return res.status(400).json({ error: "Unsupported file type" });
+    }
 
     if (!extractionResult.success) {
       return res.status(500).json({
-        error: "Failed to extract text from PDF",
+        error: "Failed to extract text from document",
         details: extractionResult.error,
       });
     }
@@ -83,7 +124,7 @@ router.post("/upload", requireAuth, upload.single("pdf"), async (req, res) => {
 
     res.json({
       success: true,
-      message: "PDF parsed successfully - review items before saving",
+      message: "Document parsed successfully - review items before saving",
       filename: originalName,
       extractedText: extractionResult.text,
       items: parseResult.items,
@@ -93,7 +134,7 @@ router.post("/upload", requireAuth, upload.single("pdf"), async (req, res) => {
   } catch (error) {
     console.error(`${logPrefix} Error:`, error);
     res.status(500).json({
-      error: "Failed to process PDF",
+      error: "Failed to process document",
       message: error.message,
     });
   }

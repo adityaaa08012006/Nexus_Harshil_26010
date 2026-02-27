@@ -15,7 +15,8 @@ export const useAlertCount = () => {
   const [loading, setLoading] = useState(true);
 
   // Determine the warehouse to check alerts for
-  const warehouseId = user?.role === "owner" ? selectedWarehouseId : user?.warehouse_id;
+  const warehouseId =
+    user?.role === "owner" ? selectedWarehouseId : user?.warehouse_id;
 
   useEffect(() => {
     if (!warehouseId) {
@@ -39,7 +40,10 @@ export const useAlertCount = () => {
         }
 
         // Fetch order alerts count for managers and owners
-        if ((user?.role === "manager" || user?.role === "owner") && warehouseId) {
+        if (
+          (user?.role === "manager" || user?.role === "owner") &&
+          warehouseId
+        ) {
           const { count: orderAlertCount, error: orderError } = await supabase
             .from("alerts")
             .select("*", { count: "exact", head: true })
