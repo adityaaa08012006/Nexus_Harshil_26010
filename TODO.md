@@ -8,7 +8,6 @@
 ## Phase 3 — Sensor Monitoring 🌡️
 
 - [ ] **Threshold config modal** — Wire up the "Configure Thresholds" button in `SensorMonitoring.tsx` (currently has no `onClick`). Build a modal with min/max inputs for each sensor type per zone; call `updateThreshold()` from `useEnvironmentalData` on save.
-- [ ] **Alert acknowledge button** — Add an "Acknowledge" button to each alert card in `SensorMonitoring.tsx`; call `acknowledgeAlert(alert.id)` from the hook (function already exists, just not wired up).
 - [ ] **Historical trend charts** — Call `/api/sensors/readings/:warehouseId/history` (backend route already exists) and render a line chart (Recharts) for temperature, humidity, and gas levels with a date range selector.
 - [ ] **Sensor data CSV export** — Add an export button that downloads current zone readings as a CSV file.
 
@@ -37,7 +36,6 @@
 - [ ] **Reorder from history** — Add a "Reorder" button on each completed order row in `QCOrders.tsx` that pre-fills the create-request form with the previous order's crop, quantity, unit, and location.
 - [ ] **`ContactInfo` page for QC Reps** — Create `client/src/pages/ContactInfo.tsx` showing warehouse contact details (manager name, phone, email, operating hours). Add route `/qc/contacts` in `App.tsx`.
 - [ ] **`DispatchHistory` for Manager/Owner** — See Phase 4 above (shared deliverable).
-- [ ] **`OwnerDashboard` analytics section** — Currently shows warehouse list and aggregate batch counts. Add: warehouse performance comparison bar chart, inventory turnover rate, active alert counts per warehouse, and a financial metrics placeholder.
 
 ---
 
@@ -61,7 +59,7 @@
 
 ## Phase 8 — Analytics & Reporting 📊
 
-> Currently 0% implemented.
+> Basic allocation analytics (order counts, fulfillment rate, per-warehouse performance table, order trend chart) are already built inside the **Owner Dashboard → Analytics tab**. What remains is a dedicated backend service, deeper impact metrics, and a standalone `ImpactDashboard` page.
 
 ### Backend
 - [ ] Create `server/services/analyticsService.js` with functions for:
@@ -90,8 +88,8 @@
   - Efficiency gauge charts
 - [ ] Add date range selector with quick-pick buttons (7d / 30d / 90d / YTD / custom)
 - [ ] Add PDF/Excel export of full dashboard report
-- [ ] Add routes `/owner/analytics` and `/manager/analytics` in `App.tsx`
-- [ ] Add sidebar nav links for Analytics in `AppLayout`/`Sidebar` for Owner and Manager roles
+- [ ] Add a dedicated `/owner/analytics` route in `App.tsx` pointing to `ImpactDashboard` (currently Owner analytics lives inside the Owner Dashboard page as a tab, not a standalone page)
+- [ ] Add an **Analytics** nav item to `ownerNav` and `managerNav` in `AppLayout.tsx` (neither currently has one)
 
 ---
 
@@ -100,13 +98,11 @@
 > Currently ~5% implemented.
 
 ### Loading & Error States
-- [ ] Add skeleton loaders to all major tables (inventory, orders, contacts, dispatch)
+- [ ] Add skeleton loaders to all major tables (inventory, orders, contacts, dispatch) — currently only spinners exist
 - [ ] Add React error boundaries around major page sections with styled fallback UI
-- [ ] Standardize empty states across all list pages (icon + message + CTA button)
 
 ### Notifications
-- [ ] Build notification center/dropdown in the Navbar — bell icon with unread count badge
-- [ ] Create `notifications` table in Supabase or derive from alerts/allocation updates
+- [ ] **Notification dropdown** — The bell icon in the top-right navbar header is a placeholder with no `onClick`. Wire it up to show a dropdown of recent unacknowledged alerts (reuse data from `useAlertCount`).
 - [ ] Add browser push notification support (request permission on login, fire on critical alerts)
 
 ### Performance
@@ -116,9 +112,7 @@
 - [ ] Implement `react-window` virtualization for inventory table when batch count is large
 
 ### Mobile Responsiveness
-- [ ] Audit and fix all table layouts for mobile (horizontal scroll or card stacking)
-- [ ] Add hamburger menu / bottom nav for mobile screen sizes
-- [ ] Ensure all buttons meet 44px minimum tap target size
+- [ ] Audit and fix all table layouts for mobile (inventory table, allocation table need horizontal scroll or card stacking on small screens)
 - [ ] Test all breakpoints: 320px, 375px, 768px, 1024px, 1440px
 
 ### UX Polish
@@ -172,9 +166,10 @@
 
 These can be done in under 30 minutes each:
 
-- [ ] Wire up "Configure Thresholds" button → threshold modal (Phase 3)
-- [ ] Add alert acknowledge button to sensor page (Phase 3)
-- [ ] Add "Reorder" button to `QCOrders` (Phase 6)
-- [ ] Add PDF upload history route and basic page (Phase 5)
-- [ ] Add `/manager/dispatch` and `/owner/dispatch` routes pointing to `DispatchHistory` placeholder (Phase 4)
-- [ ] Add Analytics nav links to sidebar for Owner + Manager (Phase 8 prereq)
+- [ ] Wire up "Configure Thresholds" button in `SensorMonitoring.tsx` → threshold config modal (Phase 3)
+- [ ] Wire up bell icon in top navbar → alert dropdown using existing `useAlertCount` data (Phase 9)
+- [ ] Add "Reorder" button to completed order rows in `QCOrders.tsx` (Phase 6)
+- [ ] Add PDF upload history page + route `/qc/pdf-history` (Phase 5)
+- [ ] Add `/manager/dispatch` and `/owner/dispatch` routes + `DispatchHistory` placeholder page (Phase 4)
+- [ ] Add Analytics nav item to `ownerNav` and `managerNav` in `AppLayout.tsx` (Phase 8)
+- [ ] Fix broken `/owner/contacts` sidebar link — it already appears in nav but has no route or page component (Phase 7)
