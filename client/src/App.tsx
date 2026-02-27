@@ -1,90 +1,111 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Navbar } from './components/layout/Navbar';
-import { Sidebar } from './components/layout/Sidebar';
-import { Footer } from './components/layout/Footer';
-import { LandingPage } from './pages/LandingPage';
-import { Dashboard } from './pages/Dashboard';
-import { BatchDetails } from './pages/BatchDetails';
-import HomePage from './pages/HomePage';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuthContext } from "./context/AuthContext";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import { RoleRoute } from "./components/auth/RoleRoute";
+import HomePage from "./pages/HomePage";
+import { AuthPage } from "./pages/AuthPage";
+import { Dashboard } from "./pages/Dashboard";
+import { BatchDetails } from "./pages/BatchDetails";
+
+// ── Placeholder dashboard shells (replace with real pages later) ───────────────
+const DashboardShell: React.FC<{ role: string }> = ({ role }) => {
+  const { user, logout } = useAuthContext();
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center gap-6"
+      style={{ backgroundColor: "#F7F0F0" }}
+    >
+      <span className="text-5xl">🌾</span>
+      <h1 className="text-3xl font-extrabold" style={{ color: "#25671E" }}>
+        {role} Dashboard
+      </h1>
+      <p className="text-sm" style={{ color: "rgba(37,103,30,0.6)" }}>
+        Logged in as <strong>{user?.name}</strong> ({user?.email})
+      </p>
+      <button
+        onClick={logout}
+        className="px-6 py-2 rounded-xl text-sm font-bold"
+        style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
+      >
+        Sign out
+      </button>
+    </div>
+  );
+};
 
 function App() {
-  const [user, setUser] = React.useState({
-    name: 'John Doe',
-    role: 'Warehouse Manager',
-  });
-
-  const sidebarItems = [
-    { id: '1', label: 'Dashboard', icon: '📊', path: '/dashboard' },
-    { id: '2', label: 'Inventory', icon: '📦', path: '/inventory' },
-    { id: '3', label: 'Monitoring', icon: '🌡️', path: '/monitoring' },
-    { id: '4', label: 'Reports', icon: '📈', path: '/reports' },
-  ];
-
-  const handleLogout = () => {
-    setUser(null);
-  };
-
   return (
     <Router>
-      <Routes>
-        {/* New Modern Home Page */}
-        <Route path="/" element={<HomePage />} />
-        
-        {/* Old Landing Page (can be removed later) */}
-        <Route path="/old-landing" element={<LandingPage />} />
-        
-        {/* Dashboard Routes with Layout */}
-        <Route
-          path="/dashboard/*"
-          element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar userName={user?.name} userRole={user?.role} onLogout={handleLogout} />
-              <div className="flex flex-1">
-                <Sidebar
-                  items={sidebarItems}
-                  activePath="/dashboard"
-                  onNavigate={() => {}}
-                />
-                <main className="flex-1">
-                  <Dashboard />
-                </main>
-              </div>
-              <Footer />
-            </div>
-          }
-        />
-        
-        {/* Batch Details Route */}
-        <Route
-          path="/batch-details"
-          element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar userName={user?.name} userRole={user?.role} onLogout={handleLogout} />
-              <div className="flex flex-1">
-                <Sidebar
-                  items={sidebarItems}
-                  activePath="/batch-details"
-                  onNavigate={() => {}}
-                />
-                <main className="flex-1">
-                  <BatchDetails />
-                </main>
-              </div>
-              <Footer />
-            </div>
-          }
-        />
-        
-        {/* Login page placeholder */}
-        <Route path="/login" element={<div className="min-h-screen flex items-center justify-center bg-godam-cream"><div className="text-center"><h1 className="text-4xl font-heading font-bold text-gray-900 mb-4">Login Page</h1><p className="text-gray-600 font-body">Coming Soon...</p></div></div>} />
-        
-        {/* About page placeholder */}
-        <Route path="/about" element={<div className="min-h-screen flex items-center justify-center bg-godam-cream"><div className="text-center"><h1 className="text-4xl font-heading font-bold text-gray-900 mb-4">About Us</h1><p className="text-gray-600 font-body">Coming Soon...</p></div></div>} />
-        
-        {/* Features page placeholder */}
-        <Route path="/features" element={<div className="min-h-screen flex items-center justify-center bg-godam-cream"><div className="text-center"><h1 className="text-4xl font-heading font-bold text-gray-900 mb-4">Features</h1><p className="text-gray-600 font-body">Coming Soon...</p></div></div>} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          {/* ── Public ── */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/auth" element={<AuthPage />} />
+
+          {/* ── Owner routes ── */}
+          <Route
+            path="/owner/*"
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={["owner"]}>
+                  <DashboardShell role="Owner" />
+                </RoleRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ── Manager routes ── */}
+          <Route
+            path="/manager/*"
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={["manager"]}>
+                  <DashboardShell role="Manager" />
+                </RoleRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ── QC routes ── */}
+          <Route
+            path="/qc/*"
+            element={
+              <ProtectedRoute>
+                <RoleRoute allowedRoles={["qc_rep"]}>
+                  <DashboardShell role="QC Representative" />
+                </RoleRoute>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ── Legacy dashboard (protected, any role) ── */}
+          <Route
+            path="/dashboard/*"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/batch-details"
+            element={
+              <ProtectedRoute>
+                <BatchDetails />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ── Fallback ── */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
