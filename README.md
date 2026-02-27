@@ -448,175 +448,596 @@ Godam Solutions transforms passive agricultural storage into an intelligent, dat
 
 ---
 
-# 🖥 Web App Structure (Mobile Responsive)
+# 🖥 Web Application Pages
+
+The Godam Solutions platform is designed as a responsive web application that works seamlessly on both desktop and mobile devices. The system is divided based on user roles to ensure efficient warehouse management, inventory monitoring, and demand coordination.
 
 ## 🏗 Application Architecture
 
 ```
 /godam-solutions
-  /client (React + TS + Tailwind)
-  /server (Node + Express)
+  /client (React + TypeScript + Tailwind CSS)
+  /server (Node.js + Express)
 ```
 
 ---
 
-## 📱 Mobile-Responsive Layout Strategy
+## 📱 Public Pages
 
-**Use:**
+### 1️⃣ Landing Page
 
-- Tailwind Grid
-- Flex layouts
-- Responsive breakpoints: `sm`, `md`, `lg`, `xl`
+**User Base:** Public / Judges / Visitors
 
-**Design Principle:**
+**Purpose:**  
+Introduces the platform and explains the problem it solves — post-harvest losses in agricultural supply chains.
 
-- **Desktop** = Control Dashboard
-- **Mobile** = Card-Based Simplified View
+**Key Features:**
 
----
+- Overview of the problem and solution
+- Platform introduction and value proposition
+- Key benefits of Godam Solutions
+- Architecture overview
+- Link to login/demo
+- Visual explanation of the smart warehouse concept
+- Responsive hero section with agricultural imagery
+- Feature grid showcasing core innovations
 
-## 🔐 Authentication
-
-- Role-based login
-- JWT-based auth
-- Redirect to role dashboard
-
----
-
-## 🧭 Navigation Structure
-
-### Shared Layout
-
-**Top Navbar:**
-
-- Logo
-- Role name
-- Profile dropdown
-- Logout
-
-**Sidebar (Desktop)**  
-**Hamburger Drawer (Mobile)**
+> This page is critical for first impressions during judging.
 
 ---
 
-## 🏢 Warehouse Owner Dashboard
+### 2️⃣ Authentication & Role Selection Page
 
-### Desktop View
+**User Base:** All Users
 
-- Total Warehouses
-- Utilization %
-- Risk exposure graph
-- Dispatch activity
-- Heatmap
+**Purpose:**  
+Allows users to securely log in and access dashboards based on their role in the system.
 
-### Mobile View
+**Key Features:**
 
-Card layout:
+- Secure login system
+- Role-based access control
+- User session management (JWT)
+- Redirect to appropriate dashboard
+- Mobile-friendly login interface
+- Password recovery option
 
-- Warehouse 1
-- Warehouse 2
-- Risk indicator badge
+**Roles Supported:**
 
----
-
-## 🧑‍💼 Warehouse Manager Dashboard
-
-### Sections
-
-#### 1️⃣ Inventory
-
-- Batch list
-- Freshness color badge
-- Quantity
-- Shelf life
-- Risk score
-
-#### 2️⃣ Sensor Monitoring
-
-- Live simulated readings
-- Temp / Humidity / Gas
-- Alert banner if threshold exceeded
-
-#### 3️⃣ Allocation Engine
-
-- Suggested dispatch list
-- Destination classification
-- Confirm dispatch button
-
-#### 4️⃣ Contacts
-
-- Farmer database
-- Market price table
-- Quick contact button
+- Warehouse Owner
+- Warehouse Manager
+- Quick Commerce Representative
 
 ---
 
-## 🛒 Quick Commerce Rep Dashboard
+## 🏢 Warehouse Owner Pages
 
-### Upload Requirement
+These pages are designed for high-level monitoring and operational oversight.
 
-- Upload PDF
-- Gemini parsing
-- Structured editable form
+### 3️⃣ Warehouse Owner Dashboard
 
-**Fields:**
+**User Base:** Warehouse Owner
 
-- Crop
-- Quantity
-- Delivery location
-- Deadline
-- Offered price
+**Purpose:**  
+Provides a consolidated overview of all warehouses managed by the owner.
 
-**Submit request → triggers allocation engine.**
+**Key Features:**
+
+- Overview of total warehouses
+- Warehouse utilization statistics
+- Risk exposure indicators across facilities
+- Inventory distribution insights
+- Dispatch activity overview
+- Warehouse performance metrics
+- Comparative analytics between warehouses
+- Financial performance indicators
+
+> This page focuses on analytics and decision-level insights.
+
+**Mobile Adaptation:**
+
+- Card-based layout for each warehouse
+- Swipeable warehouse cards
+- Expandable sections for detailed metrics
 
 ---
 
-## 📊 Core Components
+### 4️⃣ Warehouse Detail Page
 
-- `RiskScoreBadge.tsx`
-- `SensorCard.tsx`
-- `AllocationTable.tsx`
-- `InventoryList.tsx`
-- `PdfParserModal.tsx`
-- `WarehouseAnalytics.tsx`
+**User Base:** Warehouse Owner
+
+**Purpose:**  
+Displays detailed operational data for a specific warehouse.
+
+**Key Features:**
+
+- Real-time inventory levels
+- Spoilage risk distribution
+- Storage conditions overview
+- Manager activity logs
+- Current supply vs demand analysis
+- Performance trends and historical data
+- Zone-wise utilization heatmap
+- Alert history and resolution tracking
+
+> Allows owners to monitor operational efficiency at the facility level.
+
+**Mobile Adaptation:**
+
+- Tabbed interface for different data views
+- Scrollable metrics cards
+- Collapsible sections for detailed analytics
+
+---
+
+## 🧑‍💼 Warehouse Manager Pages
+
+These pages represent the core operational layer of the system.
+
+### 5️⃣ Warehouse Manager Dashboard
+
+**User Base:** Warehouse Manager
+
+**Purpose:**  
+Acts as the main control center for warehouse operations.
+
+**Key Features:**
+
+- Inventory summary with risk indicators
+- Real-time sensor data overview
+- Active risk alerts and notifications
+- Incoming demand requests
+- System-generated allocation suggestions
+- Recent dispatch updates
+- Quick action tools and shortcuts
+- Performance metrics for the current shift
+
+> This will be the primary demo page during the hackathon.
+
+**Mobile Adaptation:**
+
+- Priority alerts at the top
+- Collapsible metric cards
+- Quick action buttons with large touch targets
+- Bottom navigation for key functions
+
+---
+
+### 6️⃣ Inventory Management Page
+
+**User Base:** Warehouse Manager
+
+**Purpose:**  
+Allows managers to monitor and manage warehouse stock efficiently.
+
+**Key Features:**
+
+- Batch-level inventory tracking
+- Crop classification and categorization
+- Quantity tracking with unit conversion
+- Shelf-life monitoring with countdown timers
+- Freshness scoring with visual indicators
+- Risk indicators for each batch
+- Stock updates and adjustments
+- Batch search and filtering
+- Farmer traceability information
+- Zone-wise inventory distribution
+
+> This solves the problem of limited traceability in warehouses.
+
+**Mobile Adaptation:**
+
+- Card-based batch display
+- Swipe actions for quick updates
+- Horizontal scrolling for tables
+- Filter drawer for advanced search
+
+---
+
+### 7️⃣ Sensor Monitoring Page
+
+**User Base:** Warehouse Manager
+
+**Purpose:**  
+Displays environmental conditions inside the warehouse using simulated sensor data.
+
+**Key Features:**
+
+- Real-time temperature monitoring
+- Humidity monitoring with threshold indicators
+- Gas level detection (Ethylene, CO₂, Ammonia)
+- Spoilage risk alerts
+- Real-time simulated sensor feed
+- Environmental trend visualization
+- Zone-wise environmental status
+- Historical data and trend analysis
+- Threshold breach notifications
+- Sensor health status
+
+> This demonstrates the smart storage capability of the system.
+
+**Mobile Adaptation:**
+
+- Large sensor reading cards
+- Swipeable zone views
+- Simplified charts optimized for mobile
+- Alert banner at the top
+
+---
+
+### 8️⃣ Allocation & Dispatch Page
+
+**User Base:** Warehouse Manager
+
+**Purpose:**  
+Helps managers allocate inventory based on demand and freshness levels.
+
+**Key Features:**
+
+- Incoming demand requests queue
+- System-generated allocation suggestions
+- Freshness-based routing recommendations
+- Dispatch approval system
+- Supply-demand matching engine
+- Optimization insights and reasoning
+- Batch priority ranking
+- Automatic risk-based prioritization
+- Destination classification (Retail/Processing/Hotels)
+- Dispatch history and tracking
+
+> This page highlights the intelligent allocation engine.
+
+**Mobile Adaptation:**
+
+- Request cards with swipe-to-approve
+- Priority badges for urgent allocations
+- Simplified allocation view
+- One-tap dispatch confirmation
+
+---
+
+### 9️⃣ Supply Network & Contacts Page
+
+**User Base:** Warehouse Manager
+
+**Purpose:**  
+Provides quick access to supply chain contacts and market references.
+
+**Key Features:**
+
+- Farmer contact database with history
+- Market buyers list and preferences
+- Crop availability records
+- Price reference information by market
+- Quick sourcing tools during shortages
+- Communication logs
+- Seasonal trend data
+- Preferred supplier lists
+- Contact search and filtering
+
+> This improves supply chain coordination and responsiveness.
+
+**Mobile Adaptation:**
+
+- Contact cards with quick call/message
+- Search bar at the top
+- Alphabetical scrolling
+- Swipe actions for quick contact
+
+---
+
+## 🛒 Quick Commerce Representative Pages
+
+These pages allow demand-side stakeholders to interact with the warehouse network.
+
+### 🔟 Requirement Upload Page
+
+**User Base:** Quick Commerce Representative
+
+**Purpose:**  
+Allows buyers to submit product requirements directly to warehouses.
+
+**Key Features:**
+
+- PDF upload for requirements
+- AI-powered PDF parsing using Gemini API
+- Automatic structured form generation
+- Editable requirement fields
+- Crop type and quantity specification
+- Delivery location input with map
+- Deadline specification
+- Price offer submission
+- Multiple item request support
+- Attachment support for additional documentation
+
+> This demonstrates the AI integration component of the project.
+
+**Mobile Adaptation:**
+
+- Camera integration for document capture
+- Optimized file upload interface
+- Large input fields for easy editing
+- Step-by-step form wizard
+
+---
+
+### 1️⃣1️⃣ Order Tracking Page
+
+**User Base:** Quick Commerce Representative
+
+**Purpose:**  
+Allows buyers to track the status of their requests and orders.
+
+**Key Features:**
+
+- Request status monitoring
+- Real-time allocation updates
+- Dispatch tracking with timeline
+- Delivery timeline and ETA
+- Order history and previous requests
+- Status notifications
+- Communication with warehouse
+- Invoice and documentation access
+- Reorder functionality
+
+> This improves transparency in the supply chain.
+
+**Mobile Adaptation:**
+
+- Timeline view for order progress
+- Push notification support
+- Swipe to view order details
+- Quick reorder buttons
+
+---
+
+## 📊 System Insights Page
+
+### 1️⃣2️⃣ Allocation Insights & Impact Dashboard
+
+**User Base:** Warehouse Owner, Warehouse Manager, Judges (Demo)
+
+**Purpose:**  
+Shows how the platform improves warehouse efficiency and reduces losses.
+
+**Key Features:**
+
+- Risk reduction analytics and trends
+- Spoilage prevention insights
+- Inventory optimization metrics
+- Demand fulfillment rate tracking
+- System performance analysis
+- Cost savings calculations
+- Before/after comparison metrics
+- Waste reduction statistics
+- Efficiency improvement graphs
+- ROI calculations
+
+> This page demonstrates the impact and effectiveness of Godam Solutions.
+
+**Mobile Adaptation:**
+
+- Scrollable metric cards
+- Simplified charts for mobile viewing
+- Key metrics highlighted at top
+- Expandable sections for detailed data
+
+---
+
+## 📱 Mobile Responsiveness Strategy
+
+The application is designed to be fully mobile responsive, ensuring usability across devices.
+
+### Design Approach
+
+**Responsive Framework:**
+
+- Tailwind CSS responsive utilities
+- Adaptive dashboards with breakpoint-specific layouts
+- Card-based UI for mobile devices
+- Collapsible navigation menus
+- Optimized tables for smaller screens
+- Touch-friendly interactions
+
+**Breakpoints:**
+
+- **Mobile:** `< 640px` - Single column, stacked cards
+- **Tablet:** `640px - 1024px` - Two-column layouts
+- **Desktop:** `1024px - 1280px` - Multi-column grids
+- **Large screens:** `> 1280px` - Full dashboard layouts
+
+### Mobile-Specific Optimizations
+
+**Navigation:**
+
+- Desktop: Persistent vertical sidebar
+- Mobile: Hamburger menu with slide-out drawer
+- Bottom navigation bar for key actions
+
+**Data Display:**
+
+- Dashboards convert to stacked cards
+- Data tables become scrollable lists with horizontal scroll
+- Charts optimize for portrait orientation
+- Priority information shown first
+
+**Interactions:**
+
+- All buttons minimum 44px height for easy tapping
+- Swipe gestures for common actions
+- Pull-to-refresh functionality
+- Haptic feedback on actions
+
+**Performance:**
+
+- Lazy loading for images and components
+- Progressive image loading
+- Optimized bundle size for mobile networks
+- Offline capability for critical features
 
 ---
 
 ## 📦 Backend API Structure
 
-- `/api/auth`
-- `/api/inventory`
-- `/api/sensors`
-- `/api/allocation`
-- `/api/contacts`
-- `/api/pdf-parse`
+**Core Endpoints:**
+
+- `/api/auth` - Authentication and authorization
+- `/api/inventory` - Batch and inventory management
+- `/api/sensors` - Environmental monitoring data
+- `/api/allocation` - Demand allocation engine
+- `/api/contacts` - Farmer and buyer contacts
+- `/api/pdf-parse` - AI-powered PDF parsing
+- `/api/warehouses` - Warehouse management
+- `/api/reports` - Analytics and insights
+- `/api/users` - User management
 
 ---
 
-## 🎨 UI Guidelines
+## 🧩 Frontend Components & Page Mapping
 
-- Clean enterprise theme
-- Earth tones (green, beige, dark slate)
-- Color-coded risk:
-  - 🟢 Green
-  - 🟡 Yellow
-  - 🔴 Red
-- Avoid clutter
-- White space heavy
+This section maps the web pages to their corresponding React components in the `/client/src` directory.
+
+### Page Components (`/client/src/pages`)
+
+| Page               | Component File          | Key Features                             |
+| ------------------ | ----------------------- | ---------------------------------------- |
+| Landing Page       | `LandingPage.tsx`       | Hero section, feature grid, CTA buttons  |
+| Auth Page          | `AuthPage.tsx`          | Login form, role selection, JWT handling |
+| Owner Dashboard    | `OwnerDashboard.tsx`    | Multi-warehouse overview, analytics      |
+| Warehouse Detail   | `WarehouseDetail.tsx`   | Single warehouse deep-dive               |
+| Manager Dashboard  | `Dashboard.tsx`         | ✅ Created - Main control center         |
+| Inventory Page     | `InventoryPage.tsx`     | Batch management, risk tracking          |
+| Sensor Monitoring  | `SensorMonitoring.tsx`  | Real-time environmental data             |
+| Allocation Page    | `AllocationPage.tsx`    | Demand-supply matching                   |
+| Contacts Page      | `ContactsPage.tsx`      | Farmer/buyer database                    |
+| Requirement Upload | `RequirementUpload.tsx` | PDF upload, AI parsing                   |
+| Order Tracking     | `OrderTracking.tsx`     | Request status monitoring                |
+| Batch Details      | `BatchDetails.tsx`      | ✅ Created - Traceability view           |
+| Impact Dashboard   | `ImpactDashboard.tsx`   | Analytics and insights                   |
+
+### Common Components (`/client/src/components/common`)
+
+| Component       | File            | Purpose                                    |
+| --------------- | --------------- | ------------------------------------------ |
+| Button          | `Button.tsx`    | ✅ Created - Reusable button with variants |
+| Input           | `Input.tsx`     | ✅ Created - Form input fields             |
+| Risk Badge      | `RiskBadge.tsx` | ✅ Created - Color-coded risk indicators   |
+| Card            | `Card.tsx`      | Container component for content            |
+| Modal           | `Modal.tsx`     | Overlay dialogs                            |
+| Loading Spinner | `Spinner.tsx`   | Loading states                             |
+| Alert           | `Alert.tsx`     | Notification banners                       |
+| Badge           | `Badge.tsx`     | Status indicators                          |
+| Dropdown        | `Dropdown.tsx`  | Select menus                               |
+| Tooltip         | `Tooltip.tsx`   | Contextual help                            |
+
+### Dashboard Components (`/client/src/components/dashboard`)
+
+| Component           | File                     | Purpose                            |
+| ------------------- | ------------------------ | ---------------------------------- |
+| Metric Cards        | `MetricCards.tsx`        | ✅ Created - Top KPI displays      |
+| Risk Chart          | `RiskChart.tsx`          | ✅ Created - Risk visualization    |
+| Inventory Table     | `InventoryTable.tsx`     | ✅ Created - Batch listing         |
+| Alert Panel         | `AlertPanel.tsx`         | ✅ Created - Active alerts display |
+| Sensor Card         | `SensorCard.tsx`         | Environmental readings display     |
+| Allocation Table    | `AllocationTable.tsx`    | Demand-supply matching view        |
+| Warehouse Analytics | `WarehouseAnalytics.tsx` | Performance metrics                |
+| Heatmap             | `UtilizationHeatmap.tsx` | Zone capacity visualization        |
+| Timeline            | `DispatchTimeline.tsx`   | Order progress tracking            |
+| PDF Parser          | `PdfParserModal.tsx`     | AI-powered PDF upload              |
+
+### Layout Components (`/client/src/components/layout`)
+
+| Component      | File                | Purpose                             |
+| -------------- | ------------------- | ----------------------------------- |
+| Navbar         | `Navbar.tsx`        | ✅ Created - Top navigation bar     |
+| Sidebar        | `Sidebar.tsx`       | ✅ Created - Collapsible navigation |
+| Footer         | `Footer.tsx`        | ✅ Created - Footer content         |
+| Page Container | `PageContainer.tsx` | Consistent page wrapper             |
+| Breadcrumbs    | `Breadcrumbs.tsx`   | Navigation trail                    |
+
+### Custom Hooks (`/client/src/hooks`)
+
+| Hook                 | File                      | Purpose                              |
+| -------------------- | ------------------------- | ------------------------------------ |
+| useAuth              | `useAuth.ts`              | ✅ Created - Authentication logic    |
+| useInventory         | `useInventory.ts`         | ✅ Created - Inventory data fetching |
+| useEnvironmentalData | `useEnvironmentalData.ts` | ✅ Created - Sensor data polling     |
+| useAllocation        | `useAllocation.ts`        | Allocation engine integration        |
+| usePdfParser         | `usePdfParser.ts`         | Gemini API integration               |
+| useWebSocket         | `useWebSocket.ts`         | Real-time updates                    |
+
+### Utility Functions (`/client/src/utils`)
+
+| Module           | File                 | Purpose                                  |
+| ---------------- | -------------------- | ---------------------------------------- |
+| Risk Calculation | `riskCalculation.ts` | ✅ Created - Spoilage scoring algorithms |
+| Formatters       | `formatters.ts`      | ✅ Created - Data formatting utilities   |
+| API Client       | `apiClient.ts`       | Axios wrapper with interceptors          |
+| Validators       | `validators.ts`      | Form validation logic                    |
+| Constants        | `constants.ts`       | App-wide constants                       |
+| Date Utils       | `dateUtils.ts`       | Date manipulation helpers                |
+
+### TypeScript Types (`/client/src/types`)
+
+| Type       | File            | Purpose                                 |
+| ---------- | --------------- | --------------------------------------- |
+| Batch      | `Batch.ts`      | ✅ Created - Inventory batch interfaces |
+| Risk       | `Risk.ts`       | ✅ Created - Risk scoring types         |
+| User       | `User.ts`       | ✅ Created - User and auth types        |
+| Sensor     | `Sensor.ts`     | Environmental data types                |
+| Allocation | `Allocation.ts` | Demand-supply types                     |
+| Warehouse  | `Warehouse.ts`  | Warehouse data types                    |
+| Contact    | `Contact.ts`    | Farmer/buyer types                      |
+
+### Implementation Status
+
+✅ **Created** - Component exists in the codebase  
+🔲 **Pending** - To be implemented based on requirements
+
+---
+
+## 🎨 UI Design Guidelines
+
+**Visual Theme:**
+
+- Clean enterprise-grade interface
+- Agricultural/eco aesthetic with modern intelligence feel
+- Earth tones with vibrant accent colors
+
+**Color System:**
+
+- Risk indicators:
+  - 🟢 **Green** - Safe/Fresh (< 30% risk)
+  - 🟡 **Yellow** - Moderate (30-70% risk)
+  - 🔴 **Red** - High Risk (> 70% risk)
+
+**Design Principles:**
+
+- Avoid clutter - white space heavy
 - Large readable typography
+- Consistent component library
+- Accessible color contrasts (WCAG AA)
+- Icon-first navigation
+- Progressive disclosure of information
 
 ---
 
 ## 🎯 Demo Flow
 
-1. Login as Manager
-2. Show inventory
-3. Simulate sensor spike
-4. Risk score increases
-5. Allocation engine updates
-6. Quick commerce uploads PDF
-7. Gemini structures requirement
-8. Dispatch suggested
+**Demonstration Sequence:**
+
+1. **Landing Page** - Show problem statement and solution
+2. **Login as Warehouse Manager** - Role-based authentication
+3. **Manager Dashboard** - Overview of warehouse status
+4. **View Inventory** - Batch-level tracking with risk scores
+5. **Simulate Sensor Spike** - Temperature threshold breach
+6. **Risk Score Updates** - Automatic recalculation
+7. **Allocation Engine Response** - Priority suggestions update
+8. **Quick Commerce Uploads PDF** - AI-powered requirement extraction
+9. **Gemini Structures Requirement** - Show parsed and editable form
+10. **Allocation Suggested** - Freshness-based routing
+11. **Dispatch Confirmed** - Complete the cycle
+12. **Impact Dashboard** - Show efficiency gains
 
 **Clean. Controlled. Powerful.**
 
