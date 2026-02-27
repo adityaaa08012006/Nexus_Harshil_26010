@@ -110,6 +110,32 @@ export const RequirementUpload: React.FC = () => {
     }
   }, [location]);
 
+  // Handle reorder data from navigation (for reorder from history)
+  React.useEffect(() => {
+    const state = location.state as any;
+    if (state?.reorderData && state?.mode === "manual") {
+      console.log("[REORDER] Loading reorder data:", state.reorderData);
+      const reorder = state.reorderData;
+      // Pre-fill the first manual item with reorder data
+      setItems([
+        {
+          crop: reorder.crop || "",
+          variety: reorder.variety || "",
+          quantity: reorder.quantity || 0,
+          unit: reorder.unit || "kg",
+          location: reorder.location || "",
+          grade: "",
+          deadline: "",
+          notes: reorder.notes || "",
+          confidence: 1.0, // Manual entry, always high confidence
+        },
+      ]);
+      setMode("manual");
+      // Clear the state to prevent re-loading on subsequent visits
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];

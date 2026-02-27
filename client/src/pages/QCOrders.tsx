@@ -4,6 +4,7 @@ import { useAuthContext } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
 import { useAllocations } from "../hooks/useAllocations";
 import { MessageButton } from "../components/common/MessageThread";
+import { OrderStatusTimeline } from "../components/common/OrderStatusTimeline";
 import type { AllocationInsert } from "../lib/supabase";
 import {
   FileText,
@@ -69,7 +70,10 @@ export const QCOrders: React.FC = () => {
 
       // Fetch dispatch info for these orders to get delivery status
       const orderIds = (data || []).map((o: any) => o.id);
-      let dispatchMap: Record<string, { status: string; estimated_delivery: string | null }> = {};
+      let dispatchMap: Record<
+        string,
+        { status: string; estimated_delivery: string | null }
+      > = {};
       if (orderIds.length > 0) {
         const { data: dispatches } = await supabase
           .from("dispatches")
@@ -78,7 +82,10 @@ export const QCOrders: React.FC = () => {
         if (dispatches) {
           for (const d of dispatches) {
             if (d.allocation_id) {
-              dispatchMap[d.allocation_id] = { status: d.status, estimated_delivery: d.estimated_delivery };
+              dispatchMap[d.allocation_id] = {
+                status: d.status,
+                estimated_delivery: d.estimated_delivery,
+              };
             }
           }
         }
@@ -103,7 +110,9 @@ export const QCOrders: React.FC = () => {
 
     // Status filter (uses effective status)
     if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => getEffectiveStatus(order) === statusFilter);
+      filtered = filtered.filter(
+        (order) => getEffectiveStatus(order) === statusFilter,
+      );
     }
 
     // Search filter
@@ -307,16 +316,16 @@ export const QCOrders: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filteredOrders.map((order) => {
             const effectiveStatus = getEffectiveStatus(order);
-            const colors = getStatusColor(effectiveStatus);
-            const statusLabel = effectiveStatus === "in-transit" ? "In Transit" : effectiveStatus.charAt(0).toUpperCase() + effectiveStatus.slice(1);
             return (
               <div
                 key={order.id}
-                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden"
-                onClick={() => navigate(`/qc/orders/${order.id}`)}
+                className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden"
               >
                 {/* Header */}
-                <div className="p-5 border-b border-gray-100">
+                <div
+                  className="p-5 border-b border-gray-100 cursor-pointer"
+                  onClick={() => navigate(`/qc/orders/${order.id}`)}
+                >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
                       <span className="text-xs font-mono text-gray-500">
@@ -331,22 +340,24 @@ export const QCOrders: React.FC = () => {
                         </p>
                       )}
                     </div>
-                    <span
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border"
-                      style={{
-                        backgroundColor: colors.bg,
-                        color: colors.text,
-                        borderColor: colors.border,
-                      }}
-                    >
-                      {getStatusIcon(effectiveStatus)}
-                      {statusLabel}
-                    </span>
                   </div>
                 </div>
 
+                {/* Timeline */}
+                <div className="px-5 py-4 bg-gray-50 border-b border-gray-100">
+                  <OrderStatusTimeline
+                    currentStatus={effectiveStatus}
+                    orderId={order.request_id}
+                    createdAt={order.created_at}
+                    updatedAt={order.updated_at}
+                  />
+                </div>
+
                 {/* Details */}
-                <div className="p-5 space-y-3">
+                <div
+                  className="p-5 space-y-3 cursor-pointer"
+                  onClick={() => navigate(`/qc/orders/${order.id}`)}
+                >
                   <div className="flex items-start gap-3">
                     <Package className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
@@ -400,14 +411,21 @@ export const QCOrders: React.FC = () => {
                     <div className="pt-3 border-t border-gray-100 flex items-center gap-2">
                       <Truck className="w-4 h-4 text-green-600 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500">Estimated Delivery</p>
+                        <p className="text-xs text-gray-500">
+                          Estimated Delivery
+                        </p>
                         <p className="text-sm font-medium text-gray-900">
-                          {new Date(order.estimated_delivery).toLocaleDateString(
-                            "en-IN",
-                            { day: "numeric", month: "long", year: "numeric" },
-                          )}
+                          {new Date(
+                            order.estimated_delivery,
+                          ).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
                           {effectiveStatus === "delivered" && (
-                            <span className="ml-2 text-green-600 text-xs font-semibold">✓ Delivered</span>
+                            <span className="ml-2 text-green-600 text-xs font-semibold">
+                              ✓ Delivered
+                            </span>
                           )}
                         </p>
                       </div>
@@ -425,6 +443,34 @@ export const QCOrders: React.FC = () => {
                         allocationRequestId={order.request_id}
                         variant="button"
                       />
+                      {/* Reorder button for completed orders */}
+                      {(effectiveStatus === "delivered" ||
+                        effectiveStatus === "completed") && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate("/qc/requirements", {
+                              state: {
+                                reorderData: {
+                                  crop: order.crop,
+                                  variety: order.variety,
+                                  quantity: order.quantity,
+                                  unit: order.unit,
+                                  location: order.location,
+                                  notes: order.notes,
+                                },
+                                mode: "manual",
+                              },
+                            });
+                          }}
+                          className="px-3 py-1.5 text-xs font-medium rounded-lg border-2 transition-all hover:bg-green-50 flex items-center gap-1"
+                          style={{ borderColor: "#48A111", color: "#48A111" }}
+                          title="Reorder this item"
+                        >
+                          <PenLine className="w-3 h-3" />
+                          Reorder
+                        </button>
+                      )}
                       <span className="text-green-600 font-medium hover:underline">
                         View Details →
                       </span>
@@ -454,13 +500,26 @@ export const QCOrders: React.FC = () => {
 interface QCManualOrderModalProps {
   onClose: () => void;
   onSuccess: () => void;
-  createRequest: (data: AllocationInsert) => Promise<void>;
+  createRequest: (data: AllocationInsert) => Promise<{ error: string | null }>;
 }
 
 const CROP_LIST = [
-  "Tomatoes", "Potatoes", "Onions", "Apples", "Bananas",
-  "Cabbage", "Wheat", "Grapes", "Cauliflower", "Rice",
-  "Maize", "Soybean", "Sugarcane", "Carrots", "Peas", "Other",
+  "Tomatoes",
+  "Potatoes",
+  "Onions",
+  "Apples",
+  "Bananas",
+  "Cabbage",
+  "Wheat",
+  "Grapes",
+  "Cauliflower",
+  "Rice",
+  "Maize",
+  "Soybean",
+  "Sugarcane",
+  "Carrots",
+  "Peas",
+  "Other",
 ];
 const UNIT_LIST = ["kg", "tonnes", "quintal", "boxes", "crates"];
 
@@ -547,7 +606,9 @@ const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
                 >
                   <option value="">Select a crop…</option>
                   {CROP_LIST.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -562,7 +623,11 @@ const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
                   />
                   <button
                     type="button"
-                    onClick={() => { setUseCustomCrop(false); setCustomCrop(""); setFormData((p) => ({ ...p, crop: "" })); }}
+                    onClick={() => {
+                      setUseCustomCrop(false);
+                      setCustomCrop("");
+                      setFormData((p) => ({ ...p, crop: "" }));
+                    }}
                     className="px-3 py-2 text-xs text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50"
                   >
                     List
@@ -573,12 +638,18 @@ const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Variety <span className="text-gray-400 font-normal">(optional)</span>
+                Variety{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <input
                 type="text"
                 value={formData.variety ?? ""}
-                onChange={(e) => setFormData((p) => ({ ...p, variety: e.target.value || undefined }))}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    variety: e.target.value || undefined,
+                  }))
+                }
                 placeholder="e.g. Roma, Kufri Jyoti…"
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
@@ -593,7 +664,12 @@ const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
                   type="number"
                   min={1}
                   value={formData.quantity || ""}
-                  onChange={(e) => setFormData((p) => ({ ...p, quantity: parseFloat(e.target.value) || 0 }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({
+                      ...p,
+                      quantity: parseFloat(e.target.value) || 0,
+                    }))
+                  }
                   required
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
@@ -604,11 +680,15 @@ const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
                 </label>
                 <select
                   value={formData.unit}
-                  onChange={(e) => setFormData((p) => ({ ...p, unit: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((p) => ({ ...p, unit: e.target.value }))
+                  }
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
                   {UNIT_LIST.map((u) => (
-                    <option key={u} value={u}>{u}</option>
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -621,7 +701,9 @@ const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
               <input
                 type="text"
                 value={formData.location}
-                onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, location: e.target.value }))
+                }
                 placeholder="City or address"
                 required
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -630,23 +712,35 @@ const QCManualOrderModal: React.FC<QCManualOrderModalProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Deadline <span className="text-gray-400 font-normal">(optional)</span>
+                Deadline{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <input
                 type="date"
                 value={formData.deadline ?? ""}
-                onChange={(e) => setFormData((p) => ({ ...p, deadline: e.target.value || undefined }))}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    deadline: e.target.value || undefined,
+                  }))
+                }
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Notes <span className="text-gray-400 font-normal">(optional)</span>
+                Notes{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <textarea
                 value={formData.notes ?? ""}
-                onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value || undefined }))}
+                onChange={(e) =>
+                  setFormData((p) => ({
+                    ...p,
+                    notes: e.target.value || undefined,
+                  }))
+                }
                 rows={2}
                 placeholder="Any special requirements…"
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"

@@ -29,6 +29,7 @@ import { AllocationManagePage } from "./pages/AllocationManagePage";
 import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 import { FarmerManagement } from "./pages/FarmerManagement";
 import { DispatchHistory } from "./pages/DispatchHistory";
+import { ContactInfo } from "./pages/ContactInfo";
 import ClickSpark from "./components/home/ClickSpark";
 
 function App() {
@@ -76,8 +77,11 @@ function App() {
                             path="allocations"
                             element={<AllocationManagePage />}
                           />
-                          <Route path="dispatch" element={<DispatchHistory />} />
-                        <Route
+                          <Route
+                            path="dispatch"
+                            element={<DispatchHistory />}
+                          />
+                          <Route
                             path="farmers"
                             element={<FarmerManagement />}
                           />
@@ -115,7 +119,10 @@ function App() {
                             path="allocations"
                             element={<AllocationManagePage />}
                           />
-                        <Route path="dispatch" element={<DispatchHistory />} />
+                          <Route
+                            path="dispatch"
+                            element={<DispatchHistory />}
+                          />
                           <Route
                             path="farmers"
                             element={<FarmerManagement />}
@@ -146,7 +153,11 @@ function App() {
                           />
                           <Route path="pdf-history" element={<PdfHistory />} />
                           <Route path="orders" element={<QCOrders />} />
-                        <Route path="tracking" element={<QCOrderTracking />} />
+                          <Route
+                            path="tracking"
+                            element={<QCOrderTracking />}
+                          />
+                          <Route path="contacts" element={<ContactInfo />} />
                           <Route path="inventory" element={<InventoryPage />} />
                           <Route path="alerts" element={<AlertsPage />} />
                           <Route path="batch/:id" element={<BatchDetails />} />

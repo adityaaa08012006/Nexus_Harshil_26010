@@ -6,6 +6,7 @@ import type { Warehouse } from "../lib/supabase";
 import { MetricCards } from "../components/dashboard/MetricCards";
 import { RiskChart } from "../components/dashboard/RiskChart";
 import { InventoryTable } from "../components/dashboard/InventoryTable";
+import { DispatchHistory } from "./DispatchHistory";
 import { TrendingUp, Package, CheckCircle, Calendar } from "lucide-react";
 
 interface WarehouseAnalytics {
@@ -26,9 +27,9 @@ interface OrderTrend {
 
 export const OwnerDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeView, setActiveView] = useState<"overview" | "analytics">(
-    "overview",
-  );
+  const [activeView, setActiveView] = useState<
+    "overview" | "analytics" | "dispatch"
+  >("overview");
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<
     string | undefined
@@ -317,6 +318,16 @@ export const OwnerDashboard: React.FC = () => {
             }`}
           >
             Analytics
+          </button>
+          <button
+            onClick={() => setActiveView("dispatch")}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeView === "dispatch"
+                ? "border-[#48A111] text-[#48A111]"
+                : "border-transparent text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            Dispatch History
           </button>
         </div>
       </div>
@@ -828,6 +839,9 @@ export const OwnerDashboard: React.FC = () => {
           )}
         </>
       )}
+
+      {/* ── DISPATCH HISTORY VIEW ── */}
+      {activeView === "dispatch" && <DispatchHistory />}
     </div>
   );
 };
