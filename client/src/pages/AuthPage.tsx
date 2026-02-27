@@ -552,14 +552,8 @@ export const AuthPage: React.FC = () => {
       {/* ── Right Panel (form) ── */}
       <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-10 md:px-16 lg:px-12 xl:px-20">
         {/* Mobile logo */}
-        <div className="flex items-center gap-2 mb-10 lg:hidden">
-          <span className="text-2xl">🌾</span>
-          <span className="text-lg font-extrabold" style={{ color: "#25671E" }}>
-            Godam
-          </span>
-          <span className="text-lg font-light" style={{ color: "#48A111" }}>
-            Solutions
-          </span>
+        <div className="flex items-center justify-center mb-10 lg:hidden">
+          <img src={logo} alt="Godam AI" className="h-14 w-auto" />
         </div>
 
         {/* Tab switcher */}

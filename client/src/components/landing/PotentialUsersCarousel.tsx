@@ -61,11 +61,11 @@ const PotentialUsersCarousel = () => {
   ];
 
   return (
-    <section className="py-12 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+    <section className="py-8 md:py-12 bg-gray-50 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 md:mb-8">
         <div className="text-center">
-          <p className="text-godam-sun font-semibold mb-2 text-base uppercase tracking-wider">Trusted by Leading Brands</p>
-          <h2 className="text-4xl font-bold text-godam-forest">Our Potential Users</h2>
+          <p className="text-godam-sun font-semibold mb-2 text-sm md:text-base uppercase tracking-wider">Trusted by Leading Brands</p>
+          <h2 className="text-2xl md:text-4xl font-bold text-godam-forest">Our Potential Users</h2>
         </div>
       </div>
 
@@ -79,10 +79,10 @@ const PotentialUsersCarousel = () => {
               return (
                 <div
                   key={`${user.id}-${index}`}
-                  className="carousel-card flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-2 border-gray-100"
+                  className="carousel-card flex-shrink-0 w-56 md:w-64 bg-white rounded-xl md:rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-2 border-gray-100"
                 >
                   {/* Logo Image */}
-                  <div className="h-32 bg-gray-100 relative overflow-hidden">
+                  <div className="h-24 md:h-32 bg-gray-100 relative overflow-hidden">
                     <img 
                       src={user.logo} 
                       alt={user.company}
@@ -92,13 +92,13 @@ const PotentialUsersCarousel = () => {
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-12 h-12 bg-godam-leaf rounded-full flex items-center justify-center shadow-md">
-                        <Icon className="w-6 h-6 text-white" />
+                  <div className="p-4 md:p-6">
+                    <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+                      <div className="w-10 h-10 md:w-12 md:h-12 bg-godam-leaf rounded-full flex items-center justify-center shadow-md">
+                        <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-bold text-godam-forest">{user.company}</h3>
+                        <h3 className="text-base md:text-lg font-bold text-godam-forest">{user.company}</h3>
                         <p className="text-xs text-gray-500 font-medium">{user.type}</p>
                       </div>
                     </div>
@@ -119,9 +119,15 @@ const PotentialUsersCarousel = () => {
 
         .carousel-track {
           display: flex;
-          gap: 1.5rem;
+          gap: 1rem;
           animation: scroll 40s linear infinite;
           width: max-content;
+        }
+
+        @media (min-width: 768px) {
+          .carousel-track {
+            gap: 1.5rem;
+          }
         }
 
         .carousel-track:hover {
@@ -138,7 +144,13 @@ const PotentialUsersCarousel = () => {
         }
 
         .carousel-card {
-          min-width: 16rem;
+          min-width: 14rem;
+        }
+
+        @media (min-width: 768px) {
+          .carousel-card {
+            min-width: 16rem;
+          }
         }
       `}</style>
     </section>

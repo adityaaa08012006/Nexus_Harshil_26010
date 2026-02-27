@@ -74,7 +74,7 @@ const CircularFlowSection = () => {
   return (
     <section 
       ref={sectionRef}
-      className="py-12 bg-white relative overflow-hidden"
+      className="py-8 md:py-12 bg-white relative overflow-hidden"
     >
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -84,19 +84,19 @@ const CircularFlowSection = () => {
         }} />
       </div>
 
-      <div className="container mx-auto px-6 relative z-10 max-w-7xl">
+      <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
         {/* Section Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-4">
-            <TrendingUp className="w-5 h-5 text-godam-sun animate-bounce" />
-            <span className="text-godam-sun font-semibold uppercase text-sm tracking-wider">
+        <div className="text-center mb-8 md:mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-3 md:mb-4">
+            <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-godam-sun animate-bounce" />
+            <span className="text-godam-sun font-semibold uppercase text-xs md:text-sm tracking-wider">
               The Solution
             </span>
           </div>
-          <h2 className="text-3xl font-bold text-godam-forest mb-3">
+          <h2 className="text-2xl md:text-3xl font-bold text-godam-forest mb-2 md:mb-3 px-4">
             How Godam Transforms Warehouses
           </h2>
-          <p className="text-gray-600 text-base max-w-3xl mx-auto">
+          <p className="text-gray-600 text-sm md:text-base max-w-3xl mx-auto px-4">
             From traditional to intelligent - see how we solve each critical problem
           </p>
         </div>
@@ -141,7 +141,7 @@ const CircularFlowSection = () => {
                       {/* Main Circle */}
                       <div 
                         className={`
-                          relative w-48 h-48 lg:w-56 lg:h-56 rounded-full bg-white border-3 cursor-pointer
+                          relative w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 rounded-full bg-white border-3 cursor-pointer
                           shadow-2xl transform transition-all duration-500 z-10
                           ${isActive ? 'border-godam-leaf shadow-godam-leaf/30 scale-105' : 'border-gray-200'}
                           ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}
@@ -282,33 +282,33 @@ const CircularFlowSection = () => {
         </div>
 
         {/* Bottom Summary */}
-        <div className="mt-20 text-center">
-          <div className="max-w-4xl mx-auto bg-godam-leaf rounded-3xl p-12 shadow-2xl">
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <Sparkles className="w-12 h-12 text-white" />
-              <h3 className="text-4xl font-bold text-white">
+        <div className="mt-12 md:mt-20 text-center px-4">
+          <div className="max-w-4xl mx-auto bg-godam-leaf rounded-2xl md:rounded-3xl p-6 md:p-12 shadow-2xl">
+            <div className="flex items-center justify-center gap-3 md:gap-4 mb-4 md:mb-6">
+              <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-white" />
+              <h3 className="text-2xl md:text-4xl font-bold text-white">
                 Complete Transformation
               </h3>
             </div>
-            <p className="text-white/90 text-xl mb-8">
+            <p className="text-white/90 text-base md:text-xl mb-6 md:mb-8">
               From manual, reactive systems to intelligent, predictive warehouse management
             </p>
-            <div className="grid grid-cols-4 gap-6">
-              <div className="bg-white rounded-2xl p-4 shadow-lg">
-                <div className="text-3xl font-bold text-godam-leaf mb-2">20%</div>
-                <p className="text-godam-forest text-sm font-medium">Less Spoilage</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+              <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-4 shadow-lg">
+                <div className="text-2xl md:text-3xl font-bold text-godam-leaf mb-1 md:mb-2">20%</div>
+                <p className="text-godam-forest text-xs md:text-sm font-medium">Less Spoilage</p>
               </div>
-              <div className="bg-white rounded-2xl p-4 shadow-lg">
-                <div className="text-3xl font-bold text-godam-sun mb-2">5x</div>
-                <p className="text-godam-forest text-sm font-medium">Faster Processing</p>
+              <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-4 shadow-lg">
+                <div className="text-2xl md:text-3xl font-bold text-godam-sun mb-1 md:mb-2">5x</div>
+                <p className="text-godam-forest text-xs md:text-sm font-medium">Faster Processing</p>
               </div>
-              <div className="bg-white rounded-2xl p-4 shadow-lg">
-                <div className="text-3xl font-bold text-godam-leaf mb-2">30%</div>
-                <p className="text-godam-forest text-sm font-medium">Better Turnover</p>
+              <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-4 shadow-lg">
+                <div className="text-2xl md:text-3xl font-bold text-godam-leaf mb-1 md:mb-2">30%</div>
+                <p className="text-godam-forest text-xs md:text-sm font-medium">Better Turnover</p>
               </div>
-              <div className="bg-white rounded-2xl p-4 shadow-lg">
-                <div className="text-3xl font-bold text-godam-sun mb-2">100%</div>
-                <p className="text-godam-forest text-sm font-medium">Connected</p>
+              <div className="bg-white rounded-xl md:rounded-2xl p-3 md:p-4 shadow-lg">
+                <div className="text-2xl md:text-3xl font-bold text-godam-sun mb-1 md:mb-2">100%</div>
+                <p className="text-godam-forest text-xs md:text-sm font-medium">Connected</p>
               </div>
             </div>
           </div>
