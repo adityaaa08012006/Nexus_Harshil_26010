@@ -74,7 +74,7 @@ const CircularFlowSection = () => {
   return (
     <section 
       ref={sectionRef}
-      className="py-24 bg-white relative overflow-hidden"
+      className="py-12 bg-white relative overflow-hidden"
     >
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -86,17 +86,17 @@ const CircularFlowSection = () => {
 
       <div className="container mx-auto px-6 relative z-10 max-w-7xl">
         {/* Section Header */}
-        <div className="text-center mb-20">
+        <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/30 rounded-full mb-4">
             <TrendingUp className="w-5 h-5 text-godam-sun animate-bounce" />
             <span className="text-godam-sun font-semibold uppercase text-sm tracking-wider">
               The Solution
             </span>
           </div>
-          <h2 className="text-5xl font-bold text-godam-forest mb-4">
+          <h2 className="text-3xl font-bold text-godam-forest mb-3">
             How Godam Transforms Warehouses
           </h2>
-          <p className="text-gray-600 text-lg max-w-3xl mx-auto">
+          <p className="text-gray-600 text-base max-w-3xl mx-auto">
             From traditional to intelligent - see how we solve each critical problem
           </p>
         </div>
@@ -141,7 +141,7 @@ const CircularFlowSection = () => {
                       {/* Main Circle */}
                       <div 
                         className={`
-                          relative w-64 h-64 lg:w-72 lg:h-72 rounded-full bg-white border-4 cursor-pointer
+                          relative w-48 h-48 lg:w-56 lg:h-56 rounded-full bg-white border-3 cursor-pointer
                           shadow-2xl transform transition-all duration-500 z-10
                           ${isActive ? 'border-godam-leaf shadow-godam-leaf/30 scale-105' : 'border-gray-200'}
                           ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}
@@ -151,18 +151,18 @@ const CircularFlowSection = () => {
                         }}
                       >
                         {/* Content */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
                           {/* Icon with Animated Background */}
-                          <div className="relative mb-4">
+                          <div className="relative mb-2">
                             <div className={`absolute inset-0 bg-${solution.color} rounded-full blur-xl opacity-30 animate-pulse`} />
-                            <div className={`relative w-16 h-16 lg:w-18 lg:h-18 rounded-full bg-${solution.color} flex items-center justify-center shadow-lg`}>
-                              <Icon className="w-8 h-8 lg:w-9 lg:h-9 text-white" />
+                            <div className={`relative w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-${solution.color} flex items-center justify-center shadow-lg`}>
+                              <Icon className="w-6 h-6 lg:w-7 lg:h-7 text-white" />
                             </div>
                           </div>
 
                           {/* Traditional Label */}
-                          <div className="text-center mb-3">
-                            <span className="inline-block px-2 py-1 bg-red-100 text-red-600 text-xs font-semibold rounded-full mb-1">
+                          <div className="text-center mb-2">
+                            <span className="inline-block px-2 py-0.5 bg-red-100 text-red-600 text-xs font-semibold rounded-full mb-1">
                               Traditional
                             </span>
                             <p className="text-gray-500 text-xs line-through">
@@ -174,23 +174,13 @@ const CircularFlowSection = () => {
                           <div className="w-full h-px bg-gray-300 my-2" />
 
                           {/* Godam Solution Label */}
-                          <div className="text-center mb-3">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-godam-leaf text-xs font-semibold rounded-full mb-1">
+                          <div className="text-center mb-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 text-godam-leaf text-xs font-semibold rounded-full mb-1">
                               <CheckCircle className="w-3 h-3" />
                               Godam Solution
                             </span>
-                            <p className="text-godam-forest font-bold text-base lg:text-lg">
+                            <p className="text-godam-forest font-bold text-sm lg:text-base">
                               {solution.solution}
-                            </p>
-                          </div>
-
-                          {/* Metric */}
-                          <div className={`text-center mt-3 p-3 rounded-xl bg-${solution.color} bg-opacity-10`}>
-                            <div className={`text-3xl lg:text-4xl font-bold text-${solution.color} mb-1`}>
-                              {solution.metric}
-                            </div>
-                            <p className="text-gray-600 text-xs font-medium">
-                              {solution.description}
                             </p>
                           </div>
                         </div>
@@ -304,21 +294,21 @@ const CircularFlowSection = () => {
               From manual, reactive systems to intelligent, predictive warehouse management
             </p>
             <div className="grid grid-cols-4 gap-6">
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                <div className="text-3xl font-bold text-white mb-2">20%</div>
-                <p className="text-white/80 text-sm">Less Spoilage</p>
+              <div className="bg-white rounded-2xl p-4 shadow-lg">
+                <div className="text-3xl font-bold text-godam-leaf mb-2">20%</div>
+                <p className="text-godam-forest text-sm font-medium">Less Spoilage</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                <div className="text-3xl font-bold text-white mb-2">5x</div>
-                <p className="text-white/80 text-sm">Faster Processing</p>
+              <div className="bg-white rounded-2xl p-4 shadow-lg">
+                <div className="text-3xl font-bold text-godam-sun mb-2">5x</div>
+                <p className="text-godam-forest text-sm font-medium">Faster Processing</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                <div className="text-3xl font-bold text-white mb-2">30%</div>
-                <p className="text-white/80 text-sm">Better Turnover</p>
+              <div className="bg-white rounded-2xl p-4 shadow-lg">
+                <div className="text-3xl font-bold text-godam-leaf mb-2">30%</div>
+                <p className="text-godam-forest text-sm font-medium">Better Turnover</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                <div className="text-3xl font-bold text-white mb-2">100%</div>
-                <p className="text-white/80 text-sm">Connected</p>
+              <div className="bg-white rounded-2xl p-4 shadow-lg">
+                <div className="text-3xl font-bold text-godam-sun mb-2">100%</div>
+                <p className="text-godam-forest text-sm font-medium">Connected</p>
               </div>
             </div>
           </div>

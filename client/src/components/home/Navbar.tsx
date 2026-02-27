@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import logo from "../../assets/logo.png";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,38 +35,18 @@ export default function Navbar() {
           >
             <div className="relative">
               <div className="absolute inset-0 bg-godam-leaf rounded-xl blur-md opacity-40 group-hover:opacity-60 transition-opacity" />
-              <div className="relative bg-gradient-to-br from-godam-forest to-godam-leaf p-2.5 rounded-xl">
-                <svg
-                  className="w-6 h-6 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path
-                    d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+              <div className="relative">
+                <img
+                  src={logo}
+                  alt="Warehouse Logo"
+                  className="h-12 w-auto object-contain"
+                />
               </div>
-            </div>
-            <div className="flex flex-col">
-              <span
-                className={`font-heading font-bold text-lg transition-colors duration-300 ${isScrolled ? "text-godam-forest" : "text-white"}`}
-              >
-                Godam Solutions
-              </span>
-              <span
-                className={`text-[10px] font-medium uppercase tracking-[0.15em] transition-colors duration-300 ${isScrolled ? "text-godam-leaf" : "text-godam-sun"}`}
-              >
-                Smart Warehouse, Zero Waste
-              </span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="flex items-center space-x-1">
             {[
               { label: "Home", action: () => scrollTo("hero") },
               { label: "Solutions", action: () => scrollTo("solution") },
@@ -99,7 +80,7 @@ export default function Navbar() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center space-x-3">
+          <div className="flex items-center space-x-3">
             <Link
               to="/auth"
               className={`px-5 py-2 text-sm font-semibold rounded-xl transition-all duration-300 ${
@@ -108,20 +89,20 @@ export default function Navbar() {
                   : "text-white/90 hover:text-white hover:bg-white/10"
               }`}
             >
-              Sign In
+              Log In
             </Link>
             <Link
               to="/auth?tab=register"
               className="px-6 py-2.5 bg-gradient-to-r from-godam-forest to-godam-leaf text-white text-sm font-semibold rounded-xl transition-all duration-300 shadow-godam hover:shadow-godam-lg hover:scale-[1.03] active:scale-[0.98]"
             >
-              Get Started
+              Sign Up
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`lg:hidden p-2.5 rounded-xl transition-colors ${isScrolled ? "hover:bg-gray-100" : "hover:bg-white/10"}`}
+            className={`md:hidden p-2.5 rounded-xl transition-colors ${isScrolled ? "hover:bg-gray-100" : "hover:bg-white/10"}`}
           >
             <svg
               className={`w-5 h-5 transition-colors ${isScrolled ? "text-godam-forest" : "text-white"}`}
@@ -182,13 +163,13 @@ export default function Navbar() {
               to="/auth"
               className="block w-full text-center px-4 py-3 text-godam-forest font-semibold rounded-xl hover:bg-godam-forest/5 transition-all"
             >
-              Sign In
+              Log In
             </Link>
             <Link
               to="/auth?tab=register"
               className="block w-full text-center px-4 py-3 bg-gradient-to-r from-godam-forest to-godam-leaf text-white font-semibold rounded-xl shadow-godam"
             >
-              Get Started
+              Sign Up
             </Link>
           </div>
         </div>

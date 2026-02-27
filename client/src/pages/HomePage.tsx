@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import logo from "../assets/logo.png";
 import { 
   ShoppingCart, 
   Phone, 
@@ -24,6 +25,7 @@ import {
 // import ProblemStatementSection from '../components/landing/ProblemStatementSection';
 import CircularFlowSection from '../components/landing/CircularFlowSection';
 import PotentialUsersCarousel from '../components/landing/PotentialUsersCarousel';
+import HeroSlider from '../components/home/HeroSlider';
 
 // Modal Component
 const UserModal = ({ isOpen, onClose, user }: { isOpen: boolean; onClose: () => void; user: any }) => {
@@ -290,10 +292,7 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-28">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-14 h-14 bg-godam-leaf rounded-full flex items-center justify-center">
-                <Leaf className="text-white" size={32} />
-              </div>
-              <span className="text-3xl font-bold text-godam-forest">Godam</span>
+              <img src={logo} alt="Godam Solutions" className="h-24 w-auto object-contain" />
             </Link>
 
             {/* Desktop Menu */}
@@ -305,52 +304,20 @@ export default function HomePage() {
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center gap-5">
-              <button className="p-3 hover:bg-godam-leaf hover:text-white rounded-full transition">
-                <Search size={24} className="transition" />
-              </button>
+            <div className="flex items-center gap-3">
               <Link 
-                to="/auth" 
+                to="/auth?tab=register" 
                 className="px-8 py-3.5 bg-godam-leaf text-white text-lg rounded-full font-semibold hover:bg-godam-forest transition shadow-lg"
               >
-                Get Started
+                Log In / Sign Up
               </Link>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative h-[600px] bg-cover bg-center" style={{
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1920")'
-      }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-          <div className="text-white max-w-2xl">
-            <p className="text-godam-sun font-semibold mb-4 text-lg">WELCOME TO GODAM SOLUTIONS</p>
-            <h1 className="text-6xl font-bold mb-6 leading-tight" style={{ fontFamily: 'Georgia, serif' }}>
-              Warehouse<br />
-              & Post-Harvest<br />
-              Management
-            </h1>
-            <p className="text-xl mb-8 text-gray-200">
-              Intelligent optimization for agricultural warehouses.<br />
-              Reduce spoilage, maximize efficiency.
-            </p>
-            <div className="flex gap-4">
-              <Link 
-                to="/auth" 
-                className="px-8 py-4 bg-godam-leaf text-white rounded-full font-bold hover:bg-godam-forest transition shadow-xl flex items-center gap-2"
-              >
-                Discover More
-                <ArrowRight size={20} />
-              </Link>
-              <button className="px-8 py-4 border-2 border-white text-white rounded-full font-bold hover:bg-white hover:text-godam-forest transition">
-                Contact Us
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Slider */}
+      <HeroSlider />
 
       {/* Potential Users Carousel */}
       <PotentialUsersCarousel />
@@ -576,7 +543,6 @@ export default function HomePage() {
                 desc: "Explore the live demo and see our technical implementation",
                 cta: "View Live Demo",
                 icon: Shield,
-                bgColor: "blue-500",
                 link: "/dashboard"
               },
               {
@@ -584,7 +550,6 @@ export default function HomePage() {
                 desc: "Schedule a consultation to discuss your specific needs",
                 cta: "Schedule Call",
                 icon: Users,
-                bgColor: "godam-leaf",
                 link: "#contact"
               },
               {
@@ -592,12 +557,11 @@ export default function HomePage() {
                 desc: "Download our pitch deck and business plan",
                 cta: "Download Pitch",
                 icon: TrendingUp,
-                bgColor: "purple-500",
                 link: "#pitch"
               }
             ].map((card, idx) => (
               <div key={idx} className="group relative overflow-hidden rounded-3xl bg-gray-50 border-2 border-gray-200 hover:border-godam-leaf transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                <div className={`absolute inset-0 bg-${card.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                <div className="absolute inset-0 bg-godam-leaf opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <div className="relative z-10 p-8">
                   <div className="w-16 h-16 bg-godam-leaf rounded-2xl flex items-center justify-center mb-6 group-hover:bg-white group-hover:bg-opacity-20 transition">
                     <card.icon className="text-white" size={32} />
