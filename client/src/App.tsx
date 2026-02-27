@@ -23,6 +23,8 @@ import { WarehousesPage } from "./pages/WarehousesPage";
 import { RequirementUpload } from "./pages/RequirementUpload";
 import { QCDashboard } from "./pages/QCDashboard";
 import { QCOrders } from "./pages/QCOrders";
+import { AllocationManagePage } from "./pages/AllocationManagePage";
+import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 
 function App() {
   return (
@@ -49,7 +51,8 @@ function App() {
                         <Route path="batch/:id" element={<BatchDetails />} />
                         <Route path="sensors" element={<SensorMonitoring />} />
                         <Route path="alerts" element={<AlertsPage />} />
-                        <Route
+                        <Route path="allocations" element={<AllocationManagePage />} />
+                      <Route
                           path="*"
                           element={<Navigate to="dashboard" replace />}
                         />
@@ -76,7 +79,8 @@ function App() {
                         <Route path="sensors" element={<SensorMonitoring />} />
                         <Route path="alerts" element={<AlertsPage />} />
                         <Route path="batch/:id" element={<BatchDetails />} />
-                        <Route
+                        <Route path="allocations" element={<AllocationManagePage />} />
+                      <Route
                           path="*"
                           element={<Navigate to="dashboard" replace />}
                         />

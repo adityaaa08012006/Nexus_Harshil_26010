@@ -20,7 +20,8 @@ import {
   X,
   Building2,
   Package,
-  Truck
+  Truck,
+  Menu
 } from 'lucide-react';
 // import ProblemStatementSection from '../components/landing/ProblemStatementSection';
 import CircularFlowSection from '../components/landing/CircularFlowSection';
@@ -284,35 +285,89 @@ export default function HomePage() {
     setIsModalOpen(false);
     setSelectedUser(null);
   };
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Main Navigation */}
+      {/* Main Navigation - Mobile Responsive */}
       <nav className="bg-white shadow-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
-          <div className="flex justify-between items-center h-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
+          <div className="flex justify-between items-center h-20 md:h-28">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
-              <img src={logo} alt="Godam Solutions" className="h-24 w-auto object-contain" />
+              <img src={logo} alt="Godam Solutions" className="h-16 md:h-24 w-auto object-contain" />
             </Link>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-2">
-              <Link to="/" className="px-6 py-3 text-godam-forest text-lg font-semibold hover:bg-godam-leaf hover:text-white rounded-full transition">Home</Link>
-              <Link to="/about" className="px-6 py-3 text-gray-700 text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">About</Link>
-              <Link to="/solutions" className="px-6 py-3 text-gray-700 text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">Solutions</Link>
-              <Link to="/contact" className="px-6 py-3 text-gray-700 text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">Contact</Link>
+              <Link to="/" className="px-4 lg:px-6 py-3 text-godam-forest text-base lg:text-lg font-semibold hover:bg-godam-leaf hover:text-white rounded-full transition">Home</Link>
+              <Link to="/about" className="px-4 lg:px-6 py-3 text-gray-700 text-base lg:text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">About</Link>
+              <Link to="/solutions" className="px-4 lg:px-6 py-3 text-gray-700 text-base lg:text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">Solutions</Link>
+              <Link to="/contact" className="px-4 lg:px-6 py-3 text-gray-700 text-base lg:text-lg font-medium hover:bg-godam-leaf hover:text-white rounded-full transition">Contact</Link>
             </div>
 
-            {/* Right Icons */}
-            <div className="flex items-center gap-3">
+            {/* Desktop Auth Button */}
+            <div className="hidden md:flex items-center gap-3">
               <Link 
                 to="/auth?tab=register" 
-                className="px-8 py-3.5 bg-godam-leaf text-white text-lg rounded-full font-semibold hover:bg-godam-forest transition shadow-lg"
+                className="px-6 lg:px-8 py-2.5 lg:py-3.5 bg-godam-leaf text-white text-base lg:text-lg rounded-full font-semibold hover:bg-godam-forest transition shadow-lg"
               >
                 Log In / Sign Up
               </Link>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden pb-4 border-t border-gray-100">
+              <div className="flex flex-col space-y-2 pt-4">
+                <Link 
+                  to="/" 
+                  className="px-4 py-3 text-godam-forest text-base font-semibold bg-godam-leaf/10 rounded-lg transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
+                <Link 
+                  to="/about" 
+                  className="px-4 py-3 text-gray-700 text-base font-medium hover:bg-gray-50 rounded-lg transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  About
+                </Link>
+                <Link 
+                  to="/solutions" 
+                  className="px-4 py-3 text-gray-700 text-base font-medium hover:bg-gray-50 rounded-lg transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Solutions
+                </Link>
+                <Link 
+                  to="/contact" 
+                  className="px-4 py-3 text-gray-700 text-base font-medium hover:bg-gray-50 rounded-lg transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contact
+                </Link>
+                <Link 
+                  to="/auth?tab=register" 
+                  className="mx-4 px-6 py-3 bg-godam-leaf text-white text-base rounded-full font-semibold hover:bg-godam-forest transition shadow-lg text-center"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Log In / Sign Up
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -322,12 +377,12 @@ export default function HomePage() {
       {/* Potential Users Carousel */}
       <PotentialUsersCarousel />
 
-      {/* About Section */}
-      <section className="py-20 bg-gray-50">
+      {/* About Section - Mobile Responsive */}
+      <section className="py-12 md:py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Images */}
-            <div className="relative">
+            <div className="relative order-2 md:order-1">
               <div className="w-full aspect-square rounded-full overflow-hidden">
                 <img 
                   src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=600" 
@@ -335,7 +390,7 @@ export default function HomePage() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full overflow-hidden border-8 border-white shadow-2xl">
+              <div className="absolute bottom-0 left-0 w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-4 md:border-8 border-white shadow-2xl">
                 <img 
                   src="https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400" 
                   alt="Agriculture" 
@@ -345,44 +400,44 @@ export default function HomePage() {
             </div>
 
             {/* Content */}
-            <div>
-              <p className="text-godam-sun font-semibold mb-2">ABOUT US</p>
-              <h2 className="text-4xl font-bold text-godam-forest mb-6">
+            <div className="order-1 md:order-2">
+              <p className="text-godam-sun font-semibold mb-2 text-sm md:text-base">ABOUT US</p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-godam-forest mb-4 md:mb-6">
                 Warehouse & Organic<br />Post-Harvest Solutions
               </h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6 leading-relaxed">
                 India loses millions in post-harvest waste annually. Godam Solutions transforms traditional warehouses into intelligent optimization hubs using IoT sensors, AI-powered allocation, and real-time monitoring.
               </p>
               
-              <div className="grid grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-godam-sun bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Leaf className="text-godam-sun" size={24} />
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-godam-sun bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Leaf className="text-godam-sun" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-godam-forest mb-1">Growing Smartly</h4>
-                    <p className="text-sm text-gray-600">Optimized storage capacity utilization</p>
+                    <h4 className="font-bold text-godam-forest mb-1 text-sm md:text-base">Growing Smartly</h4>
+                    <p className="text-xs md:text-sm text-gray-600">Optimized storage capacity utilization</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-godam-leaf bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="text-godam-leaf" size={24} />
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-godam-leaf bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="text-godam-leaf" size={20} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-godam-forest mb-1">Top-tier Efficiency</h4>
-                    <p className="text-sm text-gray-600">20% reduction in spoilage waste</p>
+                    <h4 className="font-bold text-godam-forest mb-1 text-sm md:text-base">Top-tier Efficiency</h4>
+                    <p className="text-xs md:text-sm text-gray-600">20% reduction in spoilage waste</p>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
-                <CheckCircle className="text-godam-leaf" size={24} />
-                <p className="text-gray-700">
+              <div className="flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white rounded-lg shadow-sm">
+                <CheckCircle className="text-godam-leaf flex-shrink-0" size={20} />
+                <p className="text-sm md:text-base text-gray-700">
                   Trusted by <span className="font-bold text-godam-forest">50+ warehouses</span> across India
                 </p>
               </div>
 
-              <button className="mt-8 px-8 py-3 bg-godam-leaf text-white rounded-full font-bold hover:bg-godam-forest transition shadow-lg">
+              <button className="mt-6 md:mt-8 w-full sm:w-auto px-6 md:px-8 py-2.5 md:py-3 bg-godam-leaf text-white rounded-full font-bold hover:bg-godam-forest transition shadow-lg text-sm md:text-base">
                 Discover More
               </button>
             </div>
@@ -529,14 +584,14 @@ export default function HomePage() {
 
 
       {/* Call to Action Hub */}
-      <section className="py-20 bg-white">
+      <section className="py-10 md:py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-godam-forest mb-4">Ready to Transform Your Warehouse?</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Choose your path to get started with Godam Solutions</p>
+          <div className="text-center mb-10 md:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-godam-forest mb-4">Ready to Transform Your Warehouse?</h2>
+            <p className="text-base md:text-xl text-gray-600 max-w-3xl mx-auto">Choose your path to get started with Godam Solutions</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
               {
                 title: "For Judges & Evaluators",
@@ -560,36 +615,36 @@ export default function HomePage() {
                 link: "#pitch"
               }
             ].map((card, idx) => (
-              <div key={idx} className="group relative overflow-hidden rounded-3xl bg-gray-50 border-2 border-gray-200 hover:border-godam-leaf transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
+              <div key={idx} className="group relative overflow-hidden rounded-2xl md:rounded-3xl bg-gray-50 border-2 border-gray-200 hover:border-godam-leaf transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
                 <div className="absolute inset-0 bg-godam-leaf opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="relative z-10 p-8">
-                  <div className="w-16 h-16 bg-godam-leaf rounded-2xl flex items-center justify-center mb-6 group-hover:bg-white group-hover:bg-opacity-20 transition">
-                    <card.icon className="text-white" size={32} />
+                <div className="relative z-10 p-6 md:p-8">
+                  <div className="w-12 h-12 md:w-16 md:h-16 bg-godam-leaf rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 group-hover:bg-white group-hover:bg-opacity-20 transition">
+                    <card.icon className="text-white" size={24} />
                   </div>
-                  <h3 className="text-2xl font-bold text-godam-forest mb-3 group-hover:text-white transition">{card.title}</h3>
-                  <p className="text-gray-600 mb-6 group-hover:text-white group-hover:text-opacity-90 transition">{card.desc}</p>
+                  <h3 className="text-xl md:text-2xl font-bold text-godam-forest mb-3 group-hover:text-white transition">{card.title}</h3>
+                  <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6 group-hover:text-white group-hover:text-opacity-90 transition">{card.desc}</p>
                   <Link 
                     to={card.link}
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-godam-leaf text-white rounded-full font-bold hover:bg-white hover:text-godam-forest transition shadow-lg group-hover:bg-white group-hover:text-godam-forest"
+                    className="inline-flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 bg-godam-leaf text-white rounded-full font-bold hover:bg-white hover:text-godam-forest transition shadow-lg group-hover:bg-white group-hover:text-godam-forest text-sm md:text-base"
                   >
                     {card.cta}
-                    <ArrowRight size={20} />
+                    <ArrowRight size={18} />
                   </Link>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-16 bg-godam-leaf rounded-3xl p-12 text-center text-white">
-            <h3 className="text-3xl font-bold mb-4">🌾 Join the Agricultural Revolution</h3>
-            <p className="text-xl mb-8 text-white text-opacity-90 max-w-3xl mx-auto">
+          <div className="mt-10 md:mt-16 bg-godam-leaf rounded-2xl md:rounded-3xl p-6 md:p-12 text-center text-white">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">🌾 Join the Agricultural Revolution</h3>
+            <p className="text-base md:text-xl mb-6 md:mb-8 text-white text-opacity-90 max-w-3xl mx-auto">
               Help us eliminate ₹92,651 crores in annual post-harvest losses and build a sustainable future for Indian agriculture.
             </p>
-            <div className="flex justify-center gap-4">
-              <Link to="/auth" className="px-8 py-4 bg-white text-godam-forest rounded-full font-bold hover:bg-gray-100 transition shadow-lg text-lg">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4">
+              <Link to="/auth" className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-white text-godam-forest rounded-full font-bold hover:bg-gray-100 transition shadow-lg text-base md:text-lg">
                 Get Started Free
               </Link>
-              <a href="mailto:contact@godamsolutions.com" className="px-8 py-4 bg-white bg-opacity-20 text-white rounded-full font-bold hover:bg-opacity-30 transition border-2 border-white text-lg">
+              <a href="mailto:contact@godamsolutions.com" className="w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 bg-white bg-opacity-20 text-white rounded-full font-bold hover:bg-opacity-30 transition border-2 border-white text-base md:text-lg">
                 Contact Us
               </a>
             </div>
@@ -601,16 +656,13 @@ export default function HomePage() {
       <UserModal isOpen={isModalOpen} onClose={closeModal} user={selectedUser} />
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white pt-16 pb-8">
+      <footer className="bg-gray-900 text-white pt-10 md:pt-16 pb-6 md:pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 mb-8 md:mb-12">
             {/* Company Info */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 bg-godam-leaf rounded-full flex items-center justify-center">
-                  <Leaf className="text-white" size={24} />
-                </div>
-                <span className="text-2xl font-bold">Godam</span>
+            <div className="sm:col-span-2 md:col-span-1">
+              <div className="flex items-center mb-4">
+                <img src={logo} alt="Godam AI" className="h-10 md:h-12 w-auto" />
               </div>
               <p className="text-gray-400 mb-4 text-sm leading-relaxed">
                 Intelligent post-harvest warehouse optimization for reducing agricultural losses and maximizing efficiency.
@@ -620,7 +672,7 @@ export default function HomePage() {
                   <a 
                     key={social} 
                     href="#" 
-                    className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-godam-leaf transition"
+                    className="w-9 h-9 md:w-10 md:h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-godam-leaf transition"
                   >
                     <span className="sr-only">{social}</span>
                     <span className="text-sm">●</span>
@@ -631,8 +683,8 @@ export default function HomePage() {
 
             {/* Explore */}
             <div>
-              <h3 className="font-bold text-lg mb-4">Explore</h3>
-              <ul className="space-y-2 text-gray-400">
+              <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">Explore</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
                 {['About', 'Solutions', 'Team', 'Portfolio', 'Contact'].map((link) => (
                   <li key={link}>
                     <a href="#" className="hover:text-godam-leaf transition">{link}</a>
@@ -643,8 +695,8 @@ export default function HomePage() {
 
             {/* News */}
             <div>
-              <h3 className="font-bold text-lg mb-4">News</h3>
-              <ul className="space-y-2 text-gray-400">
+              <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">News</h3>
+              <ul className="space-y-2 text-gray-400 text-sm">
                 {['Blog', 'Recent News', 'FAQ', 'Terms & Conditions'].map((link) => (
                   <li key={link}>
                     <a href="#" className="hover:text-godam-leaf transition">{link}</a>
@@ -655,18 +707,18 @@ export default function HomePage() {
 
             {/* Contact */}
             <div>
-              <h3 className="font-bold text-lg mb-4">Contact</h3>
+              <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4">Contact</h3>
               <ul className="space-y-3 text-gray-400 text-sm">
                 <li className="flex items-start gap-2">
-                  <MapPin size={18} className="text-godam-leaf flex-shrink-0 mt-1" />
+                  <MapPin size={16} className="text-godam-leaf flex-shrink-0 mt-1" />
                   <span>Green Building, Mumbai 400001, Maharashtra, India</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Mail size={18} className="text-godam-leaf flex-shrink-0 mt-1" />
+                  <Mail size={16} className="text-godam-leaf flex-shrink-0 mt-1" />
                   <span>support@godamsolutions.com</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <Phone size={18} className="text-godam-leaf flex-shrink-0 mt-1" />
+                  <Phone size={16} className="text-godam-leaf flex-shrink-0 mt-1" />
                   <span>+91 98765 43210</span>
                 </li>
               </ul>
@@ -674,11 +726,11 @@ export default function HomePage() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400 text-sm">
+          <div className="border-t border-gray-800 pt-6 md:pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-400 text-xs md:text-sm text-center md:text-left">
               © 2026 <span className="text-godam-leaf">Godam Solutions</span>. All Rights Reserved.
             </p>
-            <div className="flex gap-6 text-sm text-gray-400">
+            <div className="flex gap-4 md:gap-6 text-xs md:text-sm text-gray-400">
               <a href="#" className="hover:text-godam-leaf transition">Privacy Policy</a>
               <a href="#" className="hover:text-godam-leaf transition">Terms of Use</a>
             </div>

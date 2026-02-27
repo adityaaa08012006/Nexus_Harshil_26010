@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase, Batch, BatchInsert, BatchUpdate } from "../lib/supabase";
 import { useAuthContext } from "../context/AuthContext";
 import { calculateRiskScore } from "../utils/riskCalculation";
@@ -25,12 +26,34 @@ interface UseInventoryReturn {
   deleteBatch: (id: string) => Promise<{ error: string | null }>;
 }
 
+/**
+ * Helper: check if a batch row matches the current user's filter criteria.
+ * Mirrors the role-based filtering used in the initial fetch.
+ */
+const matchesFilter = (
+  row: Batch,
+  userRole?: string,
+  userWarehouseId?: string | null,
+  filterWarehouseId?: string,
+): boolean => {
+  if (row.status === "expired") return false;
+  if (userRole === "manager" && userWarehouseId) {
+    return row.warehouse_id === userWarehouseId;
+  }
+  if (filterWarehouseId) {
+    return row.warehouse_id === filterWarehouseId;
+  }
+  return true;
+};
+
 export const useInventory = (warehouseId?: string): UseInventoryReturn => {
   const { user } = useAuthContext();
   const [batches, setBatches] = useState<Batch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
+  // ── Initial Fetch ─────────────────────────────────────────────────────────
   const fetchInventory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -58,15 +81,86 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
     }
   }, [user, warehouseId]);
 
+  // ── Supabase Realtime Subscription ────────────────────────────────────────
   useEffect(() => {
     fetchInventory();
-  }, [fetchInventory]);
+
+    // Subscribe to all changes on the batches table
+    const channel = supabase
+      .channel("inventory-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "batches" },
+        (payload) => {
+          const newRow = payload.new as Batch;
+          if (
+            matchesFilter(
+              newRow,
+              user?.role,
+              user?.warehouse_id,
+              warehouseId,
+            )
+          ) {
+            setBatches((prev) => {
+              // Avoid duplicates
+              if (prev.some((b) => b.id === newRow.id)) return prev;
+              return [newRow, ...prev];
+            });
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "batches" },
+        (payload) => {
+          const updated = payload.new as Batch;
+          setBatches((prev) => {
+            // If updated to expired or no longer matches filter, remove it
+            if (
+              !matchesFilter(
+                updated,
+                user?.role,
+                user?.warehouse_id,
+                warehouseId,
+              )
+            ) {
+              return prev.filter((b) => b.id !== updated.id);
+            }
+            // Replace existing row, or add if new
+            const idx = prev.findIndex((b) => b.id === updated.id);
+            if (idx === -1) return [updated, ...prev];
+            const next = [...prev];
+            next[idx] = updated;
+            return next;
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "batches" },
+        (payload) => {
+          const deleted = payload.old as Batch;
+          setBatches((prev) => prev.filter((b) => b.id !== deleted.id));
+        },
+      )
+      .subscribe();
+
+    channelRef.current = channel;
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [fetchInventory, user, warehouseId]);
+
+  // ── CRUD Operations ───────────────────────────────────────────────────────
 
   const createBatch = async (
     data: BatchInsert,
   ): Promise<{ error: string | null }> => {
     try {
-      // Calculate initial risk score client-side
       const risk_score = calculateRiskScore({
         entryDate: new Date().toISOString(),
         shelfLife: data.shelf_life,
@@ -79,7 +173,7 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
         .insert({ ...data, risk_score, status: "active" });
 
       if (insertErr) return { error: insertErr.message };
-      await fetchInventory();
+      // Realtime subscription will handle the state update
       return { error: null };
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Insert failed" };
@@ -96,7 +190,7 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
         .update(data)
         .eq("id", id);
       if (updateErr) return { error: updateErr.message };
-      await fetchInventory();
+      // Realtime subscription will handle the state update
       return { error: null };
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Update failed" };
@@ -110,12 +204,14 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
         .delete()
         .eq("id", id);
       if (deleteErr) return { error: deleteErr.message };
-      setBatches((prev) => prev.filter((b) => b.id !== id));
+      // Realtime subscription will handle the state update
       return { error: null };
     } catch (err) {
       return { error: err instanceof Error ? err.message : "Delete failed" };
     }
   };
+
+  // ── Derived Stats ─────────────────────────────────────────────────────────
 
   const stats: InventoryStats = {
     total: batches.length,
