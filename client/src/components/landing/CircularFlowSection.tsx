@@ -31,10 +31,10 @@ const CircularFlowSection = () => {
       metric: "20%",
       metricLabel: "Less Spoilage",
       description: "Auto-alerts prevent spoilage before it happens.",
-      color: "red",
       themeColor: "text-red-500",
       bgColor: "bg-red-50",
       borderColor: "border-red-100",
+      iconBg: "bg-red-100",
       delay: 0
     },
     {
@@ -45,10 +45,10 @@ const CircularFlowSection = () => {
       metric: "30%",
       metricLabel: "Better Turnover",
       description: "AI prioritizes items based on actual shelf life.",
-      color: "yellow",
-      themeColor: "text-yellow-600",
+      themeColor: "text-yellow-500",
       bgColor: "bg-yellow-50",
       borderColor: "border-yellow-100",
+      iconBg: "bg-yellow-100",
       delay: 1
     },
     {
@@ -59,10 +59,10 @@ const CircularFlowSection = () => {
       metric: "5x",
       metricLabel: "Faster Processing",
       description: "Instantly digitize invoices & receipts with Gemini.",
-      color: "green",
-      themeColor: "text-green-600",
+      themeColor: "text-green-500",
       bgColor: "bg-green-50",
       borderColor: "border-green-100",
+      iconBg: "bg-green-100",
       delay: 2
     },
     {
@@ -71,12 +71,12 @@ const CircularFlowSection = () => {
       traditional: "Isolated Supply Chains",
       solution: "Connected Network",
       metric: "100%",
-      metricLabel: "Real-time Sync",
+      metricLabel: "Real-Time Sync",
       description: "Seamless demand matching across all nodes.",
-      color: "blue",
-      themeColor: "text-blue-600",
+      themeColor: "text-blue-500",
       bgColor: "bg-blue-50",
       borderColor: "border-blue-100",
+      iconBg: "bg-blue-100",
       delay: 3
     }
   ];
@@ -84,12 +84,12 @@ const CircularFlowSection = () => {
   return (
     <section 
       ref={sectionRef}
-      className="py-20 md:py-24 bg-white relative overflow-hidden"
+      className="py-20 md:py-24 bg-white relative overflow-hidden font-sans"
     >
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-godam-leaf/5 blur-3xl" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-godam-sun/5 blur-3xl" />
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-godam-leaf/5 blur-3xl opacity-50" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-godam-sun/5 blur-3xl opacity-50" />
       </div>
 
       <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
@@ -115,12 +115,10 @@ const CircularFlowSection = () => {
         </div>
 
         {/* Process Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           
           {solutions.map((item, index) => {
             const Icon = item.icon;
-            // Calculations for staggered animation
-            const delayClass = `delay-${index * 100}`; 
 
             return (
               <div 
@@ -132,71 +130,63 @@ const CircularFlowSection = () => {
                 `}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
-                {/* Connecting Line (Desktop) */}
-                {index < solutions.length - 1 && (
-                  <div className="hidden lg:block absolute top-[28%] -right-5 w-10 h-[2px] bg-gray-100 z-0">
-                    <div className={`
-                      h-full bg-godam-leaf/50 origin-left transition-transform duration-1000 ease-out
-                      ${isVisible ? 'scale-x-100' : 'scale-x-0'}
-                    `} style={{ transitionDelay: `${index * 150 + 500}ms` }} />
-                  </div>
-                )}
-
                 {/* Card Container */}
-                <div className="relative bg-white rounded-3xl border border-gray-100 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-godam-leaf/10 transition-shadow duration-300 flex flex-col h-full overflow-hidden">
+                <div className="relative bg-white rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100/50 hover:shadow-2xl hover:shadow-godam-leaf/10 transition-shadow duration-300 flex flex-col h-full overflow-hidden">
                   
                   {/* Top: Traditional (Problem) */}
-                  <div className={`p-6 ${item.bgColor} relative`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="p-3 bg-white rounded-2xl shadow-sm">
+                  <div className={`p-8 ${item.bgColor} relative h-48 flex flex-col justify-between`}>
+                    <div className="flex justify-between items-start">
+                      <div className={`w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm`}>
                         <Icon className={`w-6 h-6 ${item.themeColor}`} />
                       </div>
-                      <span className="text-[10px] font-bold text-gray-400 bg-white/60 px-2 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
+                      <span className="text-[10px] font-bold text-gray-400 bg-white/60 px-3 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-sm">
                         Traditional
                       </span>
                     </div>
-                    <div className="min-h-[3rem] flex items-center">
-                        <h3 className="text-gray-500 font-medium text-sm line-through decoration-red-300 decoration-2">
-                            {item.traditional}
+                    
+                    <div className="relative z-10 mt-2">
+                        <h3 className="text-gray-500 font-medium text-base relative inline-block">
+                            <span className="relative z-10">{item.traditional}</span>
+                            <span className="absolute left-0 top-1/2 w-full h-0.5 bg-red-300 transform -rotate-2 origin-left"></span>
                         </h3>
                     </div>
                     
                     {/* Transformation Arrow Circle */}
-                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg border border-gray-50 z-10 group-hover:scale-110 group-hover:rotate-90 transition-all duration-500">
-                      <ArrowRight className={`w-4 h-4 ${item.themeColor}`} />
+                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-gray-50 z-20 group-hover:scale-110 transition-transform duration-500">
+                      <ArrowRight className={`w-5 h-5 ${item.themeColor}`} />
                     </div>
                   </div>
 
                   {/* Bottom: Solution */}
-                  <div className={`p-6 pt-10 flex-grow flex flex-col justify-between bg-white`}>
+                  <div className={`p-8 pt-12 flex-grow flex flex-col justify-between bg-white`}>
                     <div>
-                        <div className="inline-flex items-center gap-1.5 mb-2">
-                            <CheckCircle className={`w-4 h-4 ${item.themeColor}`} />
+                        <div className="flex items-center gap-2 mb-3">
+                            <CheckCircle className={`w-5 h-5 ${item.themeColor}`} />
                             <span className={`text-xs font-bold ${item.themeColor} uppercase tracking-wide`}>Godam Solution</span>
                         </div>
-                        <h4 className="text-lg font-bold text-gray-800 mb-2 group-hover:text-godam-forest transition-colors min-h-[3.5rem] flex items-center justify-center">
+                        <h4 className="text-xl font-bold text-gray-900 mb-3 leading-tight min-h-[3.5rem]">
                             {item.solution}
                         </h4>
-                        <p className="text-sm text-gray-500 leading-relaxed mb-4 min-h-[3rem]">
+                        <p className="text-sm text-gray-500 leading-relaxed mb-6">
                             {item.description}
                         </p>
                     </div>
 
                     {/* Metric Highlight */}
                     <div className={`
-                        mt-4 py-3 px-4 rounded-xl border border-dashed flex items-center justify-between
-                        ${item.borderColor} bg-opacity-30
-                        group-hover:bg-opacity-100 transition-all
+                        mt-auto py-4 px-5 rounded-2xl border border-dashed flex items-center justify-between
+                        ${item.borderColor} bg-white
+                        hover:bg-opacity-50 transition-colors
                     `}>
                         <div>
-                            <span className={`block text-xl font-bold ${item.themeColor}`}>
+                            <span className={`block text-2xl font-bold ${item.themeColor} mb-0.5`}>
                                 {item.metric}
                             </span>
-                            <span className="text-[10px] text-gray-400 font-medium uppercase">
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wide">
                                 {item.metricLabel}
                             </span>
                         </div>
-                        <TrendingUp className={`w-5 h-5 ${item.themeColor} opacity-50 group-hover:opacity-100 transition-opacity`} />
+                        <TrendingUp className={`w-5 h-5 ${item.themeColor}`} />
                     </div>
                   </div>
                 </div>
@@ -205,6 +195,7 @@ const CircularFlowSection = () => {
           })}
         </div>
       </div>
+
       <style>{`
         @keyframes fadeInUp {
             from {
