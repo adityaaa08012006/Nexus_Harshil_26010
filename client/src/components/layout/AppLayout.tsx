@@ -239,6 +239,12 @@ const managerNav: NavItem[] = [
     icon: <FarmerIcon />,
   },
   {
+    id: "contacts",
+    label: "Contacts",
+    path: "/manager/contacts",
+    icon: <UsersIcon />,
+  },
+  {
     id: "dispatch",
     label: "Dispatches",
     path: "/manager/dispatch",
@@ -335,6 +341,7 @@ const qcNav: NavItem[] = [
     icon: <EyeIcon />,
   },
   { id: "alerts", label: "Alerts", path: "/qc/alerts", icon: <BellIcon /> },
+  { id: "contacts", label: "Contacts", path: "/qc/contacts", icon: <UsersIcon /> },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────

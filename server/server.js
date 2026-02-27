@@ -14,6 +14,7 @@ import warehouseRoutes from "./routes/warehouses.js";
 import pdfParseRoutes from "./routes/pdf-parse.js";
 import allocationRoutes from "./routes/allocation.js";
 import messageRoutes from "./routes/messages.js";
+import contactRoutes from "./routes/contacts.js";
 import { createClient } from "@supabase/supabase-js";
 import { calculateRiskScore } from "./utils/riskCalculation.js";
 
@@ -63,6 +64,8 @@ app.use("/api/allocation", allocationRoutes);
 console.log("  ✅ /api/allocation");
 app.use("/api/messages", messageRoutes);
 console.log("  ✅ /api/messages");
+app.use("/api/contacts", contactRoutes);
+console.log("  ✅ /api/contacts");
 // app.use('/api/inventory', inventoryRoutes)
 // app.use('/api/contacts', contactutes)
 // app.use('/api/pdf-parse', pdfParseRoutes)
