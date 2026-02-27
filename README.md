@@ -435,7 +435,11 @@ This project is open-source and available under the MIT License.
 
 ## 👥 Contributors
 
-Built with ❤️ by the Godam Solutions Team
+Built with ❤️ by Team Nexus
+Aditya Rajput
+Ved Jadhav
+Harshil Biyani
+Ansh Dudhe
 
 ---
 
