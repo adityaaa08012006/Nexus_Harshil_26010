@@ -165,6 +165,7 @@ export const RequirementUpload: React.FC = () => {
         quantity: 0,
         unit: "kg",
         location: "",
+        warehouse_id: "",
         deadline: "",
         grade: "",
         notes: "",
@@ -751,15 +752,23 @@ export const RequirementUpload: React.FC = () => {
                     </td>
                     <td className="py-3 px-4">
                       <select
-                        value={item.location || ""}
-                        onChange={(e) =>
-                          updateItem(index, "location", e.target.value)
-                        }
+                        value={item.warehouse_id || ""}
+                        onChange={(e) => {
+                          const selectedWarehouse = warehouses.find(
+                            (w) => w.id === e.target.value,
+                          );
+                          updateItem(index, "warehouse_id", e.target.value);
+                          updateItem(
+                            index,
+                            "location",
+                            selectedWarehouse?.name || "",
+                          );
+                        }}
                         className="w-full min-w-[140px] px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       >
                         <option value="">Select warehouse</option>
                         {warehouses.map((warehouse) => (
-                          <option key={warehouse.id} value={warehouse.name}>
+                          <option key={warehouse.id} value={warehouse.id}>
                             {warehouse.name} - {warehouse.location}
                           </option>
                         ))}
@@ -955,15 +964,23 @@ export const RequirementUpload: React.FC = () => {
                       Delivery Location
                     </label>
                     <select
-                      value={item.location || ""}
-                      onChange={(e) =>
-                        updateItem(index, "location", e.target.value)
-                      }
+                      value={item.warehouse_id || ""}
+                      onChange={(e) => {
+                        const selectedWarehouse = warehouses.find(
+                          (w) => w.id === e.target.value,
+                        );
+                        updateItem(index, "warehouse_id", e.target.value);
+                        updateItem(
+                          index,
+                          "location",
+                          selectedWarehouse?.name || "",
+                        );
+                      }}
                       className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     >
                       <option value="">Select warehouse</option>
                       {warehouses.map((warehouse) => (
-                        <option key={warehouse.id} value={warehouse.name}>
+                        <option key={warehouse.id} value={warehouse.id}>
                           {warehouse.name} - {warehouse.location}
                         </option>
                       ))}

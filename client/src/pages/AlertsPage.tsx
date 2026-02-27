@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
-import type { Alert } from "../lib/supabase";
+import type { Alert, OrderAlert } from "../lib/supabase";
 import { formatRelativeTime } from "../utils/formatters";
-import { AlertCircle, AlertTriangle, Filter } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Filter,
+  Package,
+  Info,
+} from "lucide-react";
 
 const SEVERITY_CONFIG = {
   critical: {
@@ -20,11 +26,29 @@ const SEVERITY_CONFIG = {
     text: "#92400E",
     label: "Warning",
   },
+  info: {
+    icon: Info,
+    border: "#48A111",
+    bg: "#F0F9FF",
+    text: "#1E40AF",
+    label: "Info",
+  },
 } as const;
+
+type CombinedAlert = {
+  id: string;
+  type: "sensor" | "order";
+  severity: "critical" | "warning" | "info";
+  message: string;
+  zone?: string;
+  acknowledged: boolean;
+  timestamp: string;
+  details?: any;
+};
 
 export const AlertsPage: React.FC = () => {
   const { user } = useAuthContext();
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [alerts, setAlerts] = useState<CombinedAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"active" | "acknowledged" | "all">(
     "active",
@@ -32,7 +56,7 @@ export const AlertsPage: React.FC = () => {
 
   useEffect(() => {
     fetchAlerts();
-  }, [user?.warehouse_id, filter]);
+  }, [user?.warehouse_id, user?.role, filter]);
 
   const fetchAlerts = async () => {
     if (!user?.warehouse_id) {
@@ -42,40 +66,122 @@ export const AlertsPage: React.FC = () => {
 
     setLoading(true);
     try {
-      let query = supabase
+      const combinedAlerts: CombinedAlert[] = [];
+
+      // Fetch sensor alerts for all users
+      let sensorQuery = supabase
         .from("sensor_alerts")
         .select("*")
         .eq("warehouse_id", user.warehouse_id)
         .order("triggered_at", { ascending: false });
 
       if (filter === "active") {
-        query = query.eq("acknowledged", false);
+        sensorQuery = sensorQuery.eq("acknowledged", false);
       } else if (filter === "acknowledged") {
-        query = query.eq("acknowledged", true);
+        sensorQuery = sensorQuery.eq("acknowledged", true);
       }
 
-      const { data, error } = await query;
+      const { data: sensorData } = await sensorQuery;
 
-      if (error) {
-        console.error("Error fetching alerts:", error);
-      } else {
-        setAlerts(data ?? []);
+      if (sensorData) {
+        combinedAlerts.push(
+          ...sensorData.map((alert: Alert) => ({
+            id: alert.id,
+            type: "sensor" as const,
+            severity: alert.severity,
+            message: alert.message,
+            zone: alert.zone,
+            acknowledged: alert.acknowledged,
+            timestamp: alert.triggered_at,
+            details: {
+              alert_type: alert.alert_type,
+              current_value: alert.current_value,
+              threshold_value: alert.threshold_value,
+              acknowledged_at: alert.acknowledged_at,
+            },
+          })),
+        );
       }
+
+      // Fetch order alerts for managers only
+      if (user.role === "manager") {
+        let orderQuery = supabase
+          .from("alerts")
+          .select("*")
+          .eq("type", "order")
+          .eq("warehouse_id", user.warehouse_id) // Filter by manager's warehouse
+          .order("created_at", { ascending: false });
+
+        if (filter === "active") {
+          orderQuery = orderQuery.eq("is_acknowledged", false);
+        } else if (filter === "acknowledged") {
+          orderQuery = orderQuery.eq("is_acknowledged", true);
+        }
+
+        const { data: orderData } = await orderQuery;
+
+        if (orderData) {
+          combinedAlerts.push(
+            ...orderData.map((alert: OrderAlert) => ({
+              id: alert.id,
+              type: "order" as const,
+              severity: alert.severity as "critical" | "warning" | "info",
+              message: alert.message,
+              zone: alert.zone || undefined,
+              acknowledged: alert.is_acknowledged,
+              timestamp: alert.created_at,
+              details: {
+                acknowledged_at: alert.acknowledged_at,
+              },
+            })),
+          );
+        }
+      }
+
+      // Sort all alerts by timestamp
+      combinedAlerts.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      );
+
+      setAlerts(combinedAlerts);
+    } catch (err) {
+      console.error("Error fetching alerts:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAcknowledge = async (alertId: string) => {
-    const { error } = await supabase
-      .from("sensor_alerts")
-      .update({ acknowledged: true, acknowledged_at: new Date().toISOString() })
-      .eq("id", alertId);
+  const handleAcknowledge = async (
+    alertId: string,
+    alertType: "sensor" | "order",
+  ) => {
+    if (alertType === "sensor") {
+      const { error } = await supabase
+        .from("sensor_alerts")
+        .update({
+          acknowledged: true,
+          acknowledged_at: new Date().toISOString(),
+        })
+        .eq("id", alertId);
 
-    if (!error) {
-      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
-      // Trigger alert count refresh in sidebar
-      window.dispatchEvent(new Event("alert-acknowledged"));
+      if (!error) {
+        setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+        window.dispatchEvent(new Event("alert-acknowledged"));
+      }
+    } else {
+      const { error } = await supabase
+        .from("alerts")
+        .update({
+          is_acknowledged: true,
+          acknowledged_at: new Date().toISOString(),
+        })
+        .eq("id", alertId);
+
+      if (!error) {
+        setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+        window.dispatchEvent(new Event("alert-acknowledged"));
+      }
     }
   };
 
@@ -168,7 +274,7 @@ export const AlertsPage: React.FC = () => {
           <div className="space-y-4">
             {alerts.map((alert) => {
               const cfg = SEVERITY_CONFIG[alert.severity];
-              const Icon = cfg.icon;
+              const Icon = alert.type === "order" ? Package : cfg.icon;
               return (
                 <div
                   key={alert.id}
@@ -194,11 +300,15 @@ export const AlertsPage: React.FC = () => {
                                 color: "white",
                               }}
                             >
-                              {cfg.label}
+                              {alert.type === "order" ? "New Order" : cfg.label}
                             </span>
-                            <span className="text-xs text-gray-500">
-                              Zone {alert.zone}
-                            </span>
+                            {alert.zone && (
+                              <span className="text-xs text-gray-500">
+                                {alert.type === "order"
+                                  ? `Location: ${alert.zone}`
+                                  : `Zone ${alert.zone}`}
+                              </span>
+                            )}
                           </div>
                           <p
                             className="text-base font-medium mb-2"
@@ -210,29 +320,41 @@ export const AlertsPage: React.FC = () => {
                             className="text-sm space-y-1"
                             style={{ color: cfg.text, opacity: 0.8 }}
                           >
-                            <p>
-                              Current: <strong>{alert.current_value}</strong> |
-                              Threshold:{" "}
-                              <strong>{alert.threshold_value}</strong>
-                            </p>
-                            <p>
-                              Alert Type:{" "}
-                              <strong className="capitalize">
-                                {alert.alert_type}
-                              </strong>
-                            </p>
-                            <p>{formatRelativeTime(alert.triggered_at)}</p>
+                            {alert.type === "sensor" && alert.details && (
+                              <>
+                                <p>
+                                  Current:{" "}
+                                  <strong>{alert.details.current_value}</strong>{" "}
+                                  | Threshold:{" "}
+                                  <strong>
+                                    {alert.details.threshold_value}
+                                  </strong>
+                                </p>
+                                <p>
+                                  Alert Type:{" "}
+                                  <strong className="capitalize">
+                                    {alert.details.alert_type}
+                                  </strong>
+                                </p>
+                              </>
+                            )}
+                            <p>{formatRelativeTime(alert.timestamp)}</p>
                           </div>
-                          {alert.acknowledged && alert.acknowledged_at && (
-                            <p className="text-xs text-gray-500 mt-2">
-                              Acknowledged{" "}
-                              {formatRelativeTime(alert.acknowledged_at)}
-                            </p>
-                          )}
+                          {alert.acknowledged &&
+                            alert.details?.acknowledged_at && (
+                              <p className="text-xs text-gray-500 mt-2">
+                                Acknowledged{" "}
+                                {formatRelativeTime(
+                                  alert.details.acknowledged_at,
+                                )}
+                              </p>
+                            )}
                         </div>
                         {!alert.acknowledged && (
                           <button
-                            onClick={() => handleAcknowledge(alert.id)}
+                            onClick={() =>
+                              handleAcknowledge(alert.id, alert.type)
+                            }
                             className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-all hover:opacity-90 shadow-sm"
                             style={{ backgroundColor: "#48A111" }}
                           >
