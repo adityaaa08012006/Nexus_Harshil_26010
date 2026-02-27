@@ -208,9 +208,6 @@ export interface AllocationInsert {
   price?: number;
   notes?: string;
 }
-  price?: number;
-  notes?: string;
-}
 
 // ─── Dispatch types ───────────────────────────────────────────────────────────
 export type DispatchStatus =
