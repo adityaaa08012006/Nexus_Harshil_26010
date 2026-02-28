@@ -171,7 +171,7 @@ export const SettingsPage: React.FC = () => {
 
             {/* Email Field (Read-only) */}
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Mail size={16} />
                 Email Address
               </label>
@@ -188,7 +188,7 @@ export const SettingsPage: React.FC = () => {
 
             {/* Role Field (Read-only) */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                 <Shield size={16} />
                 Role
               </label>

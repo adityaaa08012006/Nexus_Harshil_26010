@@ -13,7 +13,6 @@ import {
   AlertTriangle,
   ArrowRightLeft,
   Truck,
-  Users,
   Tractor,
   BarChart3,
   Upload,
@@ -199,7 +198,7 @@ interface AppLayoutProps {
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
-  const { user, logout, isManager, isOwner } = useAuth();
+  const { user, isManager, isOwner } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { count: alertCount } = useAlertCount();
@@ -213,13 +212,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   // Determine navigation items based on role
   const navItems = isOwner() ? ownerNav : isManager() ? managerNav : qcNav;
-
-  const roleLabel =
-    user?.role === "owner"
-      ? "Owner"
-      : user?.role === "manager"
-        ? "Manager"
-        : "QC Rep";
 
   const activePath = location.pathname;
   const pageTitle =
