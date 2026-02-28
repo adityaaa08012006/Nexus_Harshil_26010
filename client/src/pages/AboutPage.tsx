@@ -71,12 +71,15 @@ export default function AboutPage() {
       <GlassNavbar />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <section className="relative pt-24 pb-12 lg:pt-36 lg:pb-24 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+          {/* Enhanced Green Blur Background */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-godam-leaf/20 rounded-full blur-[120px] opacity-60 animate-pulse" />
+          <div className="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] bg-gradient-to-br from-godam-leaf/30 to-godam-forest/10 rounded-full blur-[90px] opacity-50" />
+          <div className="absolute top-[20%] -left-[10%] w-[40%] h-[40%] bg-godam-forest/10 rounded-full blur-[80px] opacity-50" />
+          
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-          <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b from-white/50 via-transparent to-white/80 pointer-events-none"></div>
-          <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] bg-gradient-to-br from-godam-leaf/10 to-transparent rounded-full blur-[100px] opacity-40 animate-pulse" />
-          <div className="absolute top-[40%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-tr from-godam-forest/5 to-transparent rounded-full blur-[100px] opacity-40 animate-pulse duration-700" />
+          <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b from-white/40 via-transparent to-white/90 pointer-events-none"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
@@ -221,27 +224,86 @@ export default function AboutPage() {
                      </div>
                    </div>
                    
-                   {/* Animated Bar Chart */}
-                   <div className="h-28 flex items-end justify-between gap-2 px-2 pb-2 mt-4 relative">
-                      {[
-                        { year: '24', val: 15, label: '50' },
-                        { year: '26', val: 35, label: '500' },
-                        { year: '28', val: 65, label: '2.5k' },
-                        { year: '30', val: 100, label: '10k' }
-                      ].map((bar, idx) => (
-                        <div key={idx} className="flex flex-col items-center gap-2 w-full h-full justify-end relative z-10">
-                           <div className="relative w-full max-w-[30px] h-[80%] flex items-end bg-gray-50 rounded-t-lg overflow-hidden">
-                              <motion.div 
-                                initial={{ height: "0%" }}
-                                whileInView={{ height: `${bar.val}%` }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 1.2, delay: 0.2 + (idx * 0.2), ease: "easeOut" }}
-                                className={`w-full rounded-t-lg ${idx === 3 ? 'bg-gradient-to-t from-godam-forest to-godam-leaf' : 'bg-green-200'}`}
+                   {/* Animated Graph Chart Container */}
+                   <div className="h-40 w-full mt-6 relative flex items-end">
+                      
+                      {/* Grid Background */}
+                      <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between pointer-events-none z-0 px-1 opacity-20">
+                          {[0, 1, 2, 3].map((_, i) => (
+                              <div key={i} className="w-full h-px bg-gray-200"></div>
+                          ))}
+                      </div>
+
+                      {/* Chart Content */}
+                      <div className="relative w-full h-[85%] z-10">
+                          
+                          {/* SVG Line & Area */}
+                          <svg className="absolute inset-0 w-full h-full overflow-visible pointer-events-none z-0" preserveAspectRatio="none" viewBox="0 0 100 100">
+                              <defs>
+                                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#48A111" stopOpacity="0.4" />
+                                  <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+                                </linearGradient>
+                              </defs>
+                              
+                              <motion.path 
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: 1 }}
+                                transition={{ duration: 1, delay: 0.5 }}
+                                d="M10,85 C30,80 40,65 60,55 S80,20 90,5 L90,100 L10,100 Z"
+                                fill="url(#areaGradient)"
                               />
-                           </div>
-                           <span className={`text-[9px] font-bold ${idx === 3 ? 'text-godam-forest' : 'text-gray-400'}`}>{bar.year}</span>
-                        </div>
-                      ))}
+                              
+                              <motion.path 
+                                initial={{ pathLength: 0 }}
+                                whileInView={{ pathLength: 1 }}
+                                transition={{ duration: 1.5, ease: "easeInOut" }}
+                                d="M10,85 C30,80 40,65 60,55 S80,20 90,5"
+                                fill="none"
+                                stroke="#48A111"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                              />
+                          </svg>
+
+                          {/* Data Points Layer */}
+                          <div className="absolute inset-0 z-10 w-full h-full pointer-events-none">
+                             {[
+                                { left: '10%', top: '85%', label: '50', year: '2024' },
+                                { left: '36%', top: '68%', label: '500', year: '2026' },
+                                { left: '60%', top: '55%', label: '2.5k', year: '2028' },
+                                { left: '90%', top: '5%', label: '10k', year: '2030' }
+                             ].map((point, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group pointer-events-auto cursor-pointer"
+                                    style={{ left: point.left, top: point.top }}
+                                >
+                                    {/* Tooltip */}
+                                    <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 transform translate-y-2 group-hover:translate-y-0">
+                                        <div className="bg-godam-forest text-white text-[10px] font-bold py-1 px-2 rounded shadow-lg whitespace-nowrap">
+                                            {point.label} Warehouses
+                                        </div>
+                                    </div>
+
+                                    {/* Dot */}
+                                    <motion.div 
+                                      initial={{ scale: 0 }}
+                                      whileInView={{ scale: 1 }}
+                                      transition={{ delay: 1 + (idx * 0.2), type: "spring" }}
+                                      className={`w-4 h-4 rounded-full bg-white border-[3px] border-godam-forest shadow-md group-hover:scale-125 transition-transform ${idx===3 ? 'animate-pulse' : ''}`}
+                                    />
+                                    
+                                    {/* Year Label */}
+                                    <div className="absolute top-full mt-2 text-center">
+                                        <span className={`text-[10px] font-bold tracking-tight ${idx === 3 ? 'text-godam-forest' : 'text-gray-400'}`}>
+                                            {point.year}
+                                        </span>
+                                    </div>
+                                </div>
+                             ))}
+                          </div>
+                      </div>
                    </div>
                  </div>
 
