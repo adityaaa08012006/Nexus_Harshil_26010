@@ -22,7 +22,7 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
   try {
     const { warehouseId } = req.params;
     const userId = req.user.id;
-    const profile = req.user.profile; // Profile already fetched by auth middleware
+    const profile = req.profile; // Profile already fetched by auth middleware
 
     console.log(
       `[SENSOR READINGS] Request for warehouse ${warehouseId} by user ${req.user.email}`,
@@ -46,7 +46,7 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
 
     if (profile.role === "owner") {
       // Verify owner owns this warehouse
-      const { data: warehouse } = await supabase
+      const { data: warehouse } = await supabaseAdmin
         .from("warehouses")
         .select("owner_id")
         .eq("id", warehouseId)
@@ -79,7 +79,7 @@ router.get("/readings/:warehouseId", requireAuth, async (req, res) => {
     const readings = [];
 
     for (const zone of zones) {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("sensor_readings")
         .select("*")
         .eq("warehouse_id", warehouseId)
@@ -151,7 +151,7 @@ router.get("/readings/:warehouseId/history", requireAuth, async (req, res) => {
     const { warehouseId } = req.params;
     const { zone, startTime, endTime, limit = 100 } = req.query;
     const userId = req.user.id;
-    const profile = req.user.profile; // Use profile from auth middleware
+    const profile = req.profile; // Use profile from auth middleware
 
     console.log(
       `[SENSOR HISTORY] Request for warehouse ${warehouseId} by user ${req.user.email}`,
@@ -168,7 +168,7 @@ router.get("/readings/:warehouseId/history", requireAuth, async (req, res) => {
     }
 
     if (profile.role === "owner") {
-      const { data: warehouse } = await supabase
+      const { data: warehouse } = await supabaseAdmin
         .from("warehouses")
         .select("owner_id")
         .eq("id", warehouseId)
@@ -182,7 +182,7 @@ router.get("/readings/:warehouseId/history", requireAuth, async (req, res) => {
     }
 
     // Build query
-    let query = supabase
+    let query = supabaseAdmin
       .from("sensor_readings")
       .select("*")
       .eq("warehouse_id", warehouseId)
@@ -227,7 +227,7 @@ router.get(
       const { warehouseId, zone } = req.params;
       const { limit = 50 } = req.query;
       const userId = req.user.id;
-      const profile = req.user.profile; // Use profile from auth middleware
+      const profile = req.profile; // Use profile from auth middleware
 
       console.log(
         `[SENSOR ZONE] Request for zone ${zone} in warehouse ${warehouseId} by user ${req.user.email}`,
@@ -243,8 +243,22 @@ router.get(
         return res.status(403).json({ error: "Access denied" });
       }
 
+      if (profile.role === "owner") {
+        const { data: warehouse } = await supabaseAdmin
+          .from("warehouses")
+          .select("owner_id")
+          .eq("id", warehouseId)
+          .single();
+
+        if (!warehouse || warehouse.owner_id !== userId) {
+          console.log(`[SENSOR ZONE] ❌ Owner access denied`);
+          return res.status(403).json({ error: "Access denied" });
+        }
+        console.log(`[SENSOR ZONE] ✅ Owner access granted`);
+      }
+
       // Fetch zone readings
-      const { data: readings, error } = await supabase
+      const { data: readings, error } = await supabaseAdmin
         .from("sensor_readings")
         .select("*")
         .eq("warehouse_id", warehouseId)
@@ -276,7 +290,7 @@ router.get("/thresholds/:warehouseId", requireAuth, async (req, res) => {
       `[SENSOR THRESHOLDS] Request for warehouse ${warehouseId} by user ${req.user.email}`,
     );
 
-    const { data: thresholds, error } = await supabase
+    const { data: thresholds, error } = await supabaseAdmin
       .from("sensor_thresholds")
       .select("*")
       .eq("warehouse_id", warehouseId);
@@ -303,7 +317,7 @@ router.get("/thresholds/:warehouseId", requireAuth, async (req, res) => {
 router.post("/thresholds", requireAuth, async (req, res) => {
   try {
     const userId = req.user.id;
-    const profile = req.user.profile; // Use profile from auth middleware
+    const profile = req.profile; // Use profile from auth middleware
     const {
       warehouse_id,
       zone,
@@ -340,7 +354,7 @@ router.post("/thresholds", requireAuth, async (req, res) => {
     }
 
     if (profile.role === "owner") {
-      const { data: warehouse } = await supabase
+      const { data: warehouse } = await supabaseAdmin
         .from("warehouses")
         .select("owner_id")
         .eq("id", warehouse_id)
@@ -358,7 +372,7 @@ router.post("/thresholds", requireAuth, async (req, res) => {
     }
 
     // Upsert threshold (update if exists, insert if not)
-    const { data: threshold, error } = await supabase
+    const { data: threshold, error } = await supabaseAdmin
       .from("sensor_thresholds")
       .upsert(
         {
@@ -405,7 +419,7 @@ router.get("/alerts/:warehouseId", requireAuth, async (req, res) => {
     const showAll = acknowledged === "all";
     const showAcknowledged = acknowledged === "true";
 
-    let query = supabase
+    let query = supabaseAdmin
       .from("sensor_alerts")
       .select("*")
       .eq("warehouse_id", warehouseId)
@@ -446,7 +460,7 @@ router.post("/alerts/:alertId/acknowledge", requireAuth, async (req, res) => {
       `[ACKNOWLEDGE ALERT] User ${req.user.email} acknowledging alert ${alertId}`,
     );
 
-    const { data: alert, error } = await supabase
+    const { data: alert, error } = await supabaseAdmin
       .from("sensor_alerts")
       .update({
         acknowledged: true,

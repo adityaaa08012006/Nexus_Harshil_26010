@@ -100,7 +100,7 @@ router.post("/", requireAuth, async (req, res) => {
 
 router.get("/", requireAuth, async (req, res) => {
   try {
-    const role = req.user.profile?.role;
+    const role = req.profile?.role;
     let query = supabaseAdmin
       .from("allocation_requests")
       .select("*, requester:user_profiles!requester_id(name, email, role)")
@@ -433,13 +433,15 @@ router.get("/dispatches/list", requireAuth, async (req, res) => {
 
     let query = supabaseAdmin
       .from("dispatches")
-      .select(`
+      .select(
+        `
         *,
         batch:batches!batch_id(batch_id, crop, variety, zone, warehouse_id),
         allocation:allocation_requests!allocation_id(request_id, requester_id, crop, variety, location,
           requester:user_profiles!requester_id(name, email, role)
         )
-      `)
+      `,
+      )
       .order("created_at", { ascending: false });
 
     if (status && status !== "all") {
@@ -478,13 +480,15 @@ router.get("/dispatches/my", requireAuth, async (req, res) => {
 
     const { data, error } = await supabaseAdmin
       .from("dispatches")
-      .select(`
+      .select(
+        `
         *,
         batch:batches!batch_id(batch_id, crop, variety, zone, warehouse_id),
         allocation:allocation_requests!allocation_id(request_id, requester_id, crop, variety, location, quantity, unit, deadline, status,
           requester:user_profiles!requester_id(name, email, role)
         )
-      `)
+      `,
+      )
       .in("allocation_id", requestIds)
       .order("created_at", { ascending: false });
 
@@ -508,7 +512,11 @@ router.put(
       const { status } = req.body;
       const validStatuses = ["pending", "in-transit", "delivered", "cancelled"];
       if (!validStatuses.includes(status)) {
-        return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` });
+        return res
+          .status(400)
+          .json({
+            error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+          });
       }
 
       const { data, error } = await supabaseAdmin

@@ -14,15 +14,32 @@ router.get("/:allocationId", requireAuth, async (req, res) => {
   try {
     const { allocationId } = req.params;
 
-    const { data, error } = await supabaseAdmin
+    const { data: messages, error } = await supabaseAdmin
       .from("messages")
-      .select("*, sender:user_profiles!sender_id(name, email, role)")
+      .select("*")
       .eq("allocation_id", allocationId)
       .order("created_at", { ascending: true });
 
     if (error) throw error;
 
-    res.json(data ?? []);
+    // Fetch sender profiles separately since messages.sender_id -> auth.users, not user_profiles
+    if (messages && messages.length > 0) {
+      const senderIds = [...new Set(messages.map(m => m.sender_id))];
+      const { data: profiles } = await supabaseAdmin
+        .from("user_profiles")
+        .select("id, name, email, role")
+        .in("id", senderIds);
+
+      // Attach sender info to each message
+      const messagesWithSenders = messages.map(msg => ({
+        ...msg,
+        sender: profiles?.find(p => p.id === msg.sender_id) || null
+      }));
+
+      return res.json(messagesWithSenders);
+    }
+
+    res.json(messages ?? []);
   } catch (err) {
     console.error("[messages] GET /:allocationId:", err.message);
     res.status(500).json({ error: "Failed to fetch messages." });
@@ -50,19 +67,26 @@ router.post("/:allocationId", requireAuth, async (req, res) => {
       return res.status(404).json({ error: "Allocation request not found." });
     }
 
-    const { data, error } = await supabaseAdmin
+    const { data: message, error } = await supabaseAdmin
       .from("messages")
       .insert({
         allocation_id: allocationId,
         sender_id: req.user.id,
         content: content.trim(),
       })
-      .select("*, sender:user_profiles!sender_id(name, email, role)")
+      .select("*")
       .single();
 
     if (error) throw error;
 
-    res.status(201).json(data);
+    // Fetch sender profile separately
+    const { data: sender } = await supabaseAdmin
+      .from("user_profiles")
+      .select("id, name, email, role")
+      .eq("id", req.user.id)
+      .single();
+
+    res.status(201).json({ ...message, sender });
   } catch (err) {
     console.error("[messages] POST /:allocationId:", err.message);
     res.status(500).json({ error: "Failed to send message." });

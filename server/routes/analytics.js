@@ -35,8 +35,8 @@ router.get("/overview", requireAuth, async (req, res) => {
     const filters = parseFilters(req);
 
     // If manager, restrict to their warehouse
-    if (req.user.profile.role === "manager") {
-      filters.warehouseId = req.user.profile.warehouse_id;
+    if (req.profile.role === "manager") {
+      filters.warehouseId = req.profile.warehouse_id;
     }
 
     const data = await getOverview(supabaseAdmin, filters);
@@ -52,8 +52,8 @@ router.get("/overview", requireAuth, async (req, res) => {
 router.get("/waste-reduction", requireAuth, async (req, res) => {
   try {
     const filters = parseFilters(req);
-    if (req.user.profile.role === "manager") {
-      filters.warehouseId = req.user.profile.warehouse_id;
+    if (req.profile.role === "manager") {
+      filters.warehouseId = req.profile.warehouse_id;
     }
 
     const data = await getWasteReduction(supabaseAdmin, filters);
@@ -69,8 +69,8 @@ router.get("/waste-reduction", requireAuth, async (req, res) => {
 router.get("/efficiency", requireAuth, async (req, res) => {
   try {
     const filters = parseFilters(req);
-    if (req.user.profile.role === "manager") {
-      filters.warehouseId = req.user.profile.warehouse_id;
+    if (req.profile.role === "manager") {
+      filters.warehouseId = req.profile.warehouse_id;
     }
 
     const data = await getEfficiency(supabaseAdmin, filters);
@@ -86,8 +86,8 @@ router.get("/efficiency", requireAuth, async (req, res) => {
 router.get("/roi", requireAuth, async (req, res) => {
   try {
     const filters = parseFilters(req);
-    if (req.user.profile.role === "manager") {
-      filters.warehouseId = req.user.profile.warehouse_id;
+    if (req.profile.role === "manager") {
+      filters.warehouseId = req.profile.warehouse_id;
     }
 
     const data = await getROI(supabaseAdmin, filters);
@@ -103,8 +103,8 @@ router.get("/roi", requireAuth, async (req, res) => {
 router.get("/trends", requireAuth, async (req, res) => {
   try {
     const filters = parseFilters(req);
-    if (req.user.profile.role === "manager") {
-      filters.warehouseId = req.user.profile.warehouse_id;
+    if (req.profile.role === "manager") {
+      filters.warehouseId = req.profile.warehouse_id;
     }
 
     const data = await getTrends(supabaseAdmin, filters);
@@ -140,8 +140,8 @@ router.get("/export", requireAuth, async (req, res) => {
     const filters = parseFilters(req);
     const format = req.query.format || "csv"; // csv | json
 
-    if (req.user.profile.role === "manager") {
-      filters.warehouseId = req.user.profile.warehouse_id;
+    if (req.profile.role === "manager") {
+      filters.warehouseId = req.profile.warehouse_id;
     }
 
     // Gather all data
@@ -153,7 +153,10 @@ router.get("/export", requireAuth, async (req, res) => {
     ]);
 
     if (format === "json") {
-      return res.json({ success: true, data: { overview, waste, efficiency, roi } });
+      return res.json({
+        success: true,
+        data: { overview, waste, efficiency, roi },
+      });
     }
 
     // Build CSV
@@ -202,9 +205,13 @@ router.get("/export", requireAuth, async (req, res) => {
     // Per-warehouse efficiency
     if (efficiency.perWarehouse?.length) {
       lines.push("=== PER-WAREHOUSE EFFICIENCY ===");
-      lines.push("Warehouse,Total Orders,Completed,Cancelled,Fulfillment Rate,Total Qty (kg)");
+      lines.push(
+        "Warehouse,Total Orders,Completed,Cancelled,Fulfillment Rate,Total Qty (kg)",
+      );
       efficiency.perWarehouse.forEach((w) => {
-        lines.push(`${w.warehouse_name},${w.total},${w.completed},${w.cancelled},${w.fulfillmentRate}%,${w.totalQty}`);
+        lines.push(
+          `${w.warehouse_name},${w.total},${w.completed},${w.cancelled},${w.fulfillmentRate}%,${w.totalQty}`,
+        );
       });
       lines.push("");
     }
@@ -212,9 +219,13 @@ router.get("/export", requireAuth, async (req, res) => {
     // Waste timeline
     if (waste.timeline?.length) {
       lines.push("=== MONTHLY SPOILAGE TREND ===");
-      lines.push("Month,Spoilage Rate,Baseline Rate,Total Batches,Expired Batches");
+      lines.push(
+        "Month,Spoilage Rate,Baseline Rate,Total Batches,Expired Batches",
+      );
       waste.timeline.forEach((t) => {
-        lines.push(`${t.month},${t.spoilageRate}%,${t.baselineRate}%,${t.total},${t.expired}`);
+        lines.push(
+          `${t.month},${t.spoilageRate}%,${t.baselineRate}%,${t.total},${t.expired}`,
+        );
       });
       lines.push("");
     }
@@ -222,15 +233,22 @@ router.get("/export", requireAuth, async (req, res) => {
     // ROI timeline
     if (roi.timeline?.length) {
       lines.push("=== MONTHLY ROI TREND ===");
-      lines.push("Month,Baseline Loss (₹),Actual Loss (₹),Savings (₹),Cumulative Savings (₹)");
+      lines.push(
+        "Month,Baseline Loss (₹),Actual Loss (₹),Savings (₹),Cumulative Savings (₹)",
+      );
       roi.timeline.forEach((t) => {
-        lines.push(`${t.month},${t.baselineLoss},${t.actualLoss},${t.savings},${t.cumulativeSavings}`);
+        lines.push(
+          `${t.month},${t.baselineLoss},${t.actualLoss},${t.savings},${t.cumulativeSavings}`,
+        );
       });
     }
 
     const csv = lines.join("\n");
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename=analytics-report-${filters.period}.csv`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=analytics-report-${filters.period}.csv`,
+    );
     res.send(csv);
   } catch (err) {
     console.error("[analytics/export] Error:", err.message);
