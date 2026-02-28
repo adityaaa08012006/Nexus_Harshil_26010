@@ -12,7 +12,7 @@ import { RoleRoute } from "./components/auth/RoleRoute";
 import { AppLayout } from "./components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
-import { AuthPage } from "./pages/AuthPage";
+import AuthPage from "./pages/AuthPage";
 import { ManagerDashboard } from "./pages/ManagerDashboard";
 import { OwnerDashboard } from "./pages/OwnerDashboard";
 import { InventoryPage } from "./pages/InventoryPage";

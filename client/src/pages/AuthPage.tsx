@@ -1,637 +1,496 @@
 import React, { useState } from "react";
-import { useNavigate, Navigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import type { UserRole } from "../lib/supabase";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Mail, 
+  Lock, 
+  User, 
+  ArrowRight, 
+  ArrowLeft, 
+  Building2, 
+  Package, 
+  ClipboardCheck, 
+  Check, 
+  Loader2,
+  Sprout,
+  ShieldCheck,
+  TrendingUp
+} from "lucide-react";
 import logo from "../assets/public/logo1.png";
 
-// ─── Role Selection Card ──────────────────────────────────────────────────────
+// ─── Constants & Types ────────────────────────────────────────────────────────
 
-interface RoleCardProps {
-  role: UserRole;
-  selected: boolean;
-  onSelect: () => void;
-  icon: string;
-  title: string;
-  description: string;
-}
+type AuthView = "login" | "register";
 
-const RoleCard: React.FC<RoleCardProps> = ({
-  selected,
-  onSelect,
-  icon,
-  title,
-  description,
-}) => (
-  <button
-    type="button"
-    onClick={onSelect}
-    className="relative w-full aspect-square text-left rounded-xl p-4 border-2 transition-all duration-200 focus:outline-none flex flex-col items-center justify-center"
-    style={{
-      borderColor: selected ? "#48A111" : "rgba(37,103,30,0.15)",
-      backgroundColor: selected ? "rgba(72,161,17,0.07)" : "#fff",
-    }}
-  >
-    {selected && (
-      <span
-        className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
-        style={{ backgroundColor: "#48A111" }}
-      >
-        ✓
-      </span>
-    )}
-    <span className="block text-3xl mb-2">{icon}</span>
-    <span className="block text-sm font-bold text-center" style={{ color: "#25671E" }}>
-      {title}
-    </span>
-    <span
-      className="block text-xs mt-1 text-center"
-      style={{ color: "rgba(37,103,30,0.6)" }}
-    >
-      {description}
-    </span>
-  </button>
-);
-
-// ─── Shared Input ─────────────────────────────────────────────────────────────
-
-interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  id: string;
-}
-
-const Field: React.FC<FieldProps> = ({ label, id, ...rest }) => (
-  <div className="flex flex-col gap-1.5">
-    <label
-      htmlFor={id}
-      className="text-sm font-medium"
-      style={{ color: "#25671E" }}
-    >
-      {label}
-    </label>
-    <input
-      id={id}
-      className="w-full px-4 py-2.5 rounded-lg text-sm outline-none border transition-all duration-200 focus:ring-2"
-      style={{
-        borderColor: "rgba(37,103,30,0.2)",
-        color: "#25671E",
-        backgroundColor: "#fff",
-      }}
-      onFocus={(e) => (e.currentTarget.style.borderColor = "#48A111")}
-      onBlur={(e) =>
-        (e.currentTarget.style.borderColor = "rgba(37,103,30,0.2)")
-      }
-      {...rest}
-    />
-  </div>
-);
-
-// ─── Login Form ───────────────────────────────────────────────────────────────
-
-const LoginForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
-  const { login, error, clearError, roleRedirectPath } = useAuthContext();
-  const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("[LoginForm] Submit triggered", { email, password: "***" });
-    clearError();
-    setIsSubmitting(true);
-    try {
-      console.log("[LoginForm] Calling login function...");
-      await login(email, password);
-      console.log("[LoginForm] Login successful, navigating...");
-      navigate(roleRedirectPath(), { replace: true });
-    } catch (err) {
-      console.error("[LoginForm] Login error:", err);
-      // error shown via context
-    } finally {
-      setIsSubmitting(false);
-      console.log("[LoginForm] Submit completed");
-    }
-  };
-
-  // Only disable during submission, not during auth context's initial load
-  const isDisabled = isSubmitting;
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <div>
-        <h2 className="text-2xl font-extrabold" style={{ color: "#25671E" }}>
-          Welcome back
-        </h2>
-        <p className="text-sm mt-1" style={{ color: "rgba(37,103,30,0.6)" }}>
-          Sign in to your Godam Solutions account
-        </p>
-      </div>
-
-      {error && (
-        <div
-          className="px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2"
-          style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }}
-        >
-          <span>⚠️</span> {error}
-        </div>
-      )}
-
-      <Field
-        label="Email address"
-        id="login-email"
-        type="email"
-        placeholder="you@example.com"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        autoComplete="email"
-      />
-
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <label
-            htmlFor="login-password"
-            className="text-sm font-medium"
-            style={{ color: "#25671E" }}
-          >
-            Password
-          </label>
-          <button
-            type="button"
-            className="text-xs font-semibold transition-colors"
-            style={{ color: "#48A111" }}
-          >
-            Forgot password?
-          </button>
-        </div>
-        <div className="relative">
-          <input
-            id="login-password"
-            type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-            className="w-full px-4 py-2.5 pr-10 rounded-lg text-sm outline-none border transition-all duration-200 focus:ring-2"
-            style={{ borderColor: "rgba(37,103,30,0.2)", color: "#25671E" }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "#48A111")}
-            onBlur={(e) =>
-              (e.currentTarget.style.borderColor = "rgba(37,103,30,0.2)")
-            }
-          />
-          <button
-            type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-lg"
-            style={{ color: "rgba(37,103,30,0.5)" }}
-            onClick={() => setShowPassword(!showPassword)}
-            tabIndex={-1}
-          >
-            {showPassword ? "🙈" : "👁️"}
-          </button>
-        </div>
-      </div>
-
-      <button
-        type="submit"
-        disabled={isDisabled}
-        className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
-        style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
-      >
-        {isSubmitting ? "Signing in…" : "Sign In →"}
-      </button>
-
-      <p
-        className="text-center text-sm"
-        style={{ color: "rgba(37,103,30,0.6)" }}
-      >
-        Don&apos;t have an account?{" "}
-        <button
-          type="button"
-          onClick={onSwitch}
-          className="font-semibold transition-colors"
-          style={{ color: "#48A111" }}
-        >
-          Create one
-        </button>
-      </p>
-    </form>
-  );
+const VARIANTS = {
+  hidden: { opacity: 0, x: 20 },
+  visible: { opacity: 1, x: 0 },
+  exit: { opacity: 0, x: -20 },
 };
-
-// ─── Register Form ────────────────────────────────────────────────────────────
 
 const ROLES: {
   role: UserRole;
-  icon: string;
+  icon: React.ElementType;
   title: string;
   description: string;
 }[] = [
   {
     role: "owner",
-    icon: "🏢",
+    icon: Building2,
     title: "Warehouse Owner",
-    description: "Multi-warehouse visibility & analytics",
+    description: "Manage multiple sites & view analytics",
   },
   {
     role: "manager",
-    icon: "📦",
+    icon: Package,
     title: "Warehouse Manager",
-    description: "Full inventory & sensor control",
+    description: "Control inventory & monitor sensors",
   },
   {
     role: "qc_rep",
-    icon: "📋",
+    icon: ClipboardCheck,
     title: "QC Representative",
-    description: "Order upload & tracking",
+    description: "Handle inspections & quality checks",
   },
 ];
 
-const RegisterForm: React.FC<{ onSwitch: () => void }> = ({ onSwitch }) => {
-  const { register, error, clearError } = useAuthContext();
-  const navigate = useNavigate();
+// ─── UI Components ────────────────────────────────────────────────────────────
 
-  const [step, setStep] = useState<1 | 2>(1);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [role, setRole] = useState<UserRole>("manager");
-  const [localError, setLocalError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+const InputField = ({ 
+  icon: Icon, 
+  error, 
+  ...props 
+}: React.InputHTMLAttributes<HTMLInputElement> & { icon: React.ElementType, error?: string }) => (
+  <div className="space-y-1">
+    <label className="block text-sm font-medium text-gray-700 ml-1">
+      {props.placeholder}
+    </label>
+    <div className="relative group">
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#48A111] transition-colors">
+        <Icon size={18} />
+      </div>
+      <input
+        className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 bg-gray-50/50 outline-none transition-all duration-200 focus:bg-white
+          ${error 
+            ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-500/10" 
+            : "border-gray-100 focus:border-[#48A111] focus:ring-4 focus:ring-[#48A111]/10"
+          }
+        `}
+        {...props}
+        placeholder="" 
+      />
+    </div>
+    {error && (
+      <motion.p 
+        initial={{ opacity: 0, y: -5 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-xs text-red-500 ml-1 font-medium"
+      >
+        {error}
+      </motion.p>
+    )}
+  </div>
+);
 
-  const handleNext = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLocalError("");
-    clearError();
-    
-    // Validate step 1 fields
-    if (!name.trim()) {
-      setLocalError("Please enter your full name");
-      return;
-    }
-    if (!email.trim()) {
-      setLocalError("Please enter your email address");
-      return;
-    }
-    if (password.length < 6) {
-      setLocalError("Password must be at least 6 characters");
-      return;
-    }
-    if (password !== confirm) {
-      setLocalError("Passwords do not match");
-      return;
-    }
-    
-    setStep(2);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    clearError();
-    setLocalError("");
-    
-    setIsSubmitting(true);
-    try {
-      await register(name, email, password, role);
-      // After signup Supabase may send a confirmation email;
-      // for demo we navigate immediately
-      const path =
-        role === "owner"
-          ? "/owner/dashboard"
-          : role === "manager"
-            ? "/manager/dashboard"
-            : "/qc/orders";
-      navigate(path, { replace: true });
-    } catch {
-      // shown via context error
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const displayError = localError || error;
-  const isDisabled = isSubmitting;
-
-  // Step 1: Basic Information
-  if (step === 1) {
-    return (
-      <form onSubmit={handleNext} className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-2xl font-extrabold" style={{ color: "#25671E" }}>
-            Create account
-          </h2>
-          <p className="text-sm mt-1" style={{ color: "rgba(37,103,30,0.6)" }}>
-            Join Godam Solutions — let's get started
-          </p>
-        </div>
-
-        {displayError && (
-          <div
-            className="px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2"
-            style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }}
-          >
-            <span>⚠️</span> {displayError}
-          </div>
-        )}
-
-        <Field
-          label="Full name"
-          id="reg-name"
-          type="text"
-          placeholder="Ravi Kumar"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <Field
-          label="Email address"
-          id="reg-email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          autoComplete="email"
-        />
-        <Field
-          label="Password"
-          id="reg-password"
-          type="password"
-          placeholder="Min. 6 characters"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          autoComplete="new-password"
-        />
-        <Field
-          label="Confirm password"
-          id="reg-confirm"
-          type="password"
-          placeholder="Repeat password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          required
-          autoComplete="new-password"
-        />
-
-        <button
-          type="submit"
-          className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:opacity-90"
-          style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
-        >
-          Next →
-        </button>
-
-        <p
-          className="text-center text-sm"
-          style={{ color: "rgba(37,103,30,0.6)" }}
-        >
-          Already have an account?{" "}
-          <button
-            type="button"
-            onClick={onSwitch}
-            className="font-semibold"
-            style={{ color: "#48A111" }}
-          >
-            Sign in
-          </button>
-        </p>
-      </form>
-    );
-  }
-
-  // Step 2: Role Selection
+const RoleCard = ({ 
+  item, 
+  selected, 
+  onClick 
+}: { 
+  item: typeof ROLES[0], 
+  selected: boolean, 
+  onClick: () => void 
+}) => {
+  const Icon = item.icon;
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+    <motion.button
+      type="button"
+      onClick={onClick}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={`relative w-full p-4 rounded-xl text-left border-2 transition-all duration-200 flex flex-col gap-3 group
+        ${selected 
+          ? `border-[#48A111] bg-[#48A111]/5 shadow-sm` 
+          : "border-gray-100 hover:border-gray-200 hover:bg-gray-50"
+        }
+      `}
+    >
+      <div className="flex justify-between items-start w-full">
+        <div className={`p-2.5 rounded-lg transition-colors ${selected ? "bg-[#48A111] text-white" : "bg-gray-100 text-gray-500 group-hover:bg-white"}`}>
+          <Icon size={20} />
+        </div>
+        {selected && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="w-5 h-5 bg-[#48A111] rounded-full flex items-center justify-center text-white"
+          >
+            <Check size={12} strokeWidth={3} />
+          </motion.div>
+        )}
+      </div>
+      
       <div>
-        <button
-          type="button"
-          onClick={() => setStep(1)}
-          className="text-sm font-medium mb-3 flex items-center gap-1 transition-colors"
-          style={{ color: "#48A111" }}
-        >
-          ← Back
-        </button>
-        <h2 className="text-2xl font-extrabold" style={{ color: "#25671E" }}>
-          Select your role
-        </h2>
-        <p className="text-sm mt-1" style={{ color: "rgba(37,103,30,0.6)" }}>
-          Choose how you'll use Godam Solutions
+        <h3 className={`font-bold transition-colors ${selected ? "text-[#25671E]" : "text-gray-900"}`}>
+          {item.title}
+        </h3>
+        <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+          {item.description}
         </p>
       </div>
-
-      {displayError && (
-        <div
-          className="px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2"
-          style={{ backgroundColor: "#FEE2E2", color: "#DC2626" }}
-        >
-          <span>⚠️</span> {displayError}
-        </div>
-      )}
-
-      <div className="grid grid-cols-3 gap-3">
-        {ROLES.map((r) => (
-          <RoleCard
-            key={r.role}
-            {...r}
-            selected={role === r.role}
-            onSelect={() => setRole(r.role)}
-          />
-        ))}
-      </div>
-
-      <button
-        type="submit"
-        disabled={isDisabled}
-        className="w-full py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
-        style={{ backgroundColor: "#25671E", color: "#F7F0F0" }}
-      >
-        {isSubmitting ? "Creating account…" : "Create Account →"}
-      </button>
-
-      <p
-        className="text-center text-sm"
-        style={{ color: "rgba(37,103,30,0.6)" }}
-      >
-        Already have an account?{" "}
-        <button
-          type="button"
-          onClick={onSwitch}
-          className="font-semibold"
-          style={{ color: "#48A111" }}
-        >
-          Sign in
-        </button>
-      </p>
-    </form>
+    </motion.button>
   );
 };
 
-// ─── Auth Page ────────────────────────────────────────────────────────────────
+// ─── Main Page Component ──────────────────────────────────────────────────────
 
-export const AuthPage: React.FC = () => {
-  const { isAuthenticated, isLoading, roleRedirectPath, error, clearError } =
-    useAuthContext();
-  const [searchParams] = useSearchParams();
-  const [mode, setMode] = useState<"login" | "register">(
-    searchParams.get("tab") === "register" ? "register" : "login",
-  );
+const AuthPage: React.FC = () => {
+  const { login, register, error, clearError, roleRedirectPath } = useAuthContext();
+  const navigate = useNavigate();
+  // Location is unused but often useful for redirects, keeping for now
+  // const location = useLocation();
+  
+  // State
+  const [view, setView] = useState<AuthView>("login");
+  const [step, setStep] = useState<1 | 2>(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [localError, setLocalError] = useState("");
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "manager" as UserRole
+  });
 
-  const isNetworkError =
-    !!error && (error.includes("Cannot reach") || error.includes("fetch"));
-
-  // Clear errors when switching between login and register
-  const switchMode = (newMode: "login" | "register") => {
+  // Switch views
+  const switchView = (v: AuthView) => {
+    setView(v);
+    setStep(1);
     clearError();
-    setMode(newMode);
+    setLocalError("");
+    setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
   };
 
-  // Already logged in → redirect to dashboard
-  if (!isLoading && isAuthenticated) {
-    return <Navigate to={roleRedirectPath()} replace />;
-  }
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (localError) setLocalError("");
+  };
+
+  const validateStep1 = () => {
+    if (!formData.name.trim()) return "Full name is required";
+    if (!formData.email.trim()) return "Email is required";
+    if (formData.password.length < 6) return "Password must be at least 6 characters";
+    if (formData.password !== formData.confirmPassword) return "Passwords do not match";
+    return null;
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setLocalError("");
+    clearError();
+    
+    try {
+      await login(formData.email, formData.password);
+      navigate(roleRedirectPath(), { replace: true });
+    } catch (err: any) {
+      // Error is handled by context, but we catch here to stop loading
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegister = async () => {
+    setIsLoading(true);
+    setLocalError("");
+    clearError();
+    
+    try {
+      await register(formData.name, formData.email, formData.password, formData.role);
+      const path = formData.role === "owner" ? "/owner/dashboard" 
+        : formData.role === "manager" ? "/manager/dashboard" 
+        : "/qc/orders";
+      navigate(path, { replace: true });
+    } catch (err: any) {
+       // handled by context
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: "#F7F0F0" }}>
-      {/* ── Left Panel (hidden on mobile) ── */}
-      <div
-        className="hidden lg:flex lg:w-1/2 xl:w-[55%] flex-col items-center justify-center p-12 relative overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(140deg, #1a3a10 0%, #25671E 50%, #48A111 100%)",
-        }}
-      >
-        {/* Decorative circles */}
-        <div
-          className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10"
-          style={{
-            backgroundColor: "#F2B50B",
-            transform: "translate(30%, -30%)",
-          }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-72 h-72 rounded-full opacity-10"
-          style={{
-            backgroundColor: "#48A111",
-            transform: "translate(-30%, 30%)",
-          }}
-        />
+    <div className="min-h-screen w-full flex bg-white font-sans text-slate-800">
+      
+      {/* Left Panel - Branding (Hidden on mobile) */}
+      <div className="hidden lg:flex flex-col w-1/2 bg-[#0B2211] relative overflow-hidden p-12 text-white justify-between">
+        {/* Background Patterns */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#48A111]/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/4"></div>
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-[#25671E]/30 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/4"></div>
+          {/* Grid Pattern Overlay */}
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+        </div>
 
-        {/* Centered Content */}
-        <div className="z-10 text-center">
-          {/* Logo */}
-          <div className="mb-8 flex justify-center">
-            <img 
-              src={logo} 
-              alt="Godam AI" 
-              className="h-32 w-auto object-contain drop-shadow-2xl"
-            />
+        {/* Content */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Godam Solutions" className="h-12 w-auto" />
           </div>
-          
-          {/* Godam AI Title */}
-          <h1
-            className="text-5xl xl:text-6xl font-bold mb-6"
-            style={{ color: "#F7F0F0" }}
-          >
-            Godam AI
+        </div>
+
+        <div className="relative z-10 space-y-8 max-w-lg">
+          <h1 className="text-5xl font-extrabold leading-tight">
+            Smart Storage <br />
+            <span className="text-[#48A111]">Simpler Future.</span>
           </h1>
-          
-          {/* Impactful Tagline */}
-          <p
-            className="text-2xl xl:text-3xl font-light leading-relaxed"
-            style={{ color: "#F2B50B" }}
-          >
-            Transforming Warehouses<br />with Intelligence
+          <p className="text-lg text-gray-300 leading-relaxed">
+            Revolutionize your agricultural storage with AI-driven insights, real-time monitoring, and seamless inventory management.
           </p>
+          
+          <div className="grid grid-cols-2 gap-4 pt-4">
+            <div className="p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+              <ShieldCheck className="text-[#48A111] mb-2" size={24} />
+              <h3 className="font-bold">Secure Data</h3>
+              <p className="text-sm text-gray-400">Enterprise-grade security for your peace of mind.</p>
+            </div>
+            <div className="p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+              <TrendingUp className="text-[#48A111] mb-2" size={24} />
+              <h3 className="font-bold">Real-time Analytics</h3>
+              <p className="text-sm text-gray-400">Track performance metrics as they happen.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 flex items-center gap-2 text-sm text-gray-400">
+          <span>© 2024 Godam Solutions. Found a bug?</span>
+          <button className="text-white hover:underline decoration-[#48A111] underline-offset-4">Report it here.</button>
         </div>
       </div>
 
-      {/* ── Right Panel (form) ── */}
-      <div className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-10 md:px-16 lg:px-12 xl:px-20">
-        {/* Mobile logo */}
-        <div className="flex items-center justify-center mb-10 lg:hidden">
-          <img src={logo} alt="Godam AI" className="h-14 w-auto" />
-        </div>
-
-        {/* Tab switcher */}
-        <div
-          className="flex rounded-xl p-1 mb-8 self-start gap-1"
-          style={{ backgroundColor: "rgba(37,103,30,0.08)" }}
-        >
-          {(["login", "register"] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => switchMode(t)}
-              className="px-5 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
-              style={{
-                backgroundColor: mode === t ? "#25671E" : "transparent",
-                color: mode === t ? "#F7F0F0" : "rgba(37,103,30,0.6)",
-              }}
-            >
-              {t === "login" ? "Sign In" : "Register"}
-            </button>
-          ))}
-        </div>
-
-        {/* Connection error banner */}
-        {isNetworkError && (
-          <div
-            className="w-full max-w-md mb-4 px-4 py-3 rounded-xl text-sm font-medium flex items-start gap-3"
-            style={{
-              backgroundColor: "#FEF3C7",
-              color: "#92400E",
-              border: "1px solid #F59E0B",
-            }}
-          >
-            <span className="text-lg">⚠️</span>
-            <div>
-              <p className="font-bold mb-0.5">Supabase unreachable</p>
-              <p>{error}</p>
-              <button
-                onClick={() => {
-                  clearError();
-                  window.location.reload();
-                }}
-                className="mt-2 text-xs font-semibold underline"
-              >
-                Retry
-              </button>
-            </div>
+      {/* Right Panel - Auth Forms */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative overflow-y-auto">
+        <div className="w-full max-w-md space-y-8">
+          
+          {/* Header Mobile Only */}
+          <div className="lg:hidden flex justify-center mb-8">
+            <img src={logo} alt="Logo" className="h-12 w-auto" />
           </div>
-        )}
 
-        {/* Form card */}
-        <div
-          className="w-full max-w-md rounded-2xl p-8 shadow-xl"
-          style={{
-            backgroundColor: "#fff",
-            border: "1.5px solid rgba(37,103,30,0.08)",
-          }}
-        >
-          {mode === "login" ? (
-            <LoginForm onSwitch={() => switchMode("register")} />
-          ) : (
-            <RegisterForm onSwitch={() => switchMode("login")} />
-          )}
+          <AnimatePresence mode="wait">
+            
+            {/* LOGIN VIEW */}
+            {view === "login" && (
+              <motion.div
+                key="login"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={VARIANTS}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-bold text-slate-900">Welcome back!</h2>
+                  <p className="text-slate-500">
+                    Enter your credentials to access your account.
+                  </p>
+                </div>
+
+                <form onSubmit={handleLogin} className="space-y-4">
+                  {(error || localError) && (
+                    <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg flex items-center gap-2 border border-red-100">
+                      <span className="font-bold">!</span> {error || localError}
+                    </div>
+                  )}
+
+                  <InputField
+                    name="email"
+                    type="email"
+                    placeholder="Email address"
+                    icon={Mail}
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+
+                  <div className="space-y-1">
+                    <InputField
+                      name="password"
+                      type="password"
+                      placeholder="Password"
+                      icon={Lock}
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                    />
+                    <div className="flex justify-end">
+                      <button type="button" className="text-xs font-semibold text-[#48A111] hover:text-[#25671E] mt-1">
+                        Forgot password?
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#25671E] hover:bg-[#1e5318] text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#25671E]/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Sign In"} 
+                    {!isLoading && <ArrowRight size={18} />}
+                  </button>
+                </form>
+
+                <div className="text-center text-sm text-slate-500">
+                  Don't have an account?{" "}
+                  <button onClick={() => switchView("register")} className="text-[#48A111] font-bold hover:underline">
+                    Create free account
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* REGISTER VIEW - STEP 1 */}
+            {view === "register" && step === 1 && (
+              <motion.div
+                key="register-step1"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={VARIANTS}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-bold text-slate-900">Create account</h2>
+                  <p className="text-slate-500">
+                    Join us to manage your warehouse efficiently.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {(localError || error) && (
+                    <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
+                      {localError || error}
+                    </div>
+                  )}
+                  
+                  <InputField
+                    name="name"
+                    type="text"
+                    placeholder="Full Name"
+                    icon={User}
+                    value={formData.name}
+                    onChange={handleInputChange}
+                  />
+
+                  <InputField
+                    name="email"
+                    type="email"
+                    placeholder="Email Address"
+                    icon={Mail}
+                    value={formData.email}
+                    onChange={handleInputChange}
+                  />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <InputField
+                      name="password"
+                      type="password"
+                      placeholder="Password"
+                      icon={Lock}
+                      value={formData.password}
+                      onChange={handleInputChange}
+                    />
+                    <InputField
+                      name="confirmPassword"
+                      type="password"
+                      placeholder="Confirm"
+                      icon={Lock}
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const err = validateStep1();
+                      if (err) setLocalError(err);
+                      else setStep(2);
+                    }}
+                    className="w-full bg-[#25671E] hover:bg-[#1e5318] text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#25671E]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    Next Step <ArrowRight size={18} />
+                  </button>
+                </div>
+
+                <div className="text-center text-sm text-slate-500">
+                  Already have an account?{" "}
+                  <button onClick={() => switchView("login")} className="text-[#48A111] font-bold hover:underline">
+                    Sign in here
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* REGISTER VIEW - STEP 2 */}
+            {view === "register" && step === 2 && (
+              <motion.div
+                key="register-step2"
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={VARIANTS}
+                transition={{ duration: 0.3 }}
+                className="space-y-6"
+              >
+                <button 
+                  onClick={() => setStep(1)} 
+                  className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors mb-2"
+                >
+                  <ArrowLeft size={16} /> Back to details
+                </button>
+
+                <div className="text-center space-y-2">
+                  <h2 className="text-3xl font-bold text-slate-900">Select Role</h2>
+                  <p className="text-slate-500">
+                    Choose the account type that suits you best.
+                  </p>
+                </div>
+
+                <div className="grid gap-3">
+                  {ROLES.map((roleItem) => (
+                    <RoleCard
+                      key={roleItem.role}
+                      item={roleItem}
+                      selected={formData.role === roleItem.role}
+                      onClick={() => setFormData({ ...formData, role: roleItem.role })}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleRegister}
+                  disabled={isLoading}
+                  className="w-full bg-[#48A111] hover:bg-[#3d8b0e] text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-[#48A111]/20 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                >
+                   {isLoading ? <Loader2 className="animate-spin" size={20} /> : "Create Account"} 
+                   {!isLoading && <Check size={18} />}
+                </button>
+              </motion.div>
+            )}
+
+          </AnimatePresence>
         </div>
-
-        {/* Back to home */}
-        <a
-          href="/"
-          className="mt-6 self-start flex items-center gap-1.5 text-sm font-medium transition-colors"
-          style={{ color: "rgba(37,103,30,0.55)" }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "#25671E")}
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.color = "rgba(37,103,30,0.55)")
-          }
-        >
-          ← Back to home
-        </a>
       </div>
     </div>
   );
 };
+
+export default AuthPage;

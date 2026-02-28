@@ -5,12 +5,12 @@ import { AlertTriangle } from "lucide-react";
 import type { Batch } from "../../lib/supabase";
 
 type SortKey =
-  | "batch_id"
-  | "farmer_name"
+  | "batchId"
+  | "farmerName"
   | "crop"
   | "quantity"
-  | "days_remaining"
-  | "risk_score";
+  | "daysRemaining"
+  | "riskScore";
 type SortDir = "asc" | "desc";
 
 interface InventoryTableProps {
@@ -38,7 +38,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   const [riskFilter, setRiskFilter] = useState<
     "all" | "fresh" | "moderate" | "high"
   >("all");
-  const [sortKey, setSortKey] = useState<SortKey>("risk_score");
+  const [sortKey, setSortKey] = useState<SortKey>("riskScore");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const handleSort = (key: SortKey) => {
@@ -60,8 +60,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       const q = search.toLowerCase();
       rows = rows.filter(
         (b) =>
-          b.batch_id.toLowerCase().includes(q) ||
-          (b.farmer_name ?? "").toLowerCase().includes(q) ||
+          b.batchId.toLowerCase().includes(q) ||
+          (b.farmerName ?? "").toLowerCase().includes(q) ||
           (b.crop ?? "").toLowerCase().includes(q) ||
           (b.zone ?? "").toLowerCase().includes(q),
       );
@@ -69,7 +69,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
 
     if (riskFilter !== "all") {
       rows = rows.filter(
-        (b) => getRiskCategory(b.risk_score ?? 0) === riskFilter,
+        (b) => getRiskCategory(b.riskScore ?? 0) === riskFilter,
       );
     }
 
@@ -77,9 +77,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
       let aVal: string | number;
       let bVal: string | number;
 
-      if (sortKey === "days_remaining") {
-        aVal = getDaysRemaining(a.entry_date, a.shelf_life);
-        bVal = getDaysRemaining(b.entry_date, b.shelf_life);
+      if (sortKey === "daysRemaining") {
+        aVal = getDaysRemaining(a.entryDate, a.shelfLife);
+        bVal = getDaysRemaining(b.entryDate, b.shelfLife);
       } else {
         aVal = (a[sortKey] ?? "") as string | number;
         bVal = (b[sortKey] ?? "") as string | number;
@@ -251,17 +251,17 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     {/* Batch ID */}
                     <td className="px-4 py-3 whitespace-nowrap">
                       <button
-                        onClick={() => onView?.(batch.batch_id)}
+                        onClick={() => onView?.(batch.batchId)}
                         className="text-sm font-mono font-medium hover:underline"
                         style={{ color: "#48A111" }}
                       >
-                        {batch.batch_id.slice(0, 8).toUpperCase()}
+                        {batch.batchId?.slice(0, 8).toUpperCase()}
                       </button>
                     </td>
 
                     {/* Farmer */}
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                      {batch.farmer_name ?? "—"}
+                      {batch.farmerName ?? "—"}
                     </td>
 
                     {/* Crop / Variety */}
