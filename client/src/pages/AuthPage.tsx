@@ -241,7 +241,7 @@ const AuthPage: React.FC = () => {
         {/* Content */}
         <div className="relative z-10">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Godam Solutions" className="h-12 w-auto" />
+            <img src={logo} alt="Godam Solutions" className="h-32 w-auto drop-shadow-lg" />
           </div>
         </div>
 
@@ -279,8 +279,8 @@ const AuthPage: React.FC = () => {
         <div className="w-full max-w-md space-y-8">
           
           {/* Header Mobile Only */}
-          <div className="lg:hidden flex justify-center mb-8">
-            <img src={logo} alt="Logo" className="h-12 w-auto" />
+          <div className="lg:hidden flex justify-center mb-10 w-full">
+            <img src={logo} alt="Logo" className="h-28 w-auto object-contain drop-shadow-md" />
           </div>
 
           <AnimatePresence mode="wait">

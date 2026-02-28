@@ -15,12 +15,12 @@ export default function GlassNavbar() {
 
   return (
     <nav
-      className={`fixed top-4 md:top-6 left-1/2 -translate-x-1/2 w-[95%] md:w-[90%] max-w-7xl z-50 rounded-2xl transition-all duration-300 border border-gray-100 bg-white shadow-lg ${
-        isScrolled ? "shadow-xl" : ""
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-white shadow-md border-b border-gray-100 ${
+        isScrolled ? "shadow-lg" : ""
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="flex justify-between items-center h-20 md:h-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <div className="relative">
@@ -33,14 +33,14 @@ export default function GlassNavbar() {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-2 bg-gray-50 rounded-full p-1 border border-gray-100">
+          <div className="hidden md:flex items-center gap-1">
             {["Home", "About", "Solutions", "Contact"].map((item) => (
               <Link
                 key={item}
                 to={item === "Home" ? "/" : `/${item.toLowerCase()}`}
-                className="px-6 py-2 text-gray-700 text-lg font-medium hover:bg-white hover:text-godam-forest hover:shadow-sm rounded-full transition-all duration-300 relative overflow-hidden group"
+                className="px-5 py-2 text-gray-700 font-medium hover:bg-[#48A111] hover:text-white rounded-lg transition-all duration-200"
               >
-                <span className="relative z-10">{item}</span>
+                <span>{item}</span>
               </Link>
             ))}
           </div>
@@ -49,12 +49,9 @@ export default function GlassNavbar() {
           <div className="hidden md:flex items-center gap-3">
             <Link
               to="/auth?tab=register"
-              className="relative px-8 py-3 bg-gradient-to-r from-godam-leaf to-godam-forest text-white text-lg rounded-full font-semibold overflow-hidden group shadow-lg hover:shadow-godam-leaf/50 transition-all duration-300 hover:-translate-y-0.5"
+              className="px-6 py-2.5 bg-[#25671E] hover:bg-[#1e5318] text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
             >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 blur-md"></div>
-              <span className="relative z-10 flex items-center gap-2">
-                Log In / Sign Up
-              </span>
+              Log In / Sign Up
             </Link>
           </div>
 

@@ -73,8 +73,10 @@ export default function AboutPage() {
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-          <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] bg-gradient-to-br from-godam-leaf/20 to-transparent rounded-full blur-3xl opacity-60" />
-          <div className="absolute top-[40%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-tr from-godam-forest/10 to-transparent rounded-full blur-3xl opacity-60" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+          <div className="absolute top-0 left-0 right-0 h-full bg-gradient-to-b from-white/50 via-transparent to-white/80 pointer-events-none"></div>
+          <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] bg-gradient-to-br from-godam-leaf/10 to-transparent rounded-full blur-[100px] opacity-40 animate-pulse" />
+          <div className="absolute top-[40%] -left-[10%] w-[50%] h-[50%] bg-gradient-to-tr from-godam-forest/5 to-transparent rounded-full blur-[100px] opacity-40 animate-pulse duration-700" />
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
@@ -84,7 +86,7 @@ export default function AboutPage() {
             transition={{ duration: 0.6 }}
           >
             <span className="inline-block py-1 px-3 rounded-full bg-godam-leaf/10 text-godam-forest text-sm font-semibold tracking-wide mb-6">
-              ESTABLISHED 2024
+              ESTABLISHED 2026
             </span>
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 tracking-tight mb-8">
               Revolutionizing <br/>
@@ -131,78 +133,104 @@ export default function AboutPage() {
                   Godam AI began with a simple observation: India's agricultural potential is immense, but its infrastructure is fragmented. 
                   We saw warehouses struggling with <span className="text-godam-forest font-medium bg-godam-leaf/10 px-1 rounded">manual processes</span>, lack of visibility, and preventable spoilage.
                 </p>
+
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                 Our mission evolved into building an <strong>Intelligent Post-Harvest Warehouse Optimization Framework</strong>. By integrating <span className="text-godam-forest font-medium bg-godam-leaf/10 px-1 rounded">environmental monitoring</span>, batch-level inventory tracking, and spoilage risk scoring, we bridge the gap between farmers, warehouse managers, and buyers.
+                </p>
                 
                 <p className="text-gray-600 text-lg leading-relaxed">
                   By combining <span className="text-godam-forest font-medium bg-godam-leaf/10 px-1 rounded">IoT sensors</span> with <span className="text-godam-forest font-medium bg-godam-leaf/10 px-1 rounded">Gemini-powered AI</span>, we created a platform that doesn't just manage inventory—it protects it. 
-                  Today, we empower warehouse owners to make decisions that save money and food.
+                  Today, Godam Solutions is not just a platform; it's a decision-making hub that minimizes waste and maximizes value for the entire supply chain.
                 </p>
               </div>
             </motion.div>
 
             {/* Right Column - Reimagined Impact Stats */}
-            <div className="lg:mt-0 flex flex-col h-full"> 
+            <div className="lg:mt-0 flex flex-col gap-6 h-full"> 
               
-              {/* Unified Impact Status Card */}
+              {/* Crisis Donut Chart Card */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-gray-100 relative overflow-hidden h-full flex flex-col justify-center gap-8 group min-h-[480px]"
+                className="bg-white rounded-[2.5rem] p-6 shadow-xl border border-gray-100 relative overflow-hidden flex-1 flex flex-col justify-center group"
+              >
+                 <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-red-50/50 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+                 <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center shadow-sm shrink-0">
+                            <TrendingUp size={20} className="transform rotate-180" />
+                        </div>
+                        <div>
+                            <div className="text-xs uppercase tracking-wider font-bold text-gray-400">The Crisis</div>
+                            <div className="text-lg font-bold text-gray-900 leading-tight">Post-Harvest Loss</div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-center py-4">
+                        <div className="relative w-32 h-32">
+                           <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
+                              {/* Background Circle */}
+                              <path className="text-gray-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3.8" />
+                              {/* Foreground Circle (40%) */}
+                              <motion.path 
+                                initial={{ strokeDasharray: "0, 100" }}
+                                whileInView={{ strokeDasharray: "40, 100" }}
+                                transition={{ duration: 1.5, ease: "easeOut" }}
+                                className="text-red-500 drop-shadow-md" 
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="3.8" 
+                                strokeLinecap="round"
+                              />
+                           </svg>
+                           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                              <span className="text-2xl font-bold text-gray-900">40%</span>
+                              <span className="text-[10px] text-gray-500 font-medium">Wasted</span>
+                           </div>
+                        </div>
+                    </div>
+                    <p className="text-xs text-center text-gray-500 mt-2">Annual loss of <span className="font-bold text-red-600">₹92,000 Cr</span> due to poor infrastructure.</p>
+                 </div>
+              </motion.div>
+
+              {/* Solution Impact Card */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="bg-white rounded-[2.5rem] p-6 shadow-xl border border-gray-100 relative overflow-hidden flex-1 flex flex-col justify-center group"
               >
                  {/* Strong Blur Green Background */}
                  <div className="absolute inset-0 bg-gradient-to-br from-white via-white to-godam-leaf/10 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-                 <div className="absolute -top-20 -right-20 w-60 h-60 bg-godam-leaf/20 rounded-full blur-[80px]"></div>
-                 <div className="absolute bottom-0 left-0 w-40 h-40 bg-godam-forest/5 rounded-full blur-3xl"></div>
-
-                 {/* Stat 1: Loss Targeted */}
-                 <div className="relative z-10 flex items-start gap-5 group/item transition-transform duration-300 hover:translate-x-2">
-                   <div className="w-14 h-14 rounded-2xl bg-godam-forest text-white flex items-center justify-center shadow-lg shadow-godam-forest/20 shrink-0">
-                     <TrendingUp size={28} />
-                   </div>
-                   <div>
-                     <div className="text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Annual Loss Targeted</div>
-                     <div className="text-4xl font-bold text-gray-900 tracking-tight leading-none mb-1">₹92k Cr</div>
-                     <div className="text-sm text-godam-leaf font-medium">Post-harvest waste</div>
-                   </div>
-                 </div>
-
-                 {/* Divider */}
-                 <div className="relative z-10 w-full h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-
+                 
                  {/* Stat 2: Growth Chart */}
                  <div className="relative z-10 w-full group/item">
                    <div className="flex items-center justify-between mb-4">
                      <div className="flex items-center gap-4">
-                       <div className="w-12 h-12 rounded-2xl bg-godam-leaf text-white flex items-center justify-center shadow-lg shadow-godam-leaf/20 shrink-0">
-                         <Building2 size={24} />
+                       <div className="w-10 h-10 rounded-xl bg-godam-leaf text-white flex items-center justify-center shadow-lg shadow-godam-leaf/20 shrink-0">
+                         <Building2 size={20} />
                        </div>
                        <div>
-                         <div className="text-xs uppercase tracking-wider font-bold text-gray-400">Growth Focus</div>
-                         <div className="text-2xl font-bold text-gray-900 leading-none">10,000+</div>
-                         <div className="text-xs text-godam-leaf font-medium">Warehouses by 2030</div>
+                         <div className="text-xs uppercase tracking-wider font-bold text-gray-400">Our Solution</div>
+                         <div className="text-lg font-bold text-gray-900 leading-none">Smart Storage</div>
                        </div>
                      </div>
                    </div>
                    
                    {/* Animated Bar Chart */}
-                   <div className="h-40 flex items-end justify-between gap-2 px-2 pb-2 mt-4 relative">
-                      {/* Grid lines */}
-                      <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-10 z-0">
-                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
-                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
-                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
-                        <div className="w-full h-px bg-gray-400 border-dashed"></div>
-                      </div>
-
+                   <div className="h-28 flex items-end justify-between gap-2 px-2 pb-2 mt-4 relative">
                       {[
-                        { year: '2024', val: 15, label: '50' },
-                        { year: '2026', val: 35, label: '500' },
-                        { year: '2028', val: 65, label: '2.5k' },
-                        { year: '2030', val: 100, label: '10k' }
+                        { year: '24', val: 15, label: '50' },
+                        { year: '26', val: 35, label: '500' },
+                        { year: '28', val: 65, label: '2.5k' },
+                        { year: '30', val: 100, label: '10k' }
                       ].map((bar, idx) => (
                         <div key={idx} className="flex flex-col items-center gap-2 w-full h-full justify-end relative z-10">
-                           <div className="relative w-full max-w-[40px] h-[80%] flex items-end bg-gray-50 rounded-t-lg overflow-hidden">
+                           <div className="relative w-full max-w-[30px] h-[80%] flex items-end bg-gray-50 rounded-t-lg overflow-hidden">
                               <motion.div 
                                 initial={{ height: "0%" }}
                                 whileInView={{ height: `${bar.val}%` }}
@@ -210,13 +238,8 @@ export default function AboutPage() {
                                 transition={{ duration: 1.2, delay: 0.2 + (idx * 0.2), ease: "easeOut" }}
                                 className={`w-full rounded-t-lg ${idx === 3 ? 'bg-gradient-to-t from-godam-forest to-godam-leaf' : 'bg-green-200'}`}
                               />
-                                {idx === 3 && (
-                                  <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-godam-forest text-white text-[10px] font-bold py-1 px-2 rounded-lg shadow-md whitespace-nowrap animate-bounce z-20">
-                                    Goal
-                                  </div>
-                                )}
                            </div>
-                           <span className={`text-[10px] font-bold ${idx === 3 ? 'text-godam-forest' : 'text-gray-400'}`}>{bar.year}</span>
+                           <span className={`text-[9px] font-bold ${idx === 3 ? 'text-godam-forest' : 'text-gray-400'}`}>{bar.year}</span>
                         </div>
                       ))}
                    </div>
@@ -234,8 +257,9 @@ export default function AboutPage() {
         <div className="absolute -top-16 -left-16 h-72 w-72 rounded-full bg-godam-leaf/20 blur-3xl" />
         <div className="absolute -bottom-20 right-10 h-80 w-80 rounded-full bg-godam-forest/15 blur-3xl" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900">Why We Do It</h2>
+           <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">"To Feed the World, We Must First <span className="text-transparent bg-clip-text bg-gradient-to-r from-godam-leaf to-godam-forest">Stop Wasting It.</span>"</h2>
+            <p className="text-lg text-gray-600">Our core values drive every line of code, every sensor deployed, and every decision we make.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {values.map((val, idx) => (
