@@ -6,6 +6,8 @@ import {
   AlertTriangle,
   AlertCircle,
   Wheat,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 
 interface MetricCardProps {
@@ -14,6 +16,10 @@ interface MetricCardProps {
   sub?: string;
   icon: React.ReactNode;
   accentColor?: string;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+  };
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({
@@ -22,25 +28,32 @@ const MetricCard: React.FC<MetricCardProps> = ({
   sub,
   icon,
   accentColor = "#25671E",
+  trend,
 }) => (
-  <div
-    className="rounded-xl p-5 flex flex-col gap-3 shadow-sm border hover:shadow-md transition-shadow"
-    style={{ backgroundColor: "white", borderColor: "#E5E7EB" }}
-  >
-    <div className="flex items-center justify-between">
+  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+    <div className="flex items-start justify-between mb-4">
       <div
-        className="p-2.5 rounded-lg"
-        style={{ backgroundColor: `${accentColor}15` }}
+        className="p-3 rounded-xl"
+        style={{
+          backgroundColor: "#25671E10",
+          color: accentColor,
+        }}
       >
-        <div style={{ color: accentColor }}>{icon}</div>
+        {icon}
       </div>
+      {trend && (
+        <div className={`flex items-center gap-1 text-sm font-medium ${trend.isPositive ? 'text-green-600' : 'text-red-600'}`}>
+          {trend.isPositive ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+          <span>{Math.abs(trend.value)}%</span>
+        </div>
+      )}
     </div>
-    <div className="flex flex-col gap-1">
+    <div className="space-y-1">
       <p className="text-sm font-medium text-gray-600">{label}</p>
-      <p className="text-2xl font-bold" style={{ color: "#1F2937" }}>
+      <p className="text-3xl font-bold text-gray-900">
         {typeof value === "number" ? formatNumber(value) : value}
       </p>
-      {sub && <p className="text-xs text-gray-500">{sub}</p>}
+      {sub && <p className="text-xs text-gray-500 mt-2">{sub}</p>}
     </div>
   </div>
 );
@@ -53,6 +66,12 @@ interface MetricCardsProps {
   totalQuantity: number;
   storageUtilization?: number;
   warehouseName?: string;
+  trends?: {
+    batches?: { value: number; isPositive: boolean };
+    fresh?: { value: number; isPositive: boolean };
+    moderate?: { value: number; isPositive: boolean };
+    highRisk?: { value: number; isPositive: boolean };
+  };
 }
 
 export const MetricCards: React.FC<MetricCardsProps> = ({
@@ -63,47 +82,47 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
   totalQuantity,
   storageUtilization,
   warehouseName,
+  trends,
 }) => (
-  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <MetricCard
       label="Total Batches"
       value={totalBatches}
       sub={warehouseName}
-      icon={<Package size={20} strokeWidth={2} />}
+      icon={<Package size={24} strokeWidth={2} />}
       accentColor="#25671E"
+      trend={trends?.batches}
     />
     <MetricCard
       label="Fresh Batches"
       value={freshCount}
-      sub="Risk ≤ 30%"
-      icon={<CheckCircle2 size={20} strokeWidth={2} />}
+      sub="In good health"
+      icon={<CheckCircle2 size={24} strokeWidth={2} />}
       accentColor="#48A111"
+      trend={trends?.fresh}
     />
     <MetricCard
       label="Moderate Risk"
       value={moderateCount}
-      sub="Risk 31–70%"
-      icon={<AlertTriangle size={20} strokeWidth={2} />}
+      sub="Needs attention"
+      icon={<AlertTriangle size={24} strokeWidth={2} />}
       accentColor="#F2B50B"
+      trend={trends?.moderate}
     />
     <MetricCard
       label="High Risk"
       value={highRiskCount}
-      sub="Risk > 70%"
-      icon={<AlertCircle size={20} strokeWidth={2} />}
+      sub="Action required"
+      icon={<AlertCircle size={24} strokeWidth={2} />}
       accentColor="#DC2626"
-    />
-    <MetricCard
-      label="Total Stock"
-      value={`${formatNumber(Math.round(totalQuantity))} kg`}
-      icon={<Wheat size={20} strokeWidth={2} />}
-      accentColor="#25671E"
+      trend={trends?.highRisk}
     />
     {storageUtilization != null && (
       <MetricCard
-        label="Storage Utilization"
+        label="Storage Used"
         value={`${storageUtilization}%`}
-        icon={<Package size={20} strokeWidth={2} />}
+        sub="Total capacity"
+        icon={<Package size={24} strokeWidth={2} />}
         accentColor={
           storageUtilization > 85
             ? "#DC2626"
@@ -113,5 +132,12 @@ export const MetricCards: React.FC<MetricCardsProps> = ({
         }
       />
     )}
+    <MetricCard
+      label="Total Stock"
+      value={`${formatNumber(Math.round(totalQuantity))} kg`}
+      sub="Current inventory"
+      icon={<Wheat size={24} strokeWidth={2} />}
+      accentColor="#25671E"
+    />
   </div>
 );

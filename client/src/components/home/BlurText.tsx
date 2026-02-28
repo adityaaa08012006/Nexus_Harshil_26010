@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { motion } from 'motion/react';
-import type { Transition, Easing } from 'motion/react';
+import { motion } from 'framer-motion';
+import type { Transition, Easing } from 'framer-motion';
 
 type BlurTextProps = {
   text?: string;

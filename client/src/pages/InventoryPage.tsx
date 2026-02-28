@@ -785,7 +785,7 @@ export const InventoryPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div
-          className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+          className="w-10 h-10 border-3 border-t-transparent rounded-full animate-spin"
           style={{ borderColor: "#48A111", borderTopColor: "transparent" }}
         />
       </div>
@@ -795,41 +795,44 @@ export const InventoryPage: React.FC = () => {
   if (error) {
     return (
       <div
-        className="rounded-xl p-6 border text-sm"
+        className="rounded-xl p-6 border-2 text-sm shadow-sm"
         style={{
           backgroundColor: "#FEF2F2",
           borderColor: "#DC2626",
           color: "#DC2626",
         }}
       >
-        Failed to load inventory: {error}
+        <div className="font-semibold mb-1">Failed to load inventory</div>
+        <div className="text-xs opacity-90">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 min-h-screen bg-gradient-to-br from-gray-50 to-green-50/30">
       {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold" style={{ color: "#25671E" }}>
-            {isReadOnly ? "View Inventory" : "Manage Inventory"}
-          </h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {batches.length} active batch{batches.length !== 1 ? "es" : ""} in
-            storage
-          </p>
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-godam-forest">
+              {isReadOnly ? "View Inventory" : "Manage Inventory"}
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              {batches.length} active batch{batches.length !== 1 ? "es" : ""} in
+              storage
+            </p>
+          </div>
+          {isManager && (
+            <button
+              onClick={handleCreate}
+              disabled={actionInProgress}
+              className="px-5 py-2.5 text-sm font-semibold rounded-lg text-white transition-all hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:transform-none shadow-md"
+              style={{ backgroundColor: "#48A111" }}
+            >
+              + Add Batch
+            </button>
+          )}
         </div>
-        {isManager && (
-          <button
-            onClick={handleCreate}
-            disabled={actionInProgress}
-            className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: "#48A111" }}
-          >
-            + Add Batch
-          </button>
-        )}
       </div>
 
       {/* ── Inventory table ── */}

@@ -199,20 +199,20 @@ export const SensorMonitoring: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50/30 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-6 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <Activity className="w-6 h-6 text-green-700" />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-godam-leaf/20 to-godam-forest/20 rounded-xl border border-godam-leaf/30">
+                <Activity className="w-6 h-6 text-godam-forest" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   Environmental Monitoring
                 </h1>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-0.5">
                   {selectedWarehouse
                     ? `${selectedWarehouse.name} - ${selectedWarehouse.location}`
                     : "Real-time sensor data across warehouse zones"}
@@ -226,11 +226,10 @@ export const SensorMonitoring: React.FC = () => {
                 <select
                   value={selectedWarehouseId ?? ""}
                   onChange={(e) => setSelectedWarehouseId(e.target.value)}
-                  className="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 bg-white"
+                  className="px-4 py-2 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-godam-leaf bg-white font-medium shadow-sm hover:shadow transition-shadow"
                   style={
                     {
                       borderColor: "#E5E7EB",
-                      "--tw-ring-color": "#48A111",
                     } as React.CSSProperties
                   }
                 >
@@ -246,7 +245,7 @@ export const SensorMonitoring: React.FC = () => {
               <button
                 onClick={handleSimulate}
                 disabled={isSimulating}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 <Activity
                   className={`w-4 h-4 ${isSimulating ? "animate-pulse" : ""}`}
@@ -258,7 +257,7 @@ export const SensorMonitoring: React.FC = () => {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:shadow-sm transition-all disabled:opacity-50"
               >
                 <RefreshCw
                   className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
@@ -270,7 +269,7 @@ export const SensorMonitoring: React.FC = () => {
               <button
                 onClick={handleExportCSV}
                 disabled={!zoneReading}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 <Download className="w-4 h-4" />
                 Export CSV
@@ -279,7 +278,7 @@ export const SensorMonitoring: React.FC = () => {
               {/* Settings button */}
               <button
                 onClick={() => setIsThresholdModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors hover:opacity-90"
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-all hover:shadow-md shadow-sm"
                 style={{ backgroundColor: "#48A111" }}
               >
                 <Settings className="w-4 h-4" />
@@ -296,7 +295,7 @@ export const SensorMonitoring: React.FC = () => {
                 <button
                   key={zone}
                   onClick={() => setSelectedZone(zone)}
-                  className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all relative ${
+                  className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all relative ${
                     selectedZone === zone
                       ? "bg-green-600 text-white shadow-md"
                       : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
