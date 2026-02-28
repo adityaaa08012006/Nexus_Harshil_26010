@@ -96,7 +96,7 @@ export default function Footer() {
                 { label: 'Documentation', href: '#docs' },
                 { label: 'Blog', href: '#blog' },
                 { label: 'Support', href: '#support' },
-                { label: 'Contact Us', href: 'mailto:contact@godamsolutions.com' },
+                { label: 'Contact Us', to: '/contact' },
               ],
             },
           ].map((col) => (

@@ -165,12 +165,12 @@ export default function CTASection() {
           {/* Contact */}
           <p className="mt-8 text-white/50 text-sm">
             Questions?{" "}
-            <a
-              href="mailto:contact@godamsolutions.com"
+            <Link
+              to="/contact"
               className="text-godam-sun hover:text-godam-sun-light font-semibold underline underline-offset-2"
             >
               Contact our team
-            </a>{" "}
+            </Link>{" "}
             for a personalized consultation
           </p>
         </div>

@@ -420,12 +420,12 @@ export default function HomePage() {
                   Get Started Free
                   <ArrowRight size={20} />
                 </Link>
-                <a 
-                  href="mailto:contact@godamsolutions.com" 
+                <Link 
+                  to="/contact" 
                   className="px-8 py-4 bg-godam-forest text-white border border-white/30 rounded-full font-bold hover:bg-white/10 hover:border-white transition-all duration-300 text-lg flex items-center justify-center backdrop-blur-sm"
                 >
                   Contact Us
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>

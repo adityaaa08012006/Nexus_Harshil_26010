@@ -13,6 +13,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import SolutionsPage from "./pages/SolutionsPage";
+import ContactPage from "./pages/ContactPage";
 import AuthPage from "./pages/AuthPage";
 import { ManagerDashboard } from "./pages/ManagerDashboard";
 import { OwnerDashboard } from "./pages/OwnerDashboard";
@@ -53,6 +54,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/solutions" element={<SolutionsPage />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route path="/auth" element={<AuthPage />} />
 
               {/* ── Owner routes ── */}
