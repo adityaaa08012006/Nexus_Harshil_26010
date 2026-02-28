@@ -200,20 +200,24 @@ export const SensorCard: React.FC<SensorCardProps> = ({
 
   return (
     <div
-      className={`p-4 rounded-lg border-2 transition-all duration-200 ${statusInfo.bgColor} ${statusInfo.borderColor}`}
+      className={`p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 ${statusInfo.bgColor} ${statusInfo.borderColor}`}
     >
       {/* Header with icon and label */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className={`p-2 rounded-lg bg-gray-100 ${meta.iconColor}`}>
-            <Icon className="w-5 h-5" />
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div
+            className={`p-1.5 sm:p-2 rounded-lg bg-gray-100 ${meta.iconColor}`}
+          >
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <h3 className="font-semibold text-gray-900">{meta.label}</h3>
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+            {meta.label}
+          </h3>
         </div>
 
         {/* Status indicator */}
         <div
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
+          className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${
             statusInfo.status === "critical"
               ? "bg-red-100 text-red-700"
               : statusInfo.status === "warning"
@@ -230,25 +234,29 @@ export const SensorCard: React.FC<SensorCardProps> = ({
       </div>
 
       {/* Current value */}
-      <div className="mb-2">
-        <div className="flex items-baseline gap-2">
-          <span className={`text-3xl font-bold ${statusInfo.textColor}`}>
+      <div className="mb-1.5 sm:mb-2">
+        <div className="flex items-baseline gap-1.5 sm:gap-2">
+          <span
+            className={`text-2xl sm:text-3xl font-bold ${statusInfo.textColor}`}
+          >
             {value.toFixed(sensorType === "ethylene" ? 2 : 1)}
           </span>
-          <span className="text-lg text-gray-500">{meta.unit}</span>
+          <span className="text-base sm:text-lg text-gray-500">
+            {meta.unit}
+          </span>
         </div>
       </div>
 
       {/* Threshold range */}
       {thresholdDisplay && (
-        <div className="text-sm text-gray-600 mb-2">
+        <div className="text-xs sm:text-sm text-gray-600 mb-1.5 sm:mb-2">
           <span className="font-medium">Range: </span>
           {thresholdDisplay}
         </div>
       )}
 
       {/* Last updated */}
-      <div className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+      <div className="text-xs text-gray-500 mt-1.5 sm:mt-2 flex items-center gap-1">
         <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
         {formatRelativeTime(reading.reading_time)}
       </div>

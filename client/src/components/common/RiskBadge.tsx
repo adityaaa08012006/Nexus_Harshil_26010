@@ -18,13 +18,13 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
 }) => {
   const level = getRiskLevel(score);
   const { hex, label } = RISK_COLORS[level];
-  
+
   const sizeStyles = {
     sm: "px-2 py-0.5 text-xs",
     md: "px-3 py-1 text-sm",
     lg: "px-4 py-1.5 text-base",
   };
-  
+
   const indicatorSize = {
     sm: 5,
     md: 6,
@@ -42,7 +42,7 @@ export const RiskBadge: React.FC<RiskBadgeProps> = ({
     >
       {showIndicator && (
         <span
-          className="rounded-full animate-pulse"
+          className="rounded-full"
           style={{
             width: indicatorSize[size],
             height: indicatorSize[size],

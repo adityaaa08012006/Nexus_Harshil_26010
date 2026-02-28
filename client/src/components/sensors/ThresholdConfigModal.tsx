@@ -86,38 +86,41 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 sm:p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <h2 className="text-base sm:text-xl font-semibold text-gray-900 truncate pr-2">
             Configure Thresholds - {zone}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="p-4 sm:p-6 space-y-4 sm:space-y-6"
+        >
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 text-red-700 text-xs sm:text-sm">
               {error}
             </div>
           )}
 
           {/* Temperature */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+          <div className="space-y-2 sm:space-y-3">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-blue-500"></span>
               Temperature (°C)
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Minimum
                 </label>
                 <input
@@ -127,12 +130,12 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
                   onChange={(e) =>
                     handleInputChange("temperature_min", e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Maximum
                 </label>
                 <input
@@ -142,7 +145,7 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
                   onChange={(e) =>
                     handleInputChange("temperature_max", e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
               </div>
@@ -150,14 +153,14 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
           </div>
 
           {/* Humidity */}
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+          <div className="space-y-2 sm:space-y-3">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
               Humidity (%)
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Minimum
                 </label>
                 <input
@@ -167,12 +170,12 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
                   onChange={(e) =>
                     handleInputChange("humidity_min", e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
                   Maximum
                 </label>
                 <input
@@ -182,7 +185,7 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
                   onChange={(e) =>
                     handleInputChange("humidity_max", e.target.value)
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
               </div>
@@ -190,14 +193,14 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
           </div>
 
           {/* Gas Levels (Max Only) */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-gray-900">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900">
               Gas Levels (Maximum)
             </h3>
 
             {/* Ethylene */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 <span className="w-2 h-2 rounded-full bg-orange-500"></span>
                 Ethylene (ppm)
               </label>
@@ -208,14 +211,14 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
                 onChange={(e) =>
                   handleInputChange("ethylene_max", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               />
             </div>
 
             {/* CO2 */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                 CO₂ (ppm)
               </label>
@@ -224,14 +227,14 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
                 step="1"
                 value={formData.co2_max}
                 onChange={(e) => handleInputChange("co2_max", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               />
             </div>
 
             {/* Ammonia */}
             <div>
-              <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+              <label className="flex items-center gap-2 text-xs sm:text-sm font-medium text-gray-700 mb-1">
                 <span className="w-2 h-2 rounded-full bg-red-500"></span>
                 Ammonia (ppm)
               </label>
@@ -242,25 +245,25 @@ const ThresholdConfigModal: React.FC<ThresholdConfigModalProps> = ({
                 onChange={(e) =>
                   handleInputChange("ammonia_max", e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               />
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               disabled={isSaving}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 sm:px-6 py-1.5 sm:py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSaving}
             >
               {isSaving ? "Saving..." : "Save Thresholds"}

@@ -188,17 +188,17 @@ const HistoricalChartsSection: React.FC<HistoricalChartsSectionProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-blue-100 rounded-lg">
-            <TrendingUp className="w-6 h-6 text-blue-600" />
+    <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6 mb-4 sm:mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="p-2 sm:p-3 bg-blue-100 rounded-lg">
+            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-base sm:text-xl font-semibold text-gray-900">
               Historical Trends
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-xs sm:text-sm text-gray-600 truncate">
               {selectedZone} - Last{" "}
               {dateRange === "custom" ? "custom range" : dateRange}
             </p>
@@ -207,13 +207,13 @@ const HistoricalChartsSection: React.FC<HistoricalChartsSectionProps> = ({
 
         {/* Date Range Selector */}
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-gray-500" />
-          <div className="flex gap-2">
+          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+          <div className="flex gap-1.5 sm:gap-2">
             {(["7d", "30d", "90d", "custom"] as DateRange[]).map((range) => (
               <button
                 key={range}
                 onClick={() => setDateRange(range)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                   dateRange === range
                     ? "bg-green-600 text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -228,31 +228,35 @@ const HistoricalChartsSection: React.FC<HistoricalChartsSectionProps> = ({
 
       {/* Custom Date Range Inputs */}
       {dateRange === "custom" && (
-        <div className="flex items-center gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">From:</label>
+            <label className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">
+              From:
+            </label>
             <input
               type="date"
               value={customStartDate}
               onChange={(e) => setCustomStartDate(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">To:</label>
+            <label className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">
+              To:
+            </label>
             <input
               type="date"
               value={customEndDate}
               onChange={(e) => setCustomEndDate(e.target.value)}
-              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="flex-1 px-2 sm:px-3 py-1 sm:py-1.5 border border-gray-300 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
         </div>
       )}
 
       {/* Sensor Toggle Buttons */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <span className="text-sm font-medium text-gray-700 mr-2">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+        <span className="text-xs sm:text-sm font-medium text-gray-700 mr-1 sm:mr-2 self-center">
           Show/Hide:
         </span>
         {Object.entries(sensorVisibility).map(([sensor, visible]) => {
@@ -267,7 +271,7 @@ const HistoricalChartsSection: React.FC<HistoricalChartsSectionProps> = ({
             <button
               key={sensor}
               onClick={() => toggleSensor(sensor as keyof SensorVisibility)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-medium transition-all ${
                 visible
                   ? `${colors[sensor as keyof typeof colors]} text-white`
                   : "bg-gray-200 text-gray-500"
@@ -281,33 +285,38 @@ const HistoricalChartsSection: React.FC<HistoricalChartsSectionProps> = ({
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="flex items-center justify-center h-48 sm:h-64">
+          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-green-600"></div>
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 text-red-700 text-xs sm:text-sm">
           {error}
         </div>
       )}
 
       {/* Chart */}
       {!isLoading && !error && chartData.length > 0 && (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer
+          width="100%"
+          height={300}
+          className="sm:!h-[400px]"
+        >
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
               dataKey="time"
-              tick={{ fontSize: 12 }}
+              tick={{ fontSize: 10 }}
               angle={-45}
               textAnchor="end"
-              height={80}
+              height={60}
+              className="sm:text-xs"
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 10 }} className="sm:text-xs" />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ paddingTop: "20px" }} />
+            <Legend wrapperStyle={{ paddingTop: "10px", fontSize: "12px" }} />
 
             {sensorVisibility.temperature && (
               <Line
@@ -365,8 +374,8 @@ const HistoricalChartsSection: React.FC<HistoricalChartsSectionProps> = ({
 
       {/* No Data State */}
       {!isLoading && !error && chartData.length === 0 && (
-        <div className="bg-gray-50 rounded-lg p-8 text-center">
-          <p className="text-gray-600">
+        <div className="bg-gray-50 rounded-lg p-6 sm:p-8 text-center">
+          <p className="text-sm sm:text-base text-gray-600">
             No historical data available for this time range.
           </p>
         </div>

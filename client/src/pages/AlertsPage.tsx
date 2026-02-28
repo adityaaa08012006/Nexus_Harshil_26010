@@ -10,6 +10,8 @@ import {
   Filter,
   Package,
   Info,
+  Truck,
+  FileText,
 } from "lucide-react";
 
 const SEVERITY_CONFIG = {
@@ -38,7 +40,7 @@ const SEVERITY_CONFIG = {
 
 type CombinedAlert = {
   id: string;
-  type: "sensor" | "order";
+  type: "sensor" | "order" | "allocation" | "dispatch";
   severity: "critical" | "warning" | "info";
   message: string;
   zone?: string;
@@ -105,13 +107,13 @@ export const AlertsPage: React.FC = () => {
         );
       }
 
-      // Fetch order alerts for managers only
-      if (user?.role === "manager") {
+      // Fetch order alerts for managers
+      if (user?.role === "manager" || user?.role === "owner") {
         let orderQuery = supabase
           .from("alerts")
           .select("*")
           .eq("type", "order")
-          .eq("warehouse_id", selectedWarehouseId) // Filter by selected warehouse
+          .eq("warehouse_id", selectedWarehouseId)
           .order("created_at", { ascending: false });
 
         if (filter === "active") {
@@ -140,6 +142,105 @@ export const AlertsPage: React.FC = () => {
         }
       }
 
+      // Fetch allocation requests for owners (pending approvals)
+      if (user?.role === "owner") {
+        let allocationQuery = supabase
+          .from("allocation_requests")
+          .select(
+            `
+            id,
+            status,
+            created_at,
+            requested_quantity,
+            crop_type,
+            quality_preference,
+            manager:user_profiles!allocation_requests_manager_id_fkey(name),
+            warehouse:warehouses(name)
+          `,
+          )
+          .eq("warehouse_id", selectedWarehouseId)
+          .order("created_at", { ascending: false })
+          .limit(20);
+
+        if (filter === "active") {
+          allocationQuery = allocationQuery.eq("status", "pending");
+        } else if (filter === "acknowledged") {
+          allocationQuery = allocationQuery.in("status", [
+            "approved",
+            "rejected",
+          ]);
+        }
+
+        const { data: allocationData } = await allocationQuery;
+
+        if (allocationData) {
+          combinedAlerts.push(
+            ...allocationData.map((req: any) => ({
+              id: `alloc-${req.id}`,
+              type: "allocation" as const,
+              severity:
+                req.status === "pending"
+                  ? ("warning" as const)
+                  : ("info" as const),
+              message: `Allocation request for ${req.requested_quantity}kg of ${req.crop_type} from ${req.manager?.name || "Manager"}`,
+              zone: req.warehouse?.name,
+              acknowledged: req.status !== "pending",
+              timestamp: req.created_at,
+              details: {
+                requestId: req.id,
+                status: req.status,
+                quality: req.quality_preference,
+              },
+            })),
+          );
+        }
+      }
+
+      // Fetch recent dispatch updates for all users (last 24 hours)
+      const oneDayAgo = new Date(
+        Date.now() - 24 * 60 * 60 * 1000,
+      ).toISOString();
+      let dispatchQuery = supabase
+        .from("dispatch_logs")
+        .select(
+          `
+          id,
+          status,
+          dispatch_date,
+          quantity,
+          created_at,
+          batch:batches(crop_type)
+        `,
+        )
+        .eq("warehouse_id", selectedWarehouseId)
+        .gte("created_at", oneDayAgo)
+        .order("created_at", { ascending: false })
+        .limit(15);
+
+      const { data: dispatchData } = await dispatchQuery;
+
+      if (dispatchData && dispatchData.length > 0) {
+        // Only show delivered/completed dispatches as notifications
+        const relevantDispatches = dispatchData.filter(
+          (d: any) => d.status === "delivered" || d.status === "completed",
+        );
+
+        combinedAlerts.push(
+          ...relevantDispatches.map((dispatch: any) => ({
+            id: `dispatch-${dispatch.id}`,
+            type: "dispatch" as const,
+            severity: "info" as const,
+            message: `Dispatch completed: ${dispatch.quantity}kg of ${dispatch.batch?.crop_type || "crops"} delivered successfully`,
+            acknowledged: true, // Auto-acknowledged since these are info notifications
+            timestamp: dispatch.dispatch_date || dispatch.created_at,
+            details: {
+              dispatchId: dispatch.id,
+              status: dispatch.status,
+            },
+          })),
+        );
+      }
+
       // Sort all alerts by timestamp
       combinedAlerts.sort(
         (a, b) =>
@@ -156,7 +257,7 @@ export const AlertsPage: React.FC = () => {
 
   const handleAcknowledge = async (
     alertId: string,
-    alertType: "sensor" | "order",
+    alertType: "sensor" | "order" | "allocation" | "dispatch",
   ) => {
     if (alertType === "sensor") {
       const { error } = await supabase
@@ -171,7 +272,7 @@ export const AlertsPage: React.FC = () => {
         setAlerts((prev) => prev.filter((a) => a.id !== alertId));
         window.dispatchEvent(new Event("alert-acknowledged"));
       }
-    } else {
+    } else if (alertType === "order") {
       const { error } = await supabase
         .from("alerts")
         .update({
@@ -184,6 +285,12 @@ export const AlertsPage: React.FC = () => {
         setAlerts((prev) => prev.filter((a) => a.id !== alertId));
         window.dispatchEvent(new Event("alert-acknowledged"));
       }
+    } else if (alertType === "allocation") {
+      // For allocation requests, just remove from view - actual approval happens elsewhere
+      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
+    } else if (alertType === "dispatch") {
+      // Dispatch notifications are informational, just remove from view
+      setAlerts((prev) => prev.filter((a) => a.id !== alertId));
     }
   };
 
@@ -197,7 +304,8 @@ export const AlertsPage: React.FC = () => {
           Alerts & Notifications
         </h1>
         <p className="text-sm text-gray-500 mt-2">
-          Monitor and respond to sensor threshold breaches
+          Monitor sensor alerts, order updates, allocation requests, and
+          dispatch notifications
         </p>
       </div>
 
@@ -276,7 +384,30 @@ export const AlertsPage: React.FC = () => {
           <div className="space-y-4">
             {alerts.map((alert) => {
               const cfg = SEVERITY_CONFIG[alert.severity];
-              const Icon = alert.type === "order" ? Package : cfg.icon;
+
+              // Determine icon based on alert type
+              let Icon;
+              let alertTypeLabel;
+              switch (alert.type) {
+                case "order":
+                  Icon = Package;
+                  alertTypeLabel = "New Order";
+                  break;
+                case "allocation":
+                  Icon = FileText;
+                  alertTypeLabel = "Allocation Request";
+                  break;
+                case "dispatch":
+                  Icon = Truck;
+                  alertTypeLabel = "Dispatch Update";
+                  break;
+                case "sensor":
+                default:
+                  Icon = cfg.icon;
+                  alertTypeLabel = cfg.label;
+                  break;
+              }
+
               return (
                 <div
                   key={alert.id}
@@ -302,11 +433,12 @@ export const AlertsPage: React.FC = () => {
                                 color: "white",
                               }}
                             >
-                              {alert.type === "order" ? "New Order" : cfg.label}
+                              {alertTypeLabel}
                             </span>
                             {alert.zone && (
                               <span className="text-xs text-gray-500">
-                                {alert.type === "order"
+                                {alert.type === "order" ||
+                                alert.type === "allocation"
                                   ? `Location: ${alert.zone}`
                                   : `Zone ${alert.zone}`}
                               </span>
@@ -340,6 +472,19 @@ export const AlertsPage: React.FC = () => {
                                 </p>
                               </>
                             )}
+                            {alert.type === "allocation" && alert.details && (
+                              <p>
+                                Quality:{" "}
+                                <strong className="capitalize">
+                                  {alert.details.quality}
+                                </strong>
+                                {" | "}
+                                Status:{" "}
+                                <strong className="capitalize">
+                                  {alert.details.status}
+                                </strong>
+                              </p>
+                            )}
                             <p>{formatRelativeTime(alert.timestamp)}</p>
                           </div>
                           {alert.acknowledged &&
@@ -360,7 +505,9 @@ export const AlertsPage: React.FC = () => {
                             className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-all hover:opacity-90 shadow-sm"
                             style={{ backgroundColor: "#48A111" }}
                           >
-                            Acknowledge
+                            {alert.type === "allocation"
+                              ? "Dismiss"
+                              : "Acknowledge"}
                           </button>
                         )}
                       </div>
