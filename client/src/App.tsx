@@ -32,6 +32,7 @@ import { ContactInfo } from "./pages/ContactInfo";
 import { ContactsPage } from "./pages/ContactsPage";
 import { QCContactInfo } from "./pages/QCContactInfo";
 import { ImpactDashboard } from "./pages/ImpactDashboard";
+import { SettingsPage } from "./pages/SettingsPage";
 import ClickSpark from "./components/home/ClickSpark";
 
 function App() {
@@ -88,13 +89,10 @@ function App() {
                             element={<FarmerManagement />}
                           />
                           <Route
-                            path="contacts"
-                            element={<ContactsPage />}
-                          />
-                          <Route
                             path="analytics"
                             element={<ImpactDashboard />}
                           />
+                          <Route path="settings" element={<SettingsPage />} />
                           <Route
                             path="*"
                             element={<Navigate to="dashboard" replace />}
@@ -138,13 +136,10 @@ function App() {
                             element={<FarmerManagement />}
                           />
                           <Route
-                            path="contacts"
-                            element={<ContactsPage />}
-                          />
-                          <Route
                             path="analytics"
                             element={<ImpactDashboard />}
                           />
+                          <Route path="settings" element={<SettingsPage />} />
                           <Route
                             path="*"
                             element={<Navigate to="dashboard" replace />}
@@ -175,10 +170,10 @@ function App() {
                             path="tracking"
                             element={<QCOrderTracking />}
                           />
-                          <Route path="contacts" element={<QCContactInfo />} />
                           <Route path="inventory" element={<InventoryPage />} />
                           <Route path="alerts" element={<AlertsPage />} />
                           <Route path="batch/:id" element={<BatchDetails />} />
+                          <Route path="settings" element={<SettingsPage />} />
                           <Route
                             path="*"
                             element={<Navigate to="dashboard" replace />}

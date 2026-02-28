@@ -69,10 +69,10 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       setMessages(data);
 
       // Mark messages as read
-      await fetch(
-        `http://localhost:5000/api/messages/${allocationId}/read`,
-        { method: "PUT", headers: headers() },
-      );
+      await fetch(`http://localhost:5000/api/messages/${allocationId}/read`, {
+        method: "PUT",
+        headers: headers(),
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load messages");
     } finally {
@@ -183,8 +183,15 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col" style={{ maxHeight: "80vh" }}>
+    <div
+      className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col"
+        style={{ maxHeight: "80vh" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-4 border-b rounded-t-xl"
@@ -200,8 +207,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
             <div>
               <h3 className="text-sm font-bold text-gray-900">Messages</h3>
               <p className="text-xs text-gray-500">
-                Order{" "}
-                <span className="font-mono">{allocationRequestId}</span>
+                Order <span className="font-mono">{allocationRequestId}</span>
               </p>
             </div>
           </div>
@@ -223,7 +229,10 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
             <div className="flex items-center justify-center py-12">
               <div
                 className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                style={{ borderColor: "#48A111", borderTopColor: "transparent" }}
+                style={{
+                  borderColor: "#48A111",
+                  borderTopColor: "transparent",
+                }}
               />
             </div>
           ) : messages.length === 0 ? (
@@ -243,16 +252,16 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
                   className={`flex ${isMe ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] ${
-                      isMe ? "order-2" : "order-1"
-                    }`}
+                    className={`max-w-[80%] ${isMe ? "order-2" : "order-1"}`}
                   >
                     {/* Sender info */}
                     {!isMe && (
                       <div className="flex items-center gap-1.5 mb-1">
                         <div
                           className="w-5 h-5 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: roleColor(msg.sender?.role) }}
+                          style={{
+                            backgroundColor: roleColor(msg.sender?.role),
+                          }}
                         >
                           <User className="w-3 h-3 text-white" />
                         </div>
@@ -318,6 +327,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
+              autoFocus
               className="flex-1 px-3.5 py-2.5 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
               style={{ maxHeight: "80px" }}
             />
