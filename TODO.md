@@ -69,7 +69,7 @@
   - Allocation efficiency (fulfillment rate, avg dispatch time)
   - Cost savings / ROI calculation
   - Risk intervention success rate
-- [ ] Add analytics API endpoints:
+- [x] Add analytics API endpoints:
   - `GET /api/analytics/overview` — summary stats (role-filtered)
   - `GET /api/analytics/waste-reduction` — waste metrics over time
   - `GET /api/analytics/efficiency` — per-warehouse efficiency
@@ -77,7 +77,7 @@
   - `GET /api/analytics/trends` — time-series data
   - `GET /api/analytics/comparison` — warehouse comparison (Owner only)
   - `GET /api/analytics/export` — data export (CSV/Excel/PDF)
-- [ ] Add date range filtering to all analytics endpoints (7/30/90 days, custom range)
+- [x] Add date range filtering to all analytics endpoints (7/30/90 days, custom range)
 
 ### Frontend
 
@@ -88,10 +88,10 @@
   - ROI growth area chart with green gradient
   - Warehouse performance comparison chart (Owner only)
   - Efficiency gauge charts
-- [ ] Add date range selector with quick-pick buttons (7d / 30d / 90d / YTD / custom)
-- [ ] Add PDF/Excel export of full dashboard report
-- [ ] Add a dedicated `/owner/analytics` route in `App.tsx` pointing to `ImpactDashboard` (currently Owner analytics lives inside the Owner Dashboard page as a tab, not a standalone page)
-- [ ] Add an **Analytics** nav item to `ownerNav` and `managerNav` in `AppLayout.tsx` (neither currently has one)
+- [x] Add date range selector with quick-pick buttons (7d / 30d / 90d / YTD / custom)
+- [x] Add PDF/Excel export of full dashboard report
+- [x] Add a dedicated `/owner/analytics` route in `App.tsx` pointing to `ImpactDashboard` (currently Owner analytics lives inside the Owner Dashboard page as a tab, not a standalone page)
+- [x] Add an **Analytics** nav item to `ownerNav` and `managerNav` in `AppLayout.tsx` (neither currently has one)
 
 ---
 

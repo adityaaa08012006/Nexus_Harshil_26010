@@ -251,6 +251,12 @@ const managerNav: NavItem[] = [
     path: "/manager/dispatch",
     icon: <ClipboardIcon />,
   },
+  {
+    id: "analytics",
+    label: "Analytics",
+    path: "/manager/analytics",
+    icon: <SensorsIcon />,
+  },
 ];
 
 const ownerNav: NavItem[] = [
@@ -307,6 +313,12 @@ const ownerNav: NavItem[] = [
     label: "Dispatches",
     path: "/owner/dispatch",
     icon: <ClipboardIcon />,
+  },
+  {
+    id: "analytics",
+    label: "Analytics",
+    path: "/owner/analytics",
+    icon: <SensorsIcon />,
   },
 ];
 
