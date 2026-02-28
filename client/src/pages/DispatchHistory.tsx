@@ -53,7 +53,13 @@ interface DispatchRecord {
 
 const STATUS_STYLES: Record<
   string,
-  { bg: string; text: string; border: string; label: string; icon: React.ReactNode }
+  {
+    bg: string;
+    text: string;
+    border: string;
+    label: string;
+    icon: React.ReactNode;
+  }
 > = {
   pending: {
     bg: "#FEF3C7",
@@ -123,10 +129,9 @@ export const DispatchHistory: React.FC = () => {
         if (session?.access_token) {
           headers["Authorization"] = `Bearer ${session.access_token}`;
         }
-        const res = await fetch(
-          `${API_URL}/api/allocation/dispatches/list`,
-          { headers },
-        );
+        const res = await fetch(`${API_URL}/api/allocation/dispatches/list`, {
+          headers,
+        });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw new Error(body.error || `HTTP ${res.status}`);
@@ -134,7 +139,9 @@ export const DispatchHistory: React.FC = () => {
         const data: DispatchRecord[] = await res.json();
         setDispatches(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load dispatches");
+        setError(
+          err instanceof Error ? err.message : "Failed to load dispatches",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -194,7 +201,9 @@ export const DispatchHistory: React.FC = () => {
       }
       // Optimistically update
       setDispatches((prev) =>
-        prev.map((d) => (d.id === dispatchId ? { ...d, status: newStatus } : d)),
+        prev.map((d) =>
+          d.id === dispatchId ? { ...d, status: newStatus } : d,
+        ),
       );
     } catch (err) {
       console.error("Failed to update dispatch status:", err);
@@ -225,7 +234,11 @@ export const DispatchHistory: React.FC = () => {
     return (
       <div
         className="rounded-xl p-6 border text-sm"
-        style={{ backgroundColor: "#FEF2F2", borderColor: "#DC2626", color: "#DC2626" }}
+        style={{
+          backgroundColor: "#FEF2F2",
+          borderColor: "#DC2626",
+          color: "#DC2626",
+        }}
       >
         Failed to load dispatches: {error}
       </div>
@@ -247,10 +260,30 @@ export const DispatchHistory: React.FC = () => {
       {/* ── Stats Cards ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Total", value: stats.total, color: "#6B7280", bg: "#F3F4F6" },
-          { label: "Pending", value: stats.pending, color: "#92400E", bg: "#FEF3C7" },
-          { label: "In Transit", value: stats.inTransit, color: "#1E40AF", bg: "#DBEAFE" },
-          { label: "Delivered", value: stats.delivered, color: "#065F46", bg: "#D1FAE5" },
+          {
+            label: "Total",
+            value: stats.total,
+            color: "#6B7280",
+            bg: "#F3F4F6",
+          },
+          {
+            label: "Pending",
+            value: stats.pending,
+            color: "#92400E",
+            bg: "#FEF3C7",
+          },
+          {
+            label: "In Transit",
+            value: stats.inTransit,
+            color: "#1E40AF",
+            bg: "#DBEAFE",
+          },
+          {
+            label: "Delivered",
+            value: stats.delivered,
+            color: "#065F46",
+            bg: "#D1FAE5",
+          },
         ].map((s) => (
           <div
             key={s.label}
@@ -407,11 +440,14 @@ export const DispatchHistory: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-600">
                       {d.estimated_delivery
-                        ? new Date(d.estimated_delivery).toLocaleDateString("en-IN", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
+                        ? new Date(d.estimated_delivery).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )
                         : "—"}
                     </td>
                     <td className="px-4 py-3">
@@ -436,7 +472,8 @@ export const DispatchHistory: React.FC = () => {
                           Mark Delivered
                         </button>
                       )}
-                      {(d.status === "delivered" || d.status === "cancelled") && (
+                      {(d.status === "delivered" ||
+                        d.status === "cancelled") && (
                         <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>

@@ -8,13 +8,16 @@ import type { AllocationRequest, Batch } from "../lib/supabase";
 
 // ─── Status badge ───────────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  pending:    { bg: "#FEF3C7", text: "#92400E", label: "Pending" },
-  reviewing:  { bg: "#DBEAFE", text: "#1E40AF", label: "Reviewing" },
-  allocated:  { bg: "#D1FAE5", text: "#065F46", label: "Allocated" },
+const STATUS_STYLES: Record<
+  string,
+  { bg: string; text: string; label: string }
+> = {
+  pending: { bg: "#FEF3C7", text: "#92400E", label: "Pending" },
+  reviewing: { bg: "#DBEAFE", text: "#1E40AF", label: "Reviewing" },
+  allocated: { bg: "#D1FAE5", text: "#065F46", label: "Allocated" },
   dispatched: { bg: "#E0E7FF", text: "#3730A3", label: "Dispatched" },
-  completed:  { bg: "#D1FAE5", text: "#065F46", label: "Completed" },
-  cancelled:  { bg: "#FEE2E2", text: "#991B1B", label: "Cancelled" },
+  completed: { bg: "#D1FAE5", text: "#065F46", label: "Completed" },
+  cancelled: { bg: "#FEE2E2", text: "#991B1B", label: "Cancelled" },
 };
 
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
@@ -119,7 +122,9 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
         quantity: String(request.quantity),
         unit: request.unit,
       });
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
       if (session?.access_token) {
         headers["Authorization"] = `Bearer ${session.access_token}`;
       }
@@ -135,7 +140,9 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
       setAiSuggestion(data.suggestion);
       setAiFarmers(data.farmers ?? []);
     } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Failed to get suggestion");
+      setAiError(
+        err instanceof Error ? err.message : "Failed to get suggestion",
+      );
     } finally {
       setAiLoading(false);
     }
@@ -144,62 +151,101 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-
         {/* ── Post-Dispatch Confirmation ── */}
         {dispatchResult ? (
           <div className="space-y-4">
             <div className="text-center">
-              <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ backgroundColor: "#D1FAE5" }}>
-                <svg className="w-7 h-7" fill="none" stroke="#065F46" viewBox="0 0 24 24" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              <div
+                className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center"
+                style={{ backgroundColor: "#D1FAE5" }}
+              >
+                <svg
+                  className="w-7 h-7"
+                  fill="none"
+                  stroke="#065F46"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-900">Dispatch Created!</h3>
+              <h3 className="text-lg font-bold text-gray-900">
+                Dispatch Created!
+              </h3>
               <p className="text-sm text-gray-500 mt-1">
-                Order <span className="font-mono">{request.request_id}</span> has been approved and dispatched.
+                Order <span className="font-mono">{request.request_id}</span>{" "}
+                has been approved and dispatched.
               </p>
             </div>
 
             <div className="rounded-xl border border-green-200 overflow-hidden">
-              <div className="px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ backgroundColor: "#F0FDF4", color: "#25671E" }}>
+              <div
+                className="px-4 py-3 text-xs font-semibold uppercase tracking-wide"
+                style={{ backgroundColor: "#F0FDF4", color: "#25671E" }}
+              >
                 Dispatch Summary
               </div>
               <div className="p-4 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Dispatch ID</span>
-                  <span className="font-mono font-medium text-gray-900">{dispatchResult.dispatch_id}</span>
+                  <span className="font-mono font-medium text-gray-900">
+                    {dispatchResult.dispatch_id}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Quantity</span>
-                  <span className="font-medium text-gray-900">{dispatchResult.quantity} {request.unit}</span>
+                  <span className="font-medium text-gray-900">
+                    {dispatchResult.quantity} {request.unit}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Destination</span>
-                  <span className="font-medium text-gray-900">{dispatchResult.destination}</span>
+                  <span className="font-medium text-gray-900">
+                    {dispatchResult.destination}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Crop</span>
-                  <span className="font-medium text-gray-900">{request.crop}{request.variety ? ` (${request.variety})` : ""}</span>
+                  <span className="font-medium text-gray-900">
+                    {request.crop}
+                    {request.variety ? ` (${request.variety})` : ""}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Estimated Delivery</span>
                   <span className="font-medium" style={{ color: "#48A111" }}>
-                    {new Date(dispatchResult.estimated_delivery).toLocaleDateString("en-IN", {
-                      day: "numeric", month: "long", year: "numeric",
+                    {new Date(
+                      dispatchResult.estimated_delivery,
+                    ).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
                     })}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Status</span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium" style={{ backgroundColor: "#FEF3C7", color: "#92400E" }}>
-                    {dispatchResult.status === "pending" ? "Pending Shipment" : dispatchResult.status}
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                    style={{ backgroundColor: "#FEF3C7", color: "#92400E" }}
+                  >
+                    {dispatchResult.status === "pending"
+                      ? "Pending Shipment"
+                      : dispatchResult.status}
                   </span>
                 </div>
               </div>
             </div>
 
             <button
-              onClick={() => { setDispatchResult(null); onCancel(); }}
+              onClick={() => {
+                setDispatchResult(null);
+                onCancel();
+              }}
               className="w-full px-4 py-2.5 text-sm font-medium rounded-lg text-white transition-opacity hover:opacity-90"
               style={{ backgroundColor: "#48A111" }}
             >
@@ -207,202 +253,207 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
             </button>
           </div>
         ) : (
-        <>
-        <h3 className="text-base font-bold text-gray-900 mb-1">
-          Approve Allocation
-        </h3>
-        <p className="text-sm text-gray-500 mb-4">
-          Request <span className="font-mono">{request.request_id}</span> —{" "}
-          {request.quantity} {request.unit} of {request.crop}
-          {request.variety ? ` (${request.variety})` : ""}
-        </p>
+          <>
+            <h3 className="text-base font-bold text-gray-900 mb-1">
+              Approve Allocation
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Request <span className="font-mono">{request.request_id}</span> —{" "}
+              {request.quantity} {request.unit} of {request.crop}
+              {request.variety ? ` (${request.variety})` : ""}
+            </p>
 
-        {error && (
-          <div
-            className="mb-3 rounded-lg p-3 text-sm"
-            style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}
-          >
-            {error}
-          </div>
-        )}
-
-        {matching.length === 0 ? (
-          <div className="space-y-4">
-            {/* No stock notice */}
-            <div className="rounded-lg p-4 bg-amber-50 border border-amber-200 text-sm text-amber-800">
-              <p className="font-medium mb-1">No matching stock available</p>
-              <p className="text-amber-700">
-                No active batch has sufficient {request.crop} to fulfil this
-                order ({request.quantity} {request.unit}).
-              </p>
-            </div>
-
-            {/* AI Suggestion trigger */}
-            {!aiSuggestion && !aiLoading && (
-              <button
-                onClick={handleGetSuggestion}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed text-sm font-medium transition-all hover:bg-green-50"
-                style={{ borderColor: "#48A111", color: "#25671E" }}
+            {error && (
+              <div
+                className="mb-3 rounded-lg p-3 text-sm"
+                style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}
               >
-                <span>✨</span>
-                AI Sourcing Suggestion — find farmers who can supply
-              </button>
-            )}
-
-            {aiLoading && (
-              <div className="flex items-center justify-center gap-2 py-6 text-sm text-gray-500">
-                <div
-                  className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
-                  style={{ borderColor: "#48A111", borderTopColor: "transparent" }}
-                />
-                Asking AI for sourcing options…
+                {error}
               </div>
             )}
 
-            {aiError && (
-              <div className="rounded-lg p-3 text-sm bg-red-50 text-red-700 border border-red-200">
-                {aiError}
-              </div>
-            )}
-
-            {aiSuggestion && (
-              <div className="rounded-lg border border-green-200 overflow-hidden">
-                {/* Header */}
-                <div
-                  className="flex items-center gap-2 px-4 py-3 text-sm font-semibold"
-                  style={{ backgroundColor: "#F0FDF4", color: "#25671E" }}
-                >
-                  <span>✨</span>
-                  AI Sourcing Suggestion
+            {matching.length === 0 ? (
+              <div className="space-y-4">
+                {/* No stock notice */}
+                <div className="rounded-lg p-4 bg-amber-50 border border-amber-200 text-sm text-amber-800">
+                  <p className="font-medium mb-1">
+                    No matching stock available
+                  </p>
+                  <p className="text-amber-700">
+                    No active batch has sufficient {request.crop} to fulfil this
+                    order ({request.quantity} {request.unit}).
+                  </p>
                 </div>
 
-                {/* Suggestion text */}
-                <div className="px-4 py-3 text-sm text-gray-700 leading-relaxed border-b border-green-100">
-                  {aiSuggestion}
-                </div>
+                {/* AI Suggestion trigger */}
+                {!aiSuggestion && !aiLoading && (
+                  <button
+                    onClick={handleGetSuggestion}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed text-sm font-medium transition-all hover:bg-green-50"
+                    style={{ borderColor: "#48A111", color: "#25671E" }}
+                  >
+                    <span>✨</span>
+                    AI Sourcing Suggestion — find farmers who can supply
+                  </button>
+                )}
 
-                {/* Farmer list */}
-                {aiFarmers.length > 0 && (
-                  <div className="px-4 py-3 space-y-2">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                      Matching Registered Farmers
-                    </p>
-                    {aiFarmers.map((f) => (
-                      <div
-                        key={f.id}
-                        className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100"
-                      >
-                        {/* Avatar */}
-                        <div
-                          className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
-                          style={{ backgroundColor: "#48A111" }}
-                        >
-                          {f.name
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")
-                            .substring(0, 2)
-                            .toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900">
-                            {f.name}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {f.location}
-                          </p>
-                          <div className="flex flex-wrap gap-3 mt-1">
-                            {f.phone && (
-                              <a
-                                href={`tel:${f.phone}`}
-                                className="text-xs hover:underline"
-                                style={{ color: "#48A111" }}
-                              >
-                                📞 {f.phone}
-                              </a>
-                            )}
-                            {f.expected_quantity && (
-                              <span className="text-xs text-gray-500">
-                                ~{f.expected_quantity} kg available
-                              </span>
-                            )}
-                            {f.crop_variety && (
-                              <span className="text-xs text-gray-400">
-                                Variety: {f.crop_variety}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                {aiLoading && (
+                  <div className="flex items-center justify-center gap-2 py-6 text-sm text-gray-500">
+                    <div
+                      className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
+                      style={{
+                        borderColor: "#48A111",
+                        borderTopColor: "transparent",
+                      }}
+                    />
+                    Asking AI for sourcing options…
                   </div>
                 )}
 
-                {/* Refresh */}
-                <div className="px-4 py-2 border-t border-green-100">
-                  <button
-                    onClick={handleGetSuggestion}
-                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                {aiError && (
+                  <div className="rounded-lg p-3 text-sm bg-red-50 text-red-700 border border-red-200">
+                    {aiError}
+                  </div>
+                )}
+
+                {aiSuggestion && (
+                  <div className="rounded-lg border border-green-200 overflow-hidden">
+                    {/* Header */}
+                    <div
+                      className="flex items-center gap-2 px-4 py-3 text-sm font-semibold"
+                      style={{ backgroundColor: "#F0FDF4", color: "#25671E" }}
+                    >
+                      <span>✨</span>
+                      AI Sourcing Suggestion
+                    </div>
+
+                    {/* Suggestion text */}
+                    <div className="px-4 py-3 text-sm text-gray-700 leading-relaxed border-b border-green-100">
+                      {aiSuggestion}
+                    </div>
+
+                    {/* Farmer list */}
+                    {aiFarmers.length > 0 && (
+                      <div className="px-4 py-3 space-y-2">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                          Matching Registered Farmers
+                        </p>
+                        {aiFarmers.map((f) => (
+                          <div
+                            key={f.id}
+                            className="flex items-start gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100"
+                          >
+                            {/* Avatar */}
+                            <div
+                              className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                              style={{ backgroundColor: "#48A111" }}
+                            >
+                              {f.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")
+                                .substring(0, 2)
+                                .toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900">
+                                {f.name}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {f.location}
+                              </p>
+                              <div className="flex flex-wrap gap-3 mt-1">
+                                {f.phone && (
+                                  <a
+                                    href={`tel:${f.phone}`}
+                                    className="text-xs hover:underline"
+                                    style={{ color: "#48A111" }}
+                                  >
+                                    📞 {f.phone}
+                                  </a>
+                                )}
+                                {f.expected_quantity && (
+                                  <span className="text-xs text-gray-500">
+                                    ~{f.expected_quantity} kg available
+                                  </span>
+                                )}
+                                {f.crop_variety && (
+                                  <span className="text-xs text-gray-400">
+                                    Variety: {f.crop_variety}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Refresh */}
+                    <div className="px-4 py-2 border-t border-green-100">
+                      <button
+                        onClick={handleGetSuggestion}
+                        className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        ↺ Refresh suggestion
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
+                {matching.map((b) => (
+                  <label
+                    key={b.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      selectedBatch === b.id
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:bg-gray-50"
+                    }`}
                   >
-                    ↺ Refresh suggestion
-                  </button>
-                </div>
+                    <input
+                      type="radio"
+                      name="batch"
+                      value={b.id}
+                      checked={selectedBatch === b.id}
+                      onChange={() => setSelectedBatch(b.id)}
+                      className="accent-[#48A111]"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900">
+                        {b.batch_id} — {b.crop}
+                        {b.variety ? ` (${b.variety})` : ""}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Zone {b.zone} · {b.quantity} {b.unit} available · Risk{" "}
+                        {b.risk_score}%
+                      </div>
+                    </div>
+                  </label>
+                ))}
               </div>
             )}
-          </div>
-        ) : (
-          <div className="space-y-2 max-h-60 overflow-y-auto mb-4">
-            {matching.map((b) => (
-              <label
-                key={b.id}
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  selectedBatch === b.id
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="batch"
-                  value={b.id}
-                  checked={selectedBatch === b.id}
-                  onChange={() => setSelectedBatch(b.id)}
-                  className="accent-[#48A111]"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900">
-                    {b.batch_id} — {b.crop}
-                    {b.variety ? ` (${b.variety})` : ""}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Zone {b.zone} · {b.quantity} {b.unit} available · Risk{" "}
-                    {b.risk_score}%
-                  </div>
-                </div>
-              </label>
-            ))}
-          </div>
-        )}
 
-        <div className="flex gap-3 pt-4">
-          <button
-            onClick={onCancel}
-            disabled={submitting}
-            className="flex-1 px-4 py-2 text-sm font-medium rounded-lg border transition-colors disabled:opacity-50"
-            style={{ borderColor: "#E5E7EB", color: "#6B7280" }}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={submitting || matching.length === 0}
-            className="flex-1 px-4 py-2 text-sm font-medium rounded-lg text-white transition-opacity disabled:opacity-50"
-            style={{ backgroundColor: "#48A111" }}
-          >
-            {submitting ? "Approving..." : "Approve & Deduct"}
-          </button>
-        </div>
-        </>
+            <div className="flex gap-3 pt-4">
+              <button
+                onClick={onCancel}
+                disabled={submitting}
+                className="flex-1 px-4 py-2 text-sm font-medium rounded-lg border transition-colors disabled:opacity-50"
+                style={{ borderColor: "#E5E7EB", color: "#6B7280" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                disabled={submitting || matching.length === 0}
+                className="flex-1 px-4 py-2 text-sm font-medium rounded-lg text-white transition-opacity disabled:opacity-50"
+                style={{ backgroundColor: "#48A111" }}
+              >
+                {submitting ? "Approving..." : "Approve & Deduct"}
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -455,7 +506,12 @@ const RejectDialog: React.FC<RejectDialogProps> = ({
           onChange={(e) => setReason(e.target.value)}
           placeholder="Reason (optional)"
           className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 resize-none mb-4"
-          style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#DC2626" } as React.CSSProperties}
+          style={
+            {
+              borderColor: "#E5E7EB",
+              "--tw-ring-color": "#DC2626",
+            } as React.CSSProperties
+          }
         />
 
         <div className="flex gap-3">
@@ -493,8 +549,12 @@ export const AllocationManagePage: React.FC = () => {
   } = useAllocations();
   const { batches, isLoading: invLoading } = useInventory();
 
-  const [approveTarget, setApproveTarget] = useState<AllocationRequest | null>(null);
-  const [rejectTarget, setRejectTarget] = useState<AllocationRequest | null>(null);
+  const [approveTarget, setApproveTarget] = useState<AllocationRequest | null>(
+    null,
+  );
+  const [rejectTarget, setRejectTarget] = useState<AllocationRequest | null>(
+    null,
+  );
   const [filter, setFilter] = useState<string>("all");
 
   const isLoading = allocLoading || invLoading;
@@ -534,7 +594,11 @@ export const AllocationManagePage: React.FC = () => {
     return (
       <div
         className="rounded-xl p-6 border text-sm"
-        style={{ backgroundColor: "#FEF2F2", borderColor: "#DC2626", color: "#DC2626" }}
+        style={{
+          backgroundColor: "#FEF2F2",
+          borderColor: "#DC2626",
+          color: "#DC2626",
+        }}
       >
         Failed to load allocations: {allocError}
       </div>
@@ -627,7 +691,9 @@ export const AllocationManagePage: React.FC = () => {
                       className="border-b last:border-0 hover:bg-gray-50"
                     >
                       <td className="px-4 py-3">
-                        <span className="font-mono text-xs">{a.request_id}</span>
+                        <span className="font-mono text-xs">
+                          {a.request_id}
+                        </span>
                         <div className="text-xs text-gray-400 mt-0.5">
                           {new Date(a.created_at).toLocaleDateString("en-IN")}
                         </div>
@@ -670,7 +736,10 @@ export const AllocationManagePage: React.FC = () => {
                             <button
                               onClick={() => setRejectTarget(a)}
                               className="px-3 py-1 text-xs font-medium rounded-md transition-colors border hover:bg-red-50"
-                              style={{ borderColor: "#DC2626", color: "#DC2626" }}
+                              style={{
+                                borderColor: "#DC2626",
+                                color: "#DC2626",
+                              }}
                             >
                               Reject
                             </button>

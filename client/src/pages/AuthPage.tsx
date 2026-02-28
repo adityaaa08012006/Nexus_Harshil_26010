@@ -394,6 +394,31 @@ const AuthPage: React.FC = () => {
                   </button>
                 </form>
 
+                {/* Judge Testing Credentials */}
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm space-y-2">
+                  <p className="font-bold text-amber-800 flex items-center gap-1.5">
+                    🔑 Test Credentials for Judges
+                  </p>
+                  <div className="grid gap-1.5 text-amber-700">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Owner:</span>
+                      <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs">owner@godam.com</code>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Manager:</span>
+                      <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs">manager@godam.com</code>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">QC Rep:</span>
+                      <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs">qc@godam.com</code>
+                    </div>
+                    <div className="flex justify-between pt-1 border-t border-amber-200">
+                      <span className="font-medium">Password (all):</span>
+                      <code className="bg-amber-100 px-1.5 py-0.5 rounded text-xs font-bold">123456</code>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="text-center text-sm text-slate-500">
                   Don't have an account?{" "}
                   <button

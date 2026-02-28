@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from "react";
 
 interface ClickSparkProps {
   sparkColor?: string;
@@ -6,7 +6,7 @@ interface ClickSparkProps {
   sparkRadius?: number;
   sparkCount?: number;
   duration?: number;
-  easing?: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
+  easing?: "linear" | "ease-in" | "ease-out" | "ease-in-out";
   extraScale?: number;
   children?: React.ReactNode;
 }
@@ -19,14 +19,14 @@ interface Spark {
 }
 
 const ClickSpark: React.FC<ClickSparkProps> = ({
-  sparkColor = '#fff',
+  sparkColor = "#fff",
   sparkSize = 10,
   sparkRadius = 15,
   sparkCount = 8,
   duration = 400,
-  easing = 'ease-out',
+  easing = "ease-out",
   extraScale = 1.0,
-  children
+  children,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sparksRef = useRef<Spark[]>([]);
@@ -72,18 +72,18 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const easeFunc = (t: number) => {
       switch (easing) {
-        case 'linear':
+        case "linear":
           return t;
-        case 'ease-in':
+        case "ease-in":
           return t * t;
-        case 'ease-in-out':
+        case "ease-in-out":
           return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-        case 'ease-out':
+        case "ease-out":
         default:
           return t * (2 - t);
       }
@@ -93,13 +93,13 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
       if (!startTimeRef.current) {
         startTimeRef.current = timestamp;
       }
-      
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Filter and draw active sparks
       sparksRef.current = sparksRef.current.filter((spark: Spark) => {
         const elapsed = timestamp - spark.startTime;
-        
+
         if (elapsed >= duration) {
           return false; // Remove finished sparks
         }
@@ -119,7 +119,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
         // Draw spark line
         ctx.strokeStyle = sparkColor;
         ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
+        ctx.lineCap = "round";
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
@@ -129,7 +129,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
       });
 
       // Continue animation loop if there are active sparks
-        animationFrameIdRef.current = requestAnimationFrame(draw);
+      animationFrameIdRef.current = requestAnimationFrame(draw);
     };
 
     animationFrameIdRef.current = requestAnimationFrame(draw);
@@ -139,12 +139,20 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
         cancelAnimationFrame(animationFrameIdRef.current);
       }
     };
-  }, [sparkColor, sparkSize, sparkRadius, sparkCount, duration, easing, extraScale]);
+  }, [
+    sparkColor,
+    sparkSize,
+    sparkRadius,
+    sparkCount,
+    duration,
+    easing,
+    extraScale,
+  ]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     // Get click position relative to canvas
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -155,7 +163,7 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
       x,
       y,
       angle: (2 * Math.PI * i) / sparkCount,
-      startTime: now
+      startTime: now,
     }));
 
     sparksRef.current.push(...newSparks);
@@ -163,10 +171,10 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
 
   return (
     <div className="relative inline-block w-full h-full" onClick={handleClick}>
-      <canvas 
-        ref={canvasRef} 
+      <canvas
+        ref={canvasRef}
         className="absolute inset-0 pointer-events-none z-50 block"
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: "100%", height: "100%" }}
       />
       {children}
     </div>

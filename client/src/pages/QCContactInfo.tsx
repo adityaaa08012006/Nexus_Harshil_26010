@@ -14,11 +14,12 @@ interface ManagerInfo {
   warehouse_location?: string | null;
 }
 
-const ROLE_LABELS: Record<string, { label: string; bg: string; text: string }> = {
-  owner: { label: "Owner", bg: "#F0FDF4", text: "#15803D" },
-  manager: { label: "Manager", bg: "#EFF6FF", text: "#1D4ED8" },
-  qc_rep: { label: "QC Rep", bg: "#FFF7ED", text: "#C2410C" },
-};
+const ROLE_LABELS: Record<string, { label: string; bg: string; text: string }> =
+  {
+    owner: { label: "Owner", bg: "#F0FDF4", text: "#15803D" },
+    manager: { label: "Manager", bg: "#EFF6FF", text: "#1D4ED8" },
+    qc_rep: { label: "QC Rep", bg: "#FFF7ED", text: "#C2410C" },
+  };
 
 export const QCContactInfo: React.FC = () => {
   const { session } = useAuthContext();
@@ -40,10 +41,13 @@ export const QCContactInfo: React.FC = () => {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
-        if (!res.ok) throw new Error((await res.json()).error ?? `HTTP ${res.status}`);
+        if (!res.ok)
+          throw new Error((await res.json()).error ?? `HTTP ${res.status}`);
         setManagers(await res.json());
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load contacts");
+        setError(
+          err instanceof Error ? err.message : "Failed to load contacts",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -69,7 +73,9 @@ export const QCContactInfo: React.FC = () => {
       <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h1 className="text-xl font-bold" style={{ color: "#25671E" }}>Staff Contacts</h1>
+            <h1 className="text-xl font-bold" style={{ color: "#25671E" }}>
+              Staff Contacts
+            </h1>
             <p className="text-sm text-gray-500 mt-0.5">
               Owners and managers you can reach out to
             </p>
@@ -90,7 +96,9 @@ export const QCContactInfo: React.FC = () => {
 
       {/* ── Error ── */}
       {error && (
-        <div className="rounded-xl p-4 border text-sm bg-red-50 border-red-200 text-red-700">{error}</div>
+        <div className="rounded-xl p-4 border text-sm bg-red-50 border-red-200 text-red-700">
+          {error}
+        </div>
       )}
 
       {/* ── Loading ── */}
@@ -105,13 +113,19 @@ export const QCContactInfo: React.FC = () => {
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 text-sm">
-            {search ? "No contacts match your search." : "No staff contacts found."}
+            {search
+              ? "No contacts match your search."
+              : "No staff contacts found."}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((m) => {
-            const roleStyle = ROLE_LABELS[m.role] ?? { label: m.role, bg: "#F9FAFB", text: "#374151" };
+            const roleStyle = ROLE_LABELS[m.role] ?? {
+              label: m.role,
+              bg: "#F9FAFB",
+              text: "#374151",
+            };
             return (
               <div
                 key={m.id}
@@ -121,15 +135,23 @@ export const QCContactInfo: React.FC = () => {
                 <div className="flex items-start gap-3 mb-4">
                   <div
                     className="w-11 h-11 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
-                    style={{ backgroundColor: roleStyle.bg, color: roleStyle.text }}
+                    style={{
+                      backgroundColor: roleStyle.bg,
+                      color: roleStyle.text,
+                    }}
                   >
                     {m.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate">{m.name}</h3>
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {m.name}
+                    </h3>
                     <span
                       className="inline-block text-xs font-medium px-2 py-0.5 rounded-full mt-0.5"
-                      style={{ backgroundColor: roleStyle.bg, color: roleStyle.text }}
+                      style={{
+                        backgroundColor: roleStyle.bg,
+                        color: roleStyle.text,
+                      }}
                     >
                       {roleStyle.label}
                     </span>
@@ -167,7 +189,9 @@ export const QCContactInfo: React.FC = () => {
                       </div>
                       <span className="truncate">
                         {m.warehouse_name}
-                        {m.warehouse_location ? `, ${m.warehouse_location}` : ""}
+                        {m.warehouse_location
+                          ? `, ${m.warehouse_location}`
+                          : ""}
                       </span>
                     </div>
                   )}

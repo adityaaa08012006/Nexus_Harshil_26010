@@ -1,7 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { RiskBadge } from "../common/RiskBadge";
 import { getDaysRemaining } from "../../utils/riskCalculation";
-import { AlertTriangle, TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
+import {
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  ArrowUpDown,
+} from "lucide-react";
 import type { Batch } from "../../lib/supabase";
 
 type SortKey =
@@ -101,10 +106,15 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   }, [batches, search, riskFilter, sortKey, sortDir, maxRows]);
 
   const SortIcon: React.FC<{ col: SortKey }> = ({ col }) => {
-    if (sortKey !== col) return <ArrowUpDown size={14} className="ml-1 text-gray-300 inline" />;
+    if (sortKey !== col)
+      return <ArrowUpDown size={14} className="ml-1 text-gray-300 inline" />;
     return (
       <span className="ml-1 inline-flex text-[#48A111]">
-        {sortDir === "asc" ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+        {sortDir === "asc" ? (
+          <TrendingUp size={14} />
+        ) : (
+          <TrendingDown size={14} />
+        )}
       </span>
     );
   };
@@ -123,9 +133,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h3
-          className="text-base font-bold flex items-center gap-2 text-gray-900"
-        >
+        <h3 className="text-base font-bold flex items-center gap-2 text-gray-900">
           {title}
           <span className="px-2 py-0.5 rounded-full bg-gray-100 text-xs font-medium text-gray-600">
             {filtered.length}
@@ -136,16 +144,28 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
           <div className="flex flex-wrap gap-3 items-center">
             {/* Search */}
             <div className="relative group">
-               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400 group-focus-within:text-[#48A111] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-               </div>
-               <input
-                 type="text"
-                 value={search}
-                 onChange={(e) => setSearch(e.target.value)}
-                 placeholder="Search inventory..."
-                 className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#48A111]/20 focus:border-[#48A111] w-48 transition-all"
-               />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg
+                  className="w-4 h-4 text-gray-400 group-focus-within:text-[#48A111] transition-colors"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search inventory..."
+                className="pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#48A111]/20 focus:border-[#48A111] w-48 transition-all"
+              />
             </div>
 
             {/* Risk filter pills */}
@@ -154,8 +174,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                 <button
                   key={f}
                   onClick={() => setRiskFilter(f)}
-                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${riskFilter === f ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                  style={ riskFilter === f ? { color: riskFilterColors[f] } : {} }
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all duration-200 capitalize ${riskFilter === f ? "bg-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                  style={riskFilter === f ? { color: riskFilterColors[f] } : {}}
                 >
                   {f}
                 </button>
@@ -179,19 +199,20 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
               <th className={headerTh} onClick={() => handleSort("quantity")}>
                 Qty (kg) <SortIcon col="quantity" />
               </th>
-              <th className={headerTh}>
-                Zone
-              </th>
-              <th className={headerTh} onClick={() => handleSort("days_remaining")}>
+              <th className={headerTh}>Zone</th>
+              <th
+                className={headerTh}
+                onClick={() => handleSort("days_remaining")}
+              >
                 Days Left <SortIcon col="days_remaining" />
               </th>
               <th className={headerTh} onClick={() => handleSort("risk_score")}>
-                 Health <SortIcon col="risk_score" />
+                Health <SortIcon col="risk_score" />
               </th>
               {(onEdit || onDelete || onView) && (
-                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
-                   Actions
-                 </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Actions
+                </th>
               )}
             </tr>
           </thead>
@@ -212,7 +233,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
                       <div className="font-medium">{batch.crop}</div>
-                      <div className="text-xs text-gray-400">{batch.variety}</div>
+                      <div className="text-xs text-gray-400">
+                        {batch.variety}
+                      </div>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 font-mono">
                       {batch.quantity.toLocaleString()}
@@ -223,7 +246,9 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-sm">
-                      <div className={`flex items-center gap-1.5 font-medium ${daysLeft < 5 ? 'text-red-600' : 'text-gray-700'}`}>
+                      <div
+                        className={`flex items-center gap-1.5 font-medium ${daysLeft < 5 ? "text-red-600" : "text-gray-700"}`}
+                      >
                         {daysLeft} days
                         {daysLeft < 5 && <AlertTriangle size={12} />}
                       </div>
@@ -234,30 +259,30 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                     {(onEdit || onDelete || onView) && (
                       <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2 transition-opacity">
-                            {onView && (
-                              <button
-                                onClick={() => onView(batch.batch_id)}
-                                className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-colors text-xs"
-                              >
-                                ViewDetails
-                              </button>
-                            )}
-                            {onEdit && (
-                              <button
-                                onClick={() => onEdit(batch)}
-                                className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded transition-colors text-xs"
-                              >
-                                Edit
-                              </button>
-                            )}
-                            {onDelete && (
-                               <button
-                                  onClick={() => onDelete(batch)}
-                                  className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors text-xs"
-                               >
-                                  Del
-                               </button>
-                            )}
+                          {onView && (
+                            <button
+                              onClick={() => onView(batch.batch_id)}
+                              className="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-colors text-xs"
+                            >
+                              ViewDetails
+                            </button>
+                          )}
+                          {onEdit && (
+                            <button
+                              onClick={() => onEdit(batch)}
+                              className="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded transition-colors text-xs"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {onDelete && (
+                            <button
+                              onClick={() => onDelete(batch)}
+                              className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors text-xs"
+                            >
+                              Del
+                            </button>
+                          )}
                         </div>
                       </td>
                     )}
@@ -271,8 +296,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
                   className="px-6 py-12 text-center text-sm text-gray-500"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
-                     <AlertTriangle className="w-8 h-8 text-gray-300" />
-                     <p>No batches found matching your criteria.</p>
+                    <AlertTriangle className="w-8 h-8 text-gray-300" />
+                    <p>No batches found matching your criteria.</p>
                   </div>
                 </td>
               </tr>

@@ -58,10 +58,9 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `${API_URL}/api/messages/${allocationId}`,
-        { headers: headers() },
-      );
+      const res = await fetch(`${API_URL}/api/messages/${allocationId}`, {
+        headers: headers(),
+      });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || `HTTP ${res.status}`);
@@ -126,14 +125,11 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
     setIsSending(true);
     try {
-      const res = await fetch(
-        `${API_URL}/api/messages/${allocationId}`,
-        {
-          method: "POST",
-          headers: headers(),
-          body: JSON.stringify({ content: newMessage.trim() }),
-        },
-      );
+      const res = await fetch(`${API_URL}/api/messages/${allocationId}`, {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify({ content: newMessage.trim() }),
+      });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || "Failed to send");

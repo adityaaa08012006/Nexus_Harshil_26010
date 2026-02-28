@@ -58,7 +58,13 @@ interface WasteData {
   baselineSpoilageRate: number;
   wasteReductionPct: number;
   quantitySaved: number;
-  timeline: { month: string; spoilageRate: number; baselineRate: number; total: number; expired: number }[];
+  timeline: {
+    month: string;
+    spoilageRate: number;
+    baselineRate: number;
+    total: number;
+    expired: number;
+  }[];
 }
 
 interface EfficiencyData {
@@ -89,7 +95,13 @@ interface ROIData {
   costSaved: number;
   roiPercentage: number;
   avgPricePerKg: number;
-  timeline: { month: string; baselineLoss: number; actualLoss: number; savings: number; cumulativeSavings: number }[];
+  timeline: {
+    month: string;
+    baselineLoss: number;
+    actualLoss: number;
+    savings: number;
+    cumulativeSavings: number;
+  }[];
 }
 
 interface ComparisonWarehouse {
@@ -199,9 +211,12 @@ export const ImpactDashboard: React.FC = () => {
   const handleExport = async (format: "csv" | "json") => {
     if (!session?.access_token) return;
     try {
-      const res = await fetch(`${API_BASE}/export?period=${period}&format=${format}`, {
-        headers: headers(),
-      });
+      const res = await fetch(
+        `${API_BASE}/export?period=${period}&format=${format}`,
+        {
+          headers: headers(),
+        },
+      );
       if (format === "csv") {
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
@@ -238,7 +253,14 @@ export const ImpactDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="rounded-xl p-6 border text-sm" style={{ backgroundColor: BRAND.redLight, borderColor: BRAND.red, color: BRAND.red }}>
+      <div
+        className="rounded-xl p-6 border text-sm"
+        style={{
+          backgroundColor: BRAND.redLight,
+          borderColor: BRAND.red,
+          color: BRAND.red,
+        }}
+      >
         Failed to load analytics: {error}
         <button onClick={fetchData} className="ml-4 underline">
           Retry
@@ -278,7 +300,9 @@ export const ImpactDashboard: React.FC = () => {
                   key={p}
                   onClick={() => setPeriod(p)}
                   className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                    period === p ? "text-white" : "text-gray-600 hover:bg-gray-50"
+                    period === p
+                      ? "text-white"
+                      : "text-gray-600 hover:bg-gray-50"
                   }`}
                   style={period === p ? { backgroundColor: BRAND.green } : {}}
                 >
@@ -318,7 +342,11 @@ export const ImpactDashboard: React.FC = () => {
           label="Waste Reduced"
           value={`${waste?.wasteReductionPct ?? 0}%`}
           subtitle={`${waste?.quantitySaved?.toLocaleString("en-IN") ?? 0} kg saved`}
-          trend={waste?.wasteReductionPct && waste.wasteReductionPct > 0 ? "up" : "neutral"}
+          trend={
+            waste?.wasteReductionPct && waste.wasteReductionPct > 0
+              ? "up"
+              : "neutral"
+          }
         />
         <MetricCard
           icon={<DollarSign className="w-5 h-5" />}
@@ -336,7 +364,11 @@ export const ImpactDashboard: React.FC = () => {
           label="Fulfillment Rate"
           value={`${efficiency?.fulfillmentRate ?? 0}%`}
           subtitle={`${efficiency?.avgDispatchTimeDays ?? 0} days avg dispatch`}
-          trend={efficiency?.fulfillmentRate && efficiency.fulfillmentRate >= 70 ? "up" : "down"}
+          trend={
+            efficiency?.fulfillmentRate && efficiency.fulfillmentRate >= 70
+              ? "up"
+              : "down"
+          }
         />
         <MetricCard
           icon={<ShieldCheck className="w-5 h-5" />}
@@ -350,7 +382,9 @@ export const ImpactDashboard: React.FC = () => {
               : "No alerts in period"
           }
           trend={
-            overview && overview.totalAlerts > 0 && overview.acknowledgedAlerts / overview.totalAlerts >= 0.7
+            overview &&
+            overview.totalAlerts > 0 &&
+            overview.acknowledgedAlerts / overview.totalAlerts >= 0.7
               ? "up"
               : "neutral"
           }
@@ -361,19 +395,36 @@ export const ImpactDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Waste Reduction Trend */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Waste Reduction Trend</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">
+            Waste Reduction Trend
+          </h3>
           {waste?.timeline && waste.timeline.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={waste.timeline}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#9CA3AF" />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11 }}
+                  stroke="#9CA3AF"
+                />
                 <YAxis tick={{ fontSize: 11 }} stroke="#9CA3AF" unit="%" />
                 <Tooltip
-                  contentStyle={{ borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "12px" }}
-                  formatter={(value: any, name?: string) => [`${value}%`, name === "spoilageRate" ? "Current" : "Baseline"]}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "1px solid #E5E7EB",
+                    fontSize: "12px",
+                  }}
+                  formatter={(value: any, name?: string) => [
+                    `${value}%`,
+                    name === "spoilageRate" ? "Current" : "Baseline",
+                  ]}
                 />
                 <Legend
-                  formatter={(value) => (value === "spoilageRate" ? "Current Spoilage" : "Industry Baseline")}
+                  formatter={(value) =>
+                    value === "spoilageRate"
+                      ? "Current Spoilage"
+                      : "Industry Baseline"
+                  }
                   wrapperStyle={{ fontSize: "11px" }}
                 />
                 <Line
@@ -401,22 +452,53 @@ export const ImpactDashboard: React.FC = () => {
 
         {/* ROI Growth */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">ROI & Savings Growth</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">
+            ROI & Savings Growth
+          </h3>
           {roi?.timeline && roi.timeline.length > 0 ? (
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={roi.timeline}>
                 <defs>
-                  <linearGradient id="greenGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={BRAND.green} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={BRAND.green} stopOpacity={0.02} />
+                  <linearGradient
+                    id="greenGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={BRAND.green}
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={BRAND.green}
+                      stopOpacity={0.02}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#9CA3AF" />
-                <YAxis tick={{ fontSize: 11 }} stroke="#9CA3AF" tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11 }}
+                  stroke="#9CA3AF"
+                />
+                <YAxis
+                  tick={{ fontSize: 11 }}
+                  stroke="#9CA3AF"
+                  tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                />
                 <Tooltip
-                  contentStyle={{ borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "12px" }}
-                  formatter={(value: any) => [`₹${Number(value).toLocaleString("en-IN")}`, ""]}
+                  contentStyle={{
+                    borderRadius: "8px",
+                    border: "1px solid #E5E7EB",
+                    fontSize: "12px",
+                  }}
+                  formatter={(value: any) => [
+                    `₹${Number(value).toLocaleString("en-IN")}`,
+                    "",
+                  ]}
                   labelFormatter={(label) => `Month: ${label}`}
                 />
                 <Legend wrapperStyle={{ fontSize: "11px" }} />
@@ -449,13 +531,17 @@ export const ImpactDashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Before/After Comparison */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Before vs After Comparison</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">
+            Before vs After Comparison
+          </h3>
           <BeforeAfterChart waste={waste} roi={roi} />
         </div>
 
         {/* Efficiency Gauges */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Efficiency Metrics</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">
+            Efficiency Metrics
+          </h3>
           <div className="grid grid-cols-2 gap-6 py-2">
             <GaugeChart
               label="Fulfillment Rate"
@@ -466,7 +552,10 @@ export const ImpactDashboard: React.FC = () => {
               label="Alert Resolution"
               value={
                 overview && overview.totalAlerts > 0
-                  ? Math.round((overview.acknowledgedAlerts / overview.totalAlerts) * 100)
+                  ? Math.round(
+                      (overview.acknowledgedAlerts / overview.totalAlerts) *
+                        100,
+                    )
                   : 0
               }
               color={BRAND.blue}
@@ -475,7 +564,12 @@ export const ImpactDashboard: React.FC = () => {
               label="Dispatch Efficiency"
               value={
                 efficiency && efficiency.totalRequests > 0
-                  ? Math.round(((efficiency.totalRequests - efficiency.cancelledRequests) / efficiency.totalRequests) * 100)
+                  ? Math.round(
+                      ((efficiency.totalRequests -
+                        efficiency.cancelledRequests) /
+                        efficiency.totalRequests) *
+                        100,
+                    )
                   : 0
               }
               color={BRAND.yellow}
@@ -484,7 +578,9 @@ export const ImpactDashboard: React.FC = () => {
               label="Inventory Health"
               value={
                 overview && overview.activeBatches > 0
-                  ? Math.round((overview.freshCount / overview.activeBatches) * 100)
+                  ? Math.round(
+                      (overview.freshCount / overview.activeBatches) * 100,
+                    )
                   : 0
               }
               color={BRAND.greenDark}
@@ -504,39 +600,78 @@ export const ImpactDashboard: React.FC = () => {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="py-3 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Warehouse</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Batches</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Quantity</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Avg Risk</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Risk Distribution</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Orders</th>
-                  <th className="py-3 pl-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Fulfillment</th>
+                  <th className="py-3 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Warehouse
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Batches
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Quantity
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Avg Risk
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Risk Distribution
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Orders
+                  </th>
+                  <th className="py-3 pl-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Fulfillment
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {comparison.map((wh) => (
-                  <tr key={wh.warehouse_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={wh.warehouse_id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
                     <td className="py-3 pr-4">
-                      <div className="font-medium text-gray-900">{wh.warehouse_name}</div>
+                      <div className="font-medium text-gray-900">
+                        {wh.warehouse_name}
+                      </div>
                       <div className="text-xs text-gray-500">{wh.location}</div>
                     </td>
-                    <td className="py-3 px-4 text-right text-gray-700">{wh.activeBatches}</td>
-                    <td className="py-3 px-4 text-right text-gray-700">{wh.totalQuantity.toLocaleString("en-IN")} kg</td>
+                    <td className="py-3 px-4 text-right text-gray-700">
+                      {wh.activeBatches}
+                    </td>
+                    <td className="py-3 px-4 text-right text-gray-700">
+                      {wh.totalQuantity.toLocaleString("en-IN")} kg
+                    </td>
                     <td className="py-3 px-4 text-right">
                       <span
                         className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                         style={{
-                          backgroundColor: wh.avgRiskScore <= 30 ? BRAND.greenLight : wh.avgRiskScore <= 70 ? BRAND.yellowLight : BRAND.redLight,
-                          color: wh.avgRiskScore <= 30 ? BRAND.green : wh.avgRiskScore <= 70 ? "#92400E" : BRAND.red,
+                          backgroundColor:
+                            wh.avgRiskScore <= 30
+                              ? BRAND.greenLight
+                              : wh.avgRiskScore <= 70
+                                ? BRAND.yellowLight
+                                : BRAND.redLight,
+                          color:
+                            wh.avgRiskScore <= 30
+                              ? BRAND.green
+                              : wh.avgRiskScore <= 70
+                                ? "#92400E"
+                                : BRAND.red,
                         }}
                       >
                         {wh.avgRiskScore}%
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <RiskBar fresh={wh.freshCount} moderate={wh.moderateCount} high={wh.highRiskCount} />
+                      <RiskBar
+                        fresh={wh.freshCount}
+                        moderate={wh.moderateCount}
+                        high={wh.highRiskCount}
+                      />
                     </td>
-                    <td className="py-3 px-4 text-right text-gray-700">{wh.totalOrders}</td>
+                    <td className="py-3 px-4 text-right text-gray-700">
+                      {wh.totalOrders}
+                    </td>
                     <td className="py-3 pl-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -544,11 +679,18 @@ export const ImpactDashboard: React.FC = () => {
                             className="h-full rounded-full transition-all"
                             style={{
                               width: `${wh.fulfillmentRate}%`,
-                              backgroundColor: wh.fulfillmentRate >= 70 ? BRAND.green : wh.fulfillmentRate >= 40 ? BRAND.yellow : BRAND.red,
+                              backgroundColor:
+                                wh.fulfillmentRate >= 70
+                                  ? BRAND.green
+                                  : wh.fulfillmentRate >= 40
+                                    ? BRAND.yellow
+                                    : BRAND.red,
                             }}
                           />
                         </div>
-                        <span className="text-xs font-medium text-gray-700">{wh.fulfillmentRate}%</span>
+                        <span className="text-xs font-medium text-gray-700">
+                          {wh.fulfillmentRate}%
+                        </span>
                       </div>
                     </td>
                   </tr>
@@ -562,27 +704,60 @@ export const ImpactDashboard: React.FC = () => {
       {/* ── Per-Warehouse Efficiency Table ── */}
       {efficiency?.perWarehouse && efficiency.perWarehouse.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Allocation Efficiency by Warehouse</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">
+            Allocation Efficiency by Warehouse
+          </h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="py-3 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wide">Warehouse</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Total Orders</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Completed</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Cancelled</th>
-                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Total Qty (kg)</th>
-                  <th className="py-3 pl-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">Fulfillment Rate</th>
+                  <th className="py-3 pr-4 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    Warehouse
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Total Orders
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Completed
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Cancelled
+                  </th>
+                  <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Total Qty (kg)
+                  </th>
+                  <th className="py-3 pl-4 text-xs font-medium text-gray-500 uppercase tracking-wide text-right">
+                    Fulfillment Rate
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {efficiency.perWarehouse.map((wh) => (
-                  <tr key={wh.warehouse_id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-3 pr-4 font-medium text-gray-900">{wh.warehouse_name}</td>
-                    <td className="py-3 px-4 text-right text-gray-700">{wh.total}</td>
-                    <td className="py-3 px-4 text-right" style={{ color: BRAND.green }}>{wh.completed}</td>
-                    <td className="py-3 px-4 text-right" style={{ color: BRAND.red }}>{wh.cancelled}</td>
-                    <td className="py-3 px-4 text-right text-gray-700">{wh.totalQty.toLocaleString("en-IN")}</td>
+                  <tr
+                    key={wh.warehouse_id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-3 pr-4 font-medium text-gray-900">
+                      {wh.warehouse_name}
+                    </td>
+                    <td className="py-3 px-4 text-right text-gray-700">
+                      {wh.total}
+                    </td>
+                    <td
+                      className="py-3 px-4 text-right"
+                      style={{ color: BRAND.green }}
+                    >
+                      {wh.completed}
+                    </td>
+                    <td
+                      className="py-3 px-4 text-right"
+                      style={{ color: BRAND.red }}
+                    >
+                      {wh.cancelled}
+                    </td>
+                    <td className="py-3 px-4 text-right text-gray-700">
+                      {wh.totalQty.toLocaleString("en-IN")}
+                    </td>
                     <td className="py-3 pl-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -590,11 +765,18 @@ export const ImpactDashboard: React.FC = () => {
                             className="h-full rounded-full transition-all"
                             style={{
                               width: `${wh.fulfillmentRate}%`,
-                              backgroundColor: wh.fulfillmentRate >= 70 ? BRAND.green : wh.fulfillmentRate >= 40 ? BRAND.yellow : BRAND.red,
+                              backgroundColor:
+                                wh.fulfillmentRate >= 70
+                                  ? BRAND.green
+                                  : wh.fulfillmentRate >= 40
+                                    ? BRAND.yellow
+                                    : BRAND.red,
                             }}
                           />
                         </div>
-                        <span className="text-xs font-medium text-gray-700">{wh.fulfillmentRate}%</span>
+                        <span className="text-xs font-medium text-gray-700">
+                          {wh.fulfillmentRate}%
+                        </span>
                       </div>
                     </td>
                   </tr>
@@ -608,19 +790,42 @@ export const ImpactDashboard: React.FC = () => {
       {/* ── Summary Stats Footer ── */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-gray-900">Period Summary</h3>
+          <h3 className="text-sm font-semibold text-gray-900">
+            Period Summary
+          </h3>
           <span className="text-xs text-gray-500 flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
             {periodLabel[period]}
           </span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          <SummaryItem label="Active Batches" value={overview?.activeBatches ?? 0} />
-          <SummaryItem label="Total Orders" value={overview?.totalOrders ?? 0} />
-          <SummaryItem label="Completed" value={overview?.completedOrders ?? 0} color={BRAND.green} />
-          <SummaryItem label="Cancelled" value={overview?.cancelledOrders ?? 0} color={BRAND.red} />
-          <SummaryItem label="Dispatches" value={overview?.totalDispatches ?? 0} />
-          <SummaryItem label="Delivered" value={overview?.deliveredDispatches ?? 0} color={BRAND.green} />
+          <SummaryItem
+            label="Active Batches"
+            value={overview?.activeBatches ?? 0}
+          />
+          <SummaryItem
+            label="Total Orders"
+            value={overview?.totalOrders ?? 0}
+          />
+          <SummaryItem
+            label="Completed"
+            value={overview?.completedOrders ?? 0}
+            color={BRAND.green}
+          />
+          <SummaryItem
+            label="Cancelled"
+            value={overview?.cancelledOrders ?? 0}
+            color={BRAND.red}
+          />
+          <SummaryItem
+            label="Dispatches"
+            value={overview?.totalDispatches ?? 0}
+          />
+          <SummaryItem
+            label="Delivered"
+            value={overview?.deliveredDispatches ?? 0}
+            color={BRAND.green}
+          />
         </div>
       </div>
     </div>
@@ -639,25 +844,52 @@ interface MetricCardProps {
   trend: "up" | "down" | "neutral";
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ icon, iconBg, iconColor, label, value, subtitle, trend }) => (
+const MetricCard: React.FC<MetricCardProps> = ({
+  icon,
+  iconBg,
+  iconColor,
+  label,
+  value,
+  subtitle,
+  trend,
+}) => (
   <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-shadow">
     <div className="flex items-start justify-between">
-      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: iconBg, color: iconColor }}>
+      <div
+        className="w-10 h-10 rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: iconBg, color: iconColor }}
+      >
         {icon}
       </div>
-      {trend === "up" && <ArrowUpRight className="w-4 h-4" style={{ color: BRAND.green }} />}
-      {trend === "down" && <ArrowDownRight className="w-4 h-4" style={{ color: BRAND.red }} />}
+      {trend === "up" && (
+        <ArrowUpRight className="w-4 h-4" style={{ color: BRAND.green }} />
+      )}
+      {trend === "down" && (
+        <ArrowDownRight className="w-4 h-4" style={{ color: BRAND.red }} />
+      )}
     </div>
     <p className="text-2xl font-bold text-gray-900 mt-3">{value}</p>
     <p className="text-xs text-gray-500 mt-0.5">{label}</p>
-    <p className="text-xs mt-1" style={{ color: trend === "up" ? BRAND.green : trend === "down" ? BRAND.red : "#6B7280" }}>
+    <p
+      className="text-xs mt-1"
+      style={{
+        color:
+          trend === "up"
+            ? BRAND.green
+            : trend === "down"
+              ? BRAND.red
+              : "#6B7280",
+      }}
+    >
       {subtitle}
     </p>
   </div>
 );
 
 const EmptyChart: React.FC<{ message: string }> = ({ message }) => (
-  <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">{message}</div>
+  <div className="flex items-center justify-center h-[280px] text-sm text-gray-400">
+    {message}
+  </div>
 );
 
 interface GaugeChartProps {
@@ -672,8 +904,20 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ label, value, color }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <svg width="100" height="100" viewBox="0 0 100 100" className="transform -rotate-90">
-        <circle cx="50" cy="50" r="40" fill="none" stroke="#F3F4F6" strokeWidth="8" />
+      <svg
+        width="100"
+        height="100"
+        viewBox="0 0 100 100"
+        className="transform -rotate-90"
+      >
+        <circle
+          cx="50"
+          cy="50"
+          r="40"
+          fill="none"
+          stroke="#F3F4F6"
+          strokeWidth="8"
+        />
         <circle
           cx="50"
           cy="50"
@@ -686,7 +930,9 @@ const GaugeChart: React.FC<GaugeChartProps> = ({ label, value, color }) => {
           className="transition-all duration-700 ease-out"
         />
       </svg>
-      <span className="text-lg font-bold text-gray-900 -mt-[62px] mb-8">{value}%</span>
+      <span className="text-lg font-bold text-gray-900 -mt-[62px] mb-8">
+        {value}%
+      </span>
       <p className="text-xs text-gray-500 mt-1 text-center">{label}</p>
     </div>
   );
@@ -706,29 +952,71 @@ const BeforeAfterChart: React.FC<BeforeAfterChartProps> = ({ waste, roi }) => {
     },
     {
       metric: "Waste Cost",
-      before: roi ? Math.round((roi.baselineCost / Math.max(roi.baselineCost, 1)) * 100) : 100,
-      after: roi ? Math.round((roi.actualCost / Math.max(roi.baselineCost, 1)) * 100) : 0,
+      before: roi
+        ? Math.round((roi.baselineCost / Math.max(roi.baselineCost, 1)) * 100)
+        : 100,
+      after: roi
+        ? Math.round((roi.actualCost / Math.max(roi.baselineCost, 1)) * 100)
+        : 0,
     },
   ];
 
-  if (!waste && !roi) return <EmptyChart message="No comparison data available" />;
+  if (!waste && !roi)
+    return <EmptyChart message="No comparison data available" />;
 
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={data} layout="vertical" barGap={4}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-        <XAxis type="number" tick={{ fontSize: 11 }} stroke="#9CA3AF" unit="%" domain={[0, 100]} />
-        <YAxis type="category" dataKey="metric" tick={{ fontSize: 11 }} stroke="#9CA3AF" width={90} />
+        <CartesianGrid
+          strokeDasharray="3 3"
+          stroke="#f0f0f0"
+          horizontal={false}
+        />
+        <XAxis
+          type="number"
+          tick={{ fontSize: 11 }}
+          stroke="#9CA3AF"
+          unit="%"
+          domain={[0, 100]}
+        />
+        <YAxis
+          type="category"
+          dataKey="metric"
+          tick={{ fontSize: 11 }}
+          stroke="#9CA3AF"
+          width={90}
+        />
         <Tooltip
-          contentStyle={{ borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "12px" }}
-          formatter={(value: any, name?: string) => [`${value}%`, name === "before" ? "Before (Baseline)" : "After (Current)"]}
+          contentStyle={{
+            borderRadius: "8px",
+            border: "1px solid #E5E7EB",
+            fontSize: "12px",
+          }}
+          formatter={(value: any, name?: string) => [
+            `${value}%`,
+            name === "before" ? "Before (Baseline)" : "After (Current)",
+          ]}
         />
         <Legend
-          formatter={(value) => (value === "before" ? "Before (Baseline)" : "After (Current)")}
+          formatter={(value) =>
+            value === "before" ? "Before (Baseline)" : "After (Current)"
+          }
           wrapperStyle={{ fontSize: "11px" }}
         />
-        <Bar dataKey="before" fill={BRAND.red} radius={[0, 4, 4, 0]} barSize={20} name="before" />
-        <Bar dataKey="after" fill={BRAND.green} radius={[0, 4, 4, 0]} barSize={20} name="after" />
+        <Bar
+          dataKey="before"
+          fill={BRAND.red}
+          radius={[0, 4, 4, 0]}
+          barSize={20}
+          name="before"
+        />
+        <Bar
+          dataKey="after"
+          fill={BRAND.green}
+          radius={[0, 4, 4, 0]}
+          barSize={20}
+          name="after"
+        />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -747,9 +1035,24 @@ const RiskBar: React.FC<RiskBarProps> = ({ fresh, moderate, high }) => {
   return (
     <div className="flex items-center gap-1.5">
       <div className="flex h-1.5 w-24 rounded-full overflow-hidden bg-gray-100">
-        <div style={{ width: `${(fresh / total) * 100}%`, backgroundColor: BRAND.green }} />
-        <div style={{ width: `${(moderate / total) * 100}%`, backgroundColor: BRAND.yellow }} />
-        <div style={{ width: `${(high / total) * 100}%`, backgroundColor: BRAND.red }} />
+        <div
+          style={{
+            width: `${(fresh / total) * 100}%`,
+            backgroundColor: BRAND.green,
+          }}
+        />
+        <div
+          style={{
+            width: `${(moderate / total) * 100}%`,
+            backgroundColor: BRAND.yellow,
+          }}
+        />
+        <div
+          style={{
+            width: `${(high / total) * 100}%`,
+            backgroundColor: BRAND.red,
+          }}
+        />
       </div>
       <span className="text-[10px] text-gray-400">
         {fresh}/{moderate}/{high}

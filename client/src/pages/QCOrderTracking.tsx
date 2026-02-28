@@ -196,10 +196,9 @@ export const QCOrderTracking: React.FC = () => {
         if (session?.access_token) {
           headers["Authorization"] = `Bearer ${session.access_token}`;
         }
-        const res = await fetch(
-          `${API_URL}/api/allocation/dispatches/my`,
-          { headers },
-        );
+        const res = await fetch(`${API_URL}/api/allocation/dispatches/my`, {
+          headers,
+        });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw new Error(body.error || `HTTP ${res.status}`);
@@ -432,9 +431,7 @@ export const QCOrderTracking: React.FC = () => {
                 {/* ── Card Header ── */}
                 <div
                   className="p-5 cursor-pointer"
-                  onClick={() =>
-                    setExpandedId(isExpanded ? null : d.id)
-                  }
+                  onClick={() => setExpandedId(isExpanded ? null : d.id)}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -455,9 +452,7 @@ export const QCOrderTracking: React.FC = () => {
                         {d.batch?.crop ?? d.allocation?.crop ?? "—"}
                         {(d.batch?.variety ?? d.allocation?.variety) && (
                           <span className="text-gray-400 text-base font-normal ml-2">
-                            (
-                            {d.batch?.variety ?? d.allocation?.variety}
-                            )
+                            ({d.batch?.variety ?? d.allocation?.variety})
                           </span>
                         )}
                       </h3>
@@ -562,9 +557,7 @@ export const QCOrderTracking: React.FC = () => {
                             </span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">
-                              Est. Delivery
-                            </span>
+                            <span className="text-gray-500">Est. Delivery</span>
                             <span className="text-gray-700">
                               {d.estimated_delivery
                                 ? formatDate(d.estimated_delivery)
@@ -576,9 +569,7 @@ export const QCOrderTracking: React.FC = () => {
                               <p className="text-xs text-gray-500 mb-0.5">
                                 Notes
                               </p>
-                              <p className="text-sm text-gray-700">
-                                {d.notes}
-                              </p>
+                              <p className="text-sm text-gray-700">{d.notes}</p>
                             </div>
                           )}
                         </div>
@@ -641,9 +632,7 @@ export const QCOrderTracking: React.FC = () => {
                         {d.allocation_id && (
                           <MessageButton
                             allocationId={d.allocation_id}
-                            allocationRequestId={
-                              d.allocation?.request_id ?? ""
-                            }
+                            allocationRequestId={d.allocation?.request_id ?? ""}
                             variant="button"
                           />
                         )}

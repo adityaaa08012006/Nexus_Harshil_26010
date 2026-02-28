@@ -234,21 +234,18 @@ export const useEnvironmentalData = (
           throw new Error("No authentication token found");
         }
 
-        const response = await fetch(
-          `${API_URL}/api/sensors/thresholds`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              warehouse_id: warehouseId,
-              zone,
-              ...thresholdData,
-            }),
+        const response = await fetch(`${API_URL}/api/sensors/thresholds`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            warehouse_id: warehouseId,
+            zone,
+            ...thresholdData,
+          }),
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
