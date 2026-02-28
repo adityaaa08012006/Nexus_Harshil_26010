@@ -141,7 +141,7 @@ export const QCOrders: React.FC = () => {
     return order.status;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (_status: string) => {
     switch (status) {
       case "pending":
         return { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D" };
@@ -164,7 +164,7 @@ export const QCOrders: React.FC = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (_status: string) => {
     switch (status) {
       case "pending":
       case "reviewing":

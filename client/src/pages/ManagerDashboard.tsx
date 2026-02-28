@@ -1,801 +1,422 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInventory } from "../hooks/useInventory";
-import { useAuthContext } from "../context/AuthContext";
 import { useWarehouse } from "../context/WarehouseContext";
+import { useAuth } from "../hooks/useAuth";
+import { useAlertCount } from "../hooks/useAlertCount";
 import { supabase } from "../lib/supabase";
-import { MetricCards } from "../components/dashboard/MetricCards";
-import { RiskChart } from "../components/dashboard/RiskChart";
-import { InventoryTable } from "../components/dashboard/InventoryTable";
-import { DispatchHistory } from "./DispatchHistory";
 import {
-  ShoppingCart,
+  TrendingUp,
   Package,
-  Clock,
   AlertTriangle,
-  CheckCircle,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
   Calendar,
-  Check,
-  X as XIcon,
-  Search,
-  Filter,
-  ChevronDown,
+  Truck,
+  FileCheck
 } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip
+} from "recharts";
+import { formatNumber } from "../utils/formatters";
+
+// ─── Modern Stat Card Component (Shared Style) ───────────────────────────────
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  trend?: string;
+  trendUp?: boolean;
+  color?: "green" | "blue" | "orange" | "red" | "purple";
+  delay?: number;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ 
+  title, 
+  value, 
+  icon, 
+  trend, 
+  trendUp, 
+  color = "green",
+  delay = 0 
+}) => {
+
+
+  const iconStyles = {
+    green: "bg-green-100 text-green-700",
+    blue: "bg-blue-100 text-blue-700",
+    orange: "bg-orange-100 text-orange-700",
+    red: "bg-red-100 text-red-700",
+    purple: "bg-purple-100 text-purple-700",
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay }}
+      className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+    >
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-3 rounded-xl ${iconStyles[color]}`}>
+          {icon}
+        </div>
+        {trend && (
+          <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${trendUp ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {trendUp ? <TrendingUp size={12} /> : <TrendingUp size={12} className="rotate-180" />}
+            {trend}
+          </div>
+        )}
+      </div>
+      <div>
+        <p className="text-gray-500 text-sm font-medium mb-1">{title}</p>
+        <h3 className="text-3xl font-bold text-gray-900 tracking-tight">{value}</h3>
+      </div>
+    </motion.div>
+  );
+};
+
+// ─── Incoming Order Row ──────────────────────────────────────────────────────
 
 interface IncomingOrder {
   id: string;
-  request_id: string;
   crop: string;
-  variety: string | null;
   quantity: number;
   unit: string;
-  location: string;
   status: string;
-  deadline: string | null;
   created_at: string;
-  requester: {
-    name: string;
-    email: string;
-  } | null;
+  requester?: { name: string; email: string };
 }
 
+const OrderRow = ({ order, onRefresh }: { order: IncomingOrder, onRefresh: () => void }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleAction = async (status: 'approved' | 'rejected') => {
+    setLoading(true);
+    try {
+      await supabase
+        .from('allocation_requests')
+        .update({ status })
+        .eq('id', order.id);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors border-b border-gray-50 last:border-0 gap-4">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+          <Truck size={18} />
+        </div>
+        <div>
+          <h4 className="font-semibold text-gray-900 text-sm">{order.crop} Order</h4>
+          <p className="text-xs text-gray-500 flex items-center gap-1">
+            From: {order.requester?.name || 'Unknown'} • <Clock size={10} /> {new Date(order.created_at).toLocaleDateString()}
+          </p>
+        </div>
+      </div>
+      
+      <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+        <div className="text-right">
+           <p className="font-bold text-gray-900 text-sm">{order.quantity} {order.unit}</p>
+           <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium uppercase">
+              {order.status}
+           </span>
+        </div>
+        
+        <div className="flex gap-2">
+           <button 
+             onClick={() => handleAction('approved')} 
+             disabled={loading}
+             className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 hover:text-green-700 transition-colors disabled:opacity-50"
+             title="Accept"
+           >
+             <CheckCircle2 size={18} />
+           </button>
+           <button 
+             onClick={() => handleAction('rejected')} 
+             disabled={loading}
+             className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors disabled:opacity-50"
+             title="Reject"
+           >
+             <XCircle size={18} />
+           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ──────────────────────────────────────────────────────────
+
 export const ManagerDashboard: React.FC = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const { user } = useAuthContext();
-  const { selectedWarehouseId } = useWarehouse();
-  const [activeView, setActiveView] = useState<"overview" | "dispatch">(
-    "overview",
-  );
-  const { batches, stats, isLoading, error } =
-    useInventory(selectedWarehouseId);
+  const { selectedWarehouseId, selectedWarehouse } = useWarehouse();
+  const { batches, stats } = useInventory(selectedWarehouseId);
+  const { count: alertCount } = useAlertCount();
+  
   const [incomingOrders, setIncomingOrders] = useState<IncomingOrder[]>([]);
-  const [ordersLoading, setOrdersLoading] = useState(true);
-  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [showFilters, setShowFilters] = useState(false);
-  const [processingOrders, setProcessingOrders] = useState<Set<string>>(
-    new Set(),
-  );
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
-  // Top 5 high-risk batches for the spotlight table
-  const highRiskBatches = [...batches]
-    .sort((a, b) => (b.risk_score ?? 0) - (a.risk_score ?? 0))
-    .slice(0, 5);
+  // Derived Metrics
+  const freshBatches = batches.filter(b => b.risk_score <= 30).length;
+  const riskBatches = batches.filter(b => b.risk_score > 70).length;
 
-  useEffect(() => {
-    fetchIncomingOrders();
-  }, []);
+  // Chart Data
+  const riskData = [
+    { name: "Fresh", value: freshBatches, color: "#48A111" },
+    { name: "Moderate", value: batches.filter(b => b.risk_score > 30 && b.risk_score <= 70).length, color: "#F59E0B" },
+    { name: "High Risk", value: riskBatches, color: "#EF4444" },
+  ].filter(d => d.value > 0);
 
   const fetchIncomingOrders = async () => {
     try {
-      setOrdersLoading(true);
-
-      // Fetch pending and reviewing orders for this manager's warehouse only
+      setLoadingOrders(true);
       let query = supabase
         .from("allocation_requests")
         .select("*")
         .in("status", ["pending", "reviewing"])
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(5);
 
-      // Filter by selected warehouse
       if (selectedWarehouseId) {
         query = query.eq("warehouse_id", selectedWarehouseId);
       }
 
-      const { data: orders, error: ordersError } = await query;
+      const { data: orders, error } = await query;
+      if (error) throw error;
 
-      if (ordersError) throw ordersError;
-
-      // Fetch requester details separately and manually join
       if (orders && orders.length > 0) {
-        const requesterIds = [
-          ...new Set(orders.map((o) => o.requester_id).filter(Boolean)),
-        ];
-
+        // Fetch requester details manually
+        const requesterIds = [...new Set(orders.map((o) => o.requester_id).filter(Boolean))];
         const { data: profiles } = await supabase
           .from("user_profiles")
           .select("id, name, email")
           .in("id", requesterIds);
 
-        const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
-
-        const ordersWithRequester = orders.map((order) => ({
+        const ordersWithProfiles = orders.map((order) => ({
           ...order,
-          requester: order.requester_id
-            ? profileMap.get(order.requester_id)
-            : null,
+          requester: profiles?.find((p) => p.id === order.requester_id),
         }));
-
-        setIncomingOrders(ordersWithRequester);
+        setIncomingOrders(ordersWithProfiles);
       } else {
         setIncomingOrders([]);
       }
-    } catch (error) {
-      console.error("Error fetching incoming orders:", error);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
     } finally {
-      setOrdersLoading(false);
+      setLoadingOrders(false);
     }
   };
 
-  // Filter and search orders
-  const filteredOrders = incomingOrders.filter((order) => {
-    const matchesSearch =
-      order.crop.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.request_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.requester?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.location.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
-
-  // Get urgent orders (deadline within 3 days)
-  const getDeadlineUrgency = (deadline: string | null) => {
-    if (!deadline) return "none";
-    const daysUntil = Math.ceil(
-      (new Date(deadline).getTime() - new Date().getTime()) /
-        (1000 * 60 * 60 * 24),
-    );
-    if (daysUntil < 0) return "overdue";
-    if (daysUntil <= 3) return "urgent";
-    if (daysUntil <= 7) return "soon";
-    return "normal";
-  };
-
-  // Select/deselect orders
-  const toggleOrderSelection = (orderId: string) => {
-    const newSelection = new Set(selectedOrders);
-    if (newSelection.has(orderId)) {
-      newSelection.delete(orderId);
-    } else {
-      newSelection.add(orderId);
-    }
-    setSelectedOrders(newSelection);
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedOrders.size === filteredOrders.length) {
-      setSelectedOrders(new Set());
-    } else {
-      setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
-    }
-  };
-
-  // Approve/reject orders
-  const handleOrderAction = async (
-    orderIds: string[],
-    action: "approve" | "reject",
-  ) => {
-    const newStatus = action === "approve" ? "reviewing" : "cancelled";
-    const processing = new Set(processingOrders);
-    orderIds.forEach((id) => processing.add(id));
-    setProcessingOrders(processing);
-
-    try {
-      const { error } = await supabase
-        .from("allocation_requests")
-        .update({ status: newStatus })
-        .in("id", orderIds);
-
-      if (error) throw error;
-
-      // Refresh orders
-      await fetchIncomingOrders();
-
-      // Clear selection
-      setSelectedOrders(new Set());
-    } catch (error) {
-      console.error(`Failed to ${action} orders:`, error);
-      alert(`Failed to ${action} orders. Please try again.`);
-    } finally {
-      const processing = new Set(processingOrders);
-      orderIds.forEach((id) => processing.delete(id));
-      setProcessingOrders(processing);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D" };
-      case "reviewing":
-        return { bg: "#DBEAFE", text: "#1E40AF", border: "#93C5FD" };
-      default:
-        return { bg: "#F3F4F6", text: "#374151", border: "#D1D5DB" };
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Clock className="w-4 h-4" />;
-      case "reviewing":
-        return <AlertTriangle className="w-4 h-4" />;
-      default:
-        return <Package className="w-4 h-4" />;
-    }
-  };
-
-  // ── Loading / error states ───────────────────────────────────────────────────
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div
-          className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
-          style={{ borderColor: "#48A111", borderTopColor: "transparent" }}
-        />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        className="rounded-xl p-6 border text-sm"
-        style={{
-          backgroundColor: "#FEF2F2",
-          borderColor: "#DC2626",
-          color: "#DC2626",
-        }}
-      >
-        Failed to load inventory: {error}
-      </div>
-    );
-  }
+  useEffect(() => {
+    fetchIncomingOrders();
+  }, [selectedWarehouseId]);
 
   return (
-    <div className="space-y-6 pb-6">
-      {/* ── Page header ── */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              Warehouse Dashboard
-            </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {user?.name} ·{" "}
-              {new Date().toLocaleDateString("en-IN", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => navigate("/manager/inventory")}
-              className="px-4 py-2 text-sm font-medium rounded-lg border transition-all hover:bg-gray-50"
-              style={{ borderColor: "#E5E7EB", color: "#374151" }}
-            >
-              View Inventory
-            </button>
-            <button
-              onClick={() => navigate("/manager/inventory?action=add")}
-              className="px-4 py-2 text-sm font-medium rounded-lg text-white transition-all hover:opacity-90 shadow-sm"
-              style={{ backgroundColor: "#48A111" }}
-            >
-              Add Batch
-            </button>
-          </div>
+    <div className="space-y-8 pb-10">
+      
+      {/* ── Welcome Header ── */}
+      <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+            Welcome back, <span className="text-[#48A111]">{user?.name?.split(' ')[0] || 'Manager'}</span>
+          </h2>
+          <p className="text-gray-500 text-sm mt-1 font-medium flex items-center gap-2">
+            Managing: <span className="text-gray-900 font-semibold">{selectedWarehouse?.name || 'All Warehouses'}</span>
+          </p>
         </div>
-
-        {/* View tabs */}
-        <div className="flex border-t border-gray-200">
-          <button
-            onClick={() => setActiveView("overview")}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeView === "overview"
-                ? "border-[#48A111] text-[#48A111]"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveView("dispatch")}
-            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-              activeView === "dispatch"
-                ? "border-[#48A111] text-[#48A111]"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Dispatch History
-          </button>
+        <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-gray-100">
+           <Calendar size={16} className="text-gray-400" />
+           <span className="text-sm font-medium text-gray-600">
+             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+           </span>
         </div>
       </div>
 
-      {/* ── OVERVIEW VIEW ── */}
-      {activeView === "overview" && (
-        <>
-          {/* ── Metric cards ── */}
-          <MetricCards
-            totalBatches={stats.total}
-            freshCount={stats.fresh}
-            moderateCount={stats.moderate}
-            highRiskCount={stats.highRisk}
-            totalQuantity={stats.totalQuantity}
-          />
+      {/* ── Stats Grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard 
+          title="Total Batches" 
+          value={stats.total}
+          icon={<Package size={24} />}
+          color="blue"
+          trend={`${freshBatches} fresh`}
+          trendUp={true}
+          delay={0.1}
+        />
+        <StatCard 
+          title="Pending Orders" 
+          value={incomingOrders.length}
+          icon={<Truck size={24} />}
+          color="purple"
+          trend={incomingOrders.length > 0 ? "Needs review" : "All cleared"}
+          trendUp={incomingOrders.length === 0}
+          delay={0.2}
+        />
+        <StatCard 
+          title="Active Alerts" 
+          value={alertCount}
+          icon={<AlertTriangle size={24} />}
+          color="red"
+          delay={0.3}
+        />
+        <StatCard 
+          title="Total Quantity" 
+          value={`${formatNumber(stats.totalQuantity)} kg`}
+          icon={<TrendingUp size={24} />}
+          color="green"
+          delay={0.4}
+        />
+      </div>
 
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {/* SECTION 1: INCOMING ORDERS - Orders from QC that need fulfillment  */}
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
-                    <ShoppingCart className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900">
-                      Incoming Orders
-                    </h2>
-                    <p className="text-xs text-gray-600 mt-0.5">
-                      Review and approve allocation requests
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1.5 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-sm">
-                    {filteredOrders.length}{" "}
-                    {filteredOrders.length === 1 ? "Order" : "Orders"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {ordersLoading ? (
-              <div className="flex items-center justify-center h-32">
-                <div
-                  className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin"
-                  style={{
-                    borderColor: "#2563EB",
-                    borderTopColor: "transparent",
-                  }}
-                />
-              </div>
-            ) : incomingOrders.length === 0 ? (
-              <div className="p-12 text-center">
-                <CheckCircle className="w-12 h-12 mx-auto mb-3 text-green-500" />
-                <p className="text-sm text-gray-600 font-medium">
-                  All caught up! No pending orders.
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  New orders will appear here
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Search and Filter Bar */}
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {/* Search */}
-                    <div className="flex-1 relative">
-                      <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Search by crop, order ID, requester, or location..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+      {/* ── Main Dashboard Content ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Left Column: Orders & Inventory */}
+        <div className="lg:col-span-2 space-y-8">
+          
+          {/* Pending Orders Section */}
+           <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
+             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+               <div>
+                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                   <FileCheck size={18} className="text-purple-600" />
+                   Pending Orders
+                 </h3>
+                 <p className="text-xs text-gray-500 mt-1">Allocation requests awaiting your approval</p>
+               </div>
+               <button onClick={() => navigate('/manager/allocations')} className="text-xs font-semibold text-[#48A111] hover:underline flex items-center gap-1">
+                 View All <ArrowRight size={12} />
+               </button>
+             </div>
+             
+             <div className="divide-y divide-gray-50">
+                {loadingOrders ? (
+                  <div className="p-8 text-center text-gray-400">Loading orders...</div>
+                ) : incomingOrders.length > 0 ? (
+                  incomingOrders.map((order) => (
+                    <OrderRow key={order.id} order={order} onRefresh={fetchIncomingOrders} />
+                  ))
+                ) : (
+                  <div className="p-12 text-center">
+                    <div className="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mx-auto mb-3">
+                      <CheckCircle2 size={24} />
                     </div>
-
-                    {/* Filter */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-white transition-colors"
-                      >
-                        <Filter className="w-4 h-4" />
-                        Status:{" "}
-                        {statusFilter === "all"
-                          ? "All"
-                          : statusFilter.charAt(0).toUpperCase() +
-                            statusFilter.slice(1)}
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-
-                      {showFilters && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                          <div className="py-1">
-                            {["all", "pending", "reviewing"].map((status) => (
-                              <button
-                                key={status}
-                                onClick={() => {
-                                  setStatusFilter(status);
-                                  setShowFilters(false);
-                                }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                                  statusFilter === status
-                                    ? "bg-blue-50 text-blue-700 font-medium"
-                                    : "text-gray-700"
-                                }`}
-                              >
-                                {status === "all"
-                                  ? "All Orders"
-                                  : status.charAt(0).toUpperCase() +
-                                    status.slice(1)}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bulk Actions Bar (shown when items selected) */}
-                {selectedOrders.size > 0 && (
-                  <div className="px-6 py-3 bg-blue-50 border-b border-blue-200">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-blue-900">
-                        {selectedOrders.size} order
-                        {selectedOrders.size !== 1 ? "s" : ""} selected
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() =>
-                            handleOrderAction(
-                              Array.from(selectedOrders),
-                              "approve",
-                            )
-                          }
-                          disabled={processingOrders.size > 0}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                        >
-                          <Check className="w-4 h-4" />
-                          Approve Selected
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleOrderAction(
-                              Array.from(selectedOrders),
-                              "reject",
-                            )
-                          }
-                          disabled={processingOrders.size > 0}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                        >
-                          <XIcon className="w-4 h-4" />
-                          Reject Selected
-                        </button>
-                        <button
-                          onClick={() => setSelectedOrders(new Set())}
-                          className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-white transition-colors"
-                        >
-                          Clear
-                        </button>
-                      </div>
-                    </div>
+                    <p className="text-gray-900 font-medium">All caught up!</p>
+                    <p className="text-sm text-gray-500">No pending orders to review.</p>
                   </div>
                 )}
+             </div>
+          </motion.div>
 
-                {/* Orders Table */}
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-4 py-3 text-left w-12">
-                          <input
-                            type="checkbox"
-                            checked={
-                              selectedOrders.size === filteredOrders.length &&
-                              filteredOrders.length > 0
-                            }
-                            onChange={toggleSelectAll}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Order Details
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Quantity
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Location
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Deadline
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Requester
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-100">
-                      {filteredOrders.map((order) => {
-                        const urgency = getDeadlineUrgency(order.deadline);
-                        const isProcessing = processingOrders.has(order.id);
-                        const isSelected = selectedOrders.has(order.id);
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             {[
+               { icon: <Package size={20} />, label: "Add Batch", path: "/manager/inventory", color: "text-blue-600 bg-blue-50 hover:bg-blue-100 border-blue-100" },
+               { icon: <AlertTriangle size={20} />, label: "View Alerts", path: "/manager/alerts", color: "text-red-600 bg-red-50 hover:bg-red-100 border-red-100" },
+               { icon: <Truck size={20} />, label: "Dispatch", path: "/manager/dispatch", color: "text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-100" },
+               { icon: <Clock size={20} />, label: "History", path: "/manager/allocations", color: "text-gray-600 bg-gray-50 hover:bg-gray-100 border-gray-100" }
+             ].map((action, i) => (
+               <motion.button
+                  key={i}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => navigate(action.path)}
+                  className={`flex items-center gap-3 p-4 rounded-xl border transition-all duration-200 shadow-sm ${action.color}`}
+               >
+                 <div className="shrink-0">{action.icon}</div>
+                 <span className="font-semibold text-sm text-gray-800">{action.label}</span>
+               </motion.button>
+             ))}
+          </div>
 
-                        return (
-                          <tr
-                            key={order.id}
-                            className={`hover:bg-gray-50 transition-colors ${
-                              isSelected ? "bg-blue-50" : ""
-                            }`}
-                          >
-                            {/* Checkbox */}
-                            <td className="px-4 py-3">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => toggleOrderSelection(order.id)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
-                            </td>
+        </div>
 
-                            {/* Order Details */}
-                            <td className="px-4 py-3">
-                              <div className="flex items-start gap-2">
-                                {urgency === "urgent" ||
-                                urgency === "overdue" ? (
-                                  <AlertTriangle
-                                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${urgency === "overdue" ? "text-red-600" : "text-orange-500"}`}
-                                  />
-                                ) : null}
-                                <div>
-                                  <div className="text-sm font-semibold text-gray-900">
-                                    {order.crop}
-                                  </div>
-                                  {order.variety && (
-                                    <div className="text-xs text-gray-500">
-                                      {order.variety}
-                                    </div>
-                                  )}
-                                  <div className="text-xs font-mono text-blue-600 mt-0.5">
-                                    {order.request_id}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-
-                            {/* Quantity */}
-                            <td className="px-4 py-3">
-                              <span className="text-sm font-semibold text-gray-900">
-                                {order.quantity.toFixed(2)}
-                              </span>
-                              <span className="text-xs text-gray-500 ml-1">
-                                {order.unit}
-                              </span>
-                            </td>
-
-                            {/* Location */}
-                            <td className="px-4 py-3">
-                              <span className="text-sm text-gray-700 truncate max-w-[150px] block">
-                                {order.location}
-                              </span>
-                            </td>
-
-                            {/* Deadline */}
-                            <td className="px-4 py-3">
-                              {order.deadline ? (
-                                <div className="flex items-center gap-1.5">
-                                  <Calendar
-                                    className={`w-3.5 h-3.5 ${
-                                      urgency === "overdue"
-                                        ? "text-red-600"
-                                        : urgency === "urgent"
-                                          ? "text-orange-500"
-                                          : urgency === "soon"
-                                            ? "text-yellow-600"
-                                            : "text-gray-400"
-                                    }`}
-                                  />
-                                  <span
-                                    className={`text-xs font-medium ${
-                                      urgency === "overdue"
-                                        ? "text-red-600"
-                                        : urgency === "urgent"
-                                          ? "text-orange-600"
-                                          : urgency === "soon"
-                                            ? "text-yellow-700"
-                                            : "text-gray-700"
-                                    }`}
-                                  >
-                                    {new Date(
-                                      order.deadline,
-                                    ).toLocaleDateString("en-IN", {
-                                      day: "numeric",
-                                      month: "short",
-                                    })}
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-xs text-gray-400">-</span>
-                              )}
-                            </td>
-
-                            {/* Requester */}
-                            <td className="px-4 py-3">
-                              <div className="text-sm text-gray-900">
-                                {order.requester?.name || "Unknown"}
-                              </div>
-                              <div className="text-xs text-gray-500 truncate max-w-[150px]">
-                                {order.requester?.email || "-"}
-                              </div>
-                            </td>
-
-                            {/* Status */}
-                            <td className="px-4 py-3">
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold"
-                                style={{
-                                  backgroundColor: getStatusColor(order.status)
-                                    .bg,
-                                  color: getStatusColor(order.status).text,
-                                }}
-                              >
-                                {getStatusIcon(order.status)}
-                                {order.status.charAt(0).toUpperCase() +
-                                  order.status.slice(1)}
-                              </span>
-                            </td>
-
-                            {/* Actions */}
-                            <td className="px-4 py-3">
-                              <div className="flex items-center justify-end gap-1">
-                                <button
-                                  onClick={() =>
-                                    handleOrderAction([order.id], "approve")
-                                  }
-                                  disabled={isProcessing}
-                                  className="p-1.5 text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                  title="Approve"
-                                >
-                                  <Check className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    handleOrderAction([order.id], "reject")
-                                  }
-                                  disabled={isProcessing}
-                                  className="p-1.5 text-gray-600 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                  title="Reject"
-                                >
-                                  <XIcon className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    navigate(`/manager/orders/${order.id}`)
-                                  }
-                                  className="px-2 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                >
-                                  View
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Empty state for filtered results */}
-                {filteredOrders.length === 0 && incomingOrders.length > 0 && (
-                  <div className="p-8 text-center">
-                    <p className="text-sm text-gray-600">
-                      No orders match your search or filter criteria
-                    </p>
-                    <button
-                      onClick={() => {
-                        setSearchTerm("");
-                        setStatusFilter("all");
-                      }}
-                      className="mt-3 text-sm text-blue-600 hover:underline"
+        {/* Right Column: Inventory Health */}
+        <div className="space-y-6">
+           <motion.div 
+               initial={{ opacity: 0, x: 20 }}
+               animate={{ opacity: 1, x: 0 }}
+               transition={{ duration: 0.5, delay: 0.3 }}
+               className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[350px] flex flex-col"
+            >
+              <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <Package size={18} className="text-[#48A111]" />
+                Batch Status
+              </h3>
+              <p className="text-xs text-gray-500 mb-6">Current quality distribution of your stock</p>
+              
+              <div className="flex-1 flex items-center justify-center relative">
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie
+                      data={riskData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={55}
+                      outerRadius={75}
+                      paddingAngle={4}
+                      dataKey="value"
                     >
-                      Clear filters
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {/* SECTION 2: CURRENT INVENTORY - What's physically in the warehouse  */}
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-          {/* SECTION 2: CURRENT INVENTORY - What's physically in the warehouse  */}
-          {/* ═══════════════════════════════════════════════════════════════════ */}
-
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200 p-5">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-gray-900">
-                  📦 Current Inventory - What's in Stock
-                </h2>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Products physically stored in your warehouse right now
-                </p>
-              </div>
-            </div>
-
-            {/* ── Risk Chart ── */}
-            <div className="bg-white rounded-lg p-4 mb-4">
-              <RiskChart batches={batches} />
-            </div>
-
-            {/* ── High-risk spotlight table ── */}
-            {highRiskBatches.length > 0 && (
-              <div className="bg-white rounded-lg p-5 mb-4 border border-gray-200">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-orange-500" />
-                    <h3 className="text-sm font-semibold text-gray-900">
-                      ⚠️ High-Risk Batches - Urgent Attention Needed
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => navigate("/manager/inventory?filter=high")}
-                    className="text-xs font-medium hover:underline"
-                    style={{ color: "#48A111" }}
-                  >
-                    View all →
-                  </button>
+                      {riskData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} strokeWidth={0} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center Text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-10">
+                   <span className="text-2xl font-bold text-gray-900">{stats.total}</span>
+                   <span className="text-xs text-gray-400">Total</span>
                 </div>
-                <InventoryTable
-                  batches={highRiskBatches}
-                  readOnly={false}
-                  title=""
-                  maxRows={5}
-                  showSearch={false}
-                  onView={(id) => navigate(`/manager/batch/${id}`)}
-                  onEdit={(batch) =>
-                    navigate(`/manager/inventory?edit=${batch.id}`)
-                  }
-                />
               </div>
-            )}
 
-            {/* ── Full inventory preview ── */}
-            <div className="bg-white rounded-lg p-5 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-gray-900">
-                  All Batches in Warehouse
-                </h3>
-                <button
-                  onClick={() => navigate("/manager/inventory")}
-                  className="text-xs font-medium hover:underline"
-                  style={{ color: "#48A111" }}
-                >
-                  View full inventory →
-                </button>
+              <div className="space-y-3 mt-4">
+                {riskData.map((d) => (
+                  <div key={d.name} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }}></div>
+                      <span className="text-gray-600 font-medium">{d.name}</span>
+                    </div>
+                    <span className="font-bold text-gray-900">{d.value}</span>
+                  </div>
+                ))}
               </div>
-              <InventoryTable
-                batches={batches}
-                maxRows={10}
-                showSearch={false}
-                readOnly={false}
-                onView={(id) => navigate(`/manager/batch/${id}`)}
-                onEdit={(batch) =>
-                  navigate(`/manager/inventory?edit=${batch.id}`)
-                }
-              />
+            </motion.div>
+
+            <div className="bg-[#122C1A] rounded-2xl p-6 text-white text-center">
+              <p className="text-sm text-green-200/80 mb-2">Need to update inventory?</p>
+              <button 
+                onClick={() => navigate('/manager/inventory')}
+                className="w-full py-3 bg-[#48A111] hover:bg-[#3d8b0e] text-white font-bold rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+              >
+                Scan / Add Batch
+              </button>
             </div>
-          </div>
-        </>
-      )}
-
-      {/* ── DISPATCH HISTORY VIEW ── */}
-      {activeView === "dispatch" && <DispatchHistory />}
+        </div>
+      </div>
     </div>
   );
 };

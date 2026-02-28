@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 import type { Batch } from "../lib/supabase";
 import { RiskBadge } from "../components/common/RiskBadge";
 import { RiskProgressBar } from "../components/common/RiskProgressBar";
-import { getDaysRemaining, getRiskLevel } from "../utils/riskCalculation";
+import { getDaysRemaining } from "../utils/riskCalculation";
 import { formatDate } from "../utils/formatters";
 
 interface FarmerContact {
@@ -88,7 +88,6 @@ export const BatchDetails: React.FC = () => {
   }
 
   const daysRemaining = getDaysRemaining(batch.entry_date, batch.shelf_life);
-  const riskLevel = getRiskLevel(batch.risk_score ?? 0);
   const isExpired = daysRemaining < 0;
   const isExpiringSoon = daysRemaining <= 3 && daysRemaining >= 0;
 
@@ -155,7 +154,7 @@ export const BatchDetails: React.FC = () => {
           Risk Overview
         </h2>
         <div className="space-y-4">
-          <RiskProgressBar score={batch.risk_score ?? 0} label />
+          <RiskProgressBar score={batch.risk_score ?? 0} />
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t">
             <div>
@@ -302,7 +301,7 @@ export const BatchDetails: React.FC = () => {
           batch.co2 ||
           batch.ammonia ? (
             <dl className="space-y-3">
-              {batch.temperature !== null && (
+              {batch.temperature !== undefined && batch.temperature !== null && (
                 <DetailRow
                   label="Temperature"
                   value={`${batch.temperature.toFixed(1)}°C`}
@@ -322,7 +321,7 @@ export const BatchDetails: React.FC = () => {
                   }
                 />
               )}
-              {batch.humidity !== null && (
+              {batch.humidity !== undefined && batch.humidity !== null && (
                 <DetailRow
                   label="Humidity"
                   value={`${batch.humidity.toFixed(1)}%`}
@@ -373,14 +372,14 @@ export const BatchDetails: React.FC = () => {
               }
               color="#F2B50B"
             />
-            {batch.temperature !== null && (
+            {batch.temperature !== undefined && batch.temperature !== null && (
               <RiskFactorBar
                 label="Temperature Deviation"
                 value={Math.min(100, Math.abs(batch.temperature - 10) * 5)}
                 color="#DC2626"
               />
             )}
-            {batch.humidity !== null && (
+            {batch.humidity !== undefined && batch.humidity !== null && (
               <RiskFactorBar
                 label="Humidity Deviation"
                 value={Math.min(100, Math.abs(batch.humidity - 65) * 2)}
