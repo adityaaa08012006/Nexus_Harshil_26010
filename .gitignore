@@ -34,6 +34,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 .cache/
+.vite/
 
 # Uploads
 server/uploads/
