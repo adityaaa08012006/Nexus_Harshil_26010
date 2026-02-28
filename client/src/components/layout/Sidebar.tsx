@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Menu,
-  X,
-  LogOut,
-  ChevronRight,
-  Leaf
-} from "lucide-react";
+import { Menu, X, ChevronRight, Leaf } from "lucide-react";
 
 export interface SidebarItem {
   id: string;
@@ -18,18 +12,12 @@ export interface SidebarItem {
 
 interface SidebarProps {
   items: SidebarItem[];
-  user: any;
-  onLogout: () => void;
-  roleLabel: string;
   logoUrl?: string;
   alertCount?: number;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   items,
-  user,
-  onLogout,
-  roleLabel,
   logoUrl,
   alertCount = 0,
 }) => {
@@ -91,11 +79,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className="font-medium text-sm tracking-wide flex-1">
             {item.label}
           </span>
-          
+
           {isAlertItem && alertCount > 0 && (
-             <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
-                {alertCount > 99 ? "99+" : alertCount}
-             </span>
+            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+              {alertCount > 99 ? "99+" : alertCount}
+            </span>
           )}
 
           {isActive && !isAlertItem && (
@@ -141,13 +129,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
         variants={sidebarVariants}
         initial="closed"
         animate={isDesktop ? "open" : isOpen ? "open" : "closed"}
-        style={{ x: 0, opacity: 1 }} 
+        style={{ x: 0, opacity: 1 }}
       >
         {/* Brand Header */}
         <div className="p-6 border-b border-white/10 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#48A111] to-[#2E7D32] flex items-center justify-center shadow-lg transform hover:rotate-12 transition-transform duration-300">
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="w-6 h-6 object-contain filter brightness-0 invert" />
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="w-6 h-6 object-contain filter brightness-0 invert"
+              />
             ) : (
               <Leaf className="text-white w-6 h-6" />
             )}
@@ -164,40 +156,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1 scrollbar-hide">
-             <div className="px-4 py-2">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Menu</p>
-             </div>
-             {items.map((item) => (
-                <NavItem key={item.id} item={item} />
-             ))}
-        </nav>
-
-        {/* User Profile Footer */}
-        <div className="p-4 border-t border-white/10 bg-[#0e2315]">
-          <div className="flex items-center gap-3 mb-4 px-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-700 to-gray-600 flex items-center justify-center border-2 border-[#48A111]">
-              <span className="text-sm font-bold text-white">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
-                {user?.name || "User"}
-              </p>
-              <p className="text-xs text-gray-400 truncate capitalize">
-                {roleLabel || user?.role?.replace("_", " ")}
-              </p>
-            </div>
+          <div className="px-4 py-2">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Menu
+            </p>
           </div>
-          
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-red-500/10 hover:text-red-400 text-gray-400 text-sm font-medium transition-all group"
-          >
-            <LogOut size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Sign Out
-          </button>
-        </div>
+          {items.map((item) => (
+            <NavItem key={item.id} item={item} />
+          ))}
+        </nav>
       </motion.aside>
     </>
   );
