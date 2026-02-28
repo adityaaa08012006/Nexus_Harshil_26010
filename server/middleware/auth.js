@@ -84,7 +84,7 @@ export const requireAuth = async (req, res, next) => {
  * @param {string[]} allowedRoles
  */
 export const requireRole = (allowedRoles) => (req, res, next) => {
-  const role = req.user?.profile?.role;
+  const role = req.profile?.role;
   if (!role || !allowedRoles.includes(role)) {
     return res.status(403).json({
       error: `Access denied. Required role(s): ${allowedRoles.join(", ")}.`,

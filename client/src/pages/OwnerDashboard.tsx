@@ -10,12 +10,14 @@ import {
   AlertTriangle,
   Warehouse,
   ArrowRight,
-  DollarSign,
   Activity,
   Calendar,
   MapPin,
   Truck,
   Clock,
+  CheckCircle2,
+  XCircle,
+  FileCheck,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
@@ -30,7 +32,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { formatNumber, formatCurrency } from "../utils/formatters";
+import { formatNumber } from "../utils/formatters";
 
 // ─── Modern Stat Card Component ──────────────────────────────────────────────
 
@@ -92,6 +94,90 @@ const StatCard: React.FC<StatCardProps> = ({
   );
 };
 
+// ─── Incoming Order Row ──────────────────────────────────────────────────────
+
+interface IncomingOrder {
+  id: string;
+  crop: string;
+  quantity: number;
+  unit: string;
+  status: string;
+  created_at: string;
+  requester?: { name: string; email: string };
+}
+
+const OrderRow = ({
+  order,
+  onRefresh,
+}: {
+  order: IncomingOrder;
+  onRefresh: () => void;
+}) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleAction = async (status: "approved" | "rejected") => {
+    setLoading(true);
+    try {
+      await supabase
+        .from("allocation_requests")
+        .update({ status })
+        .eq("id", order.id);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors border-b border-gray-50 last:border-0 gap-4">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+          <Truck size={18} />
+        </div>
+        <div>
+          <h4 className="font-semibold text-gray-900 text-sm">
+            {order.crop} Order
+          </h4>
+          <p className="text-xs text-gray-500 flex items-center gap-1">
+            From: {order.requester?.name || "Unknown"} • <Clock size={10} />{" "}
+            {new Date(order.created_at).toLocaleDateString()}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
+        <div className="text-right">
+          <p className="font-bold text-gray-900 text-sm">
+            {order.quantity} {order.unit}
+          </p>
+          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium uppercase">
+            {order.status}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleAction("approved")}
+            disabled={loading}
+            className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 hover:text-green-700 transition-colors disabled:opacity-50"
+            title="Accept"
+          >
+            <CheckCircle2 size={18} />
+          </button>
+          <button
+            onClick={() => handleAction("rejected")}
+            disabled={loading}
+            className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors disabled:opacity-50"
+            title="Reject"
+          >
+            <XCircle size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Dispatch Preview Row ────────────────────────────────────────────────────
 
 const DispatchRow = ({ dispatch }: { dispatch: any }) => {
@@ -145,9 +231,10 @@ export const OwnerDashboard: React.FC = () => {
   const { selectedWarehouseId, warehouses } = useWarehouse();
   const { batches, stats } = useInventory(selectedWarehouseId);
   const [recentDispatches, setRecentDispatches] = useState<any[]>([]);
+  const [incomingOrders, setIncomingOrders] = useState<IncomingOrder[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
 
   // Derived Metrics
-  const totalValue = stats.totalQuantity * 2.5; // Dummy multiplier for value
   const activeWarehouses = warehouses.length;
   const highRiskCount = batches.filter((b) => b.risk_score > 70).length;
 
@@ -177,6 +264,51 @@ export const OwnerDashboard: React.FC = () => {
     capacity: w.capacity,
     usage: Math.floor(Math.random() * w.capacity * 0.8), // Mock usage for now
   }));
+
+  const fetchIncomingOrders = async () => {
+    try {
+      setLoadingOrders(true);
+      let query = supabase
+        .from("allocation_requests")
+        .select("*")
+        .in("status", ["pending", "reviewing"])
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (selectedWarehouseId) {
+        query = query.eq("warehouse_id", selectedWarehouseId);
+      }
+
+      const { data: orders, error } = await query;
+      if (error) throw error;
+
+      if (orders && orders.length > 0) {
+        const requesterIds = [
+          ...new Set(orders.map((o) => o.requester_id).filter(Boolean)),
+        ];
+        const { data: profiles } = await supabase
+          .from("user_profiles")
+          .select("id, name, email")
+          .in("id", requesterIds);
+
+        const ordersWithProfiles = orders.map((order) => ({
+          ...order,
+          requester: profiles?.find((p) => p.id === order.requester_id),
+        }));
+        setIncomingOrders(ordersWithProfiles);
+      } else {
+        setIncomingOrders([]);
+      }
+    } catch (err) {
+      console.error("Error fetching orders:", err);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIncomingOrders();
+  }, [selectedWarehouseId]);
 
   useEffect(() => {
     // Fetch limited recent dispatches for the widget
@@ -251,10 +383,12 @@ export const OwnerDashboard: React.FC = () => {
           delay={0.2}
         />
         <StatCard
-          title="Est. Value"
-          value={formatCurrency(totalValue)}
-          icon={<DollarSign size={24} />}
+          title="Pending Orders"
+          value={incomingOrders.length}
+          icon={<Truck size={24} />}
           color="orange"
+          trend={incomingOrders.length > 0 ? "Needs review" : "All cleared"}
+          trendUp={incomingOrders.length === 0}
           delay={0.3}
         />
         <StatCard
@@ -393,6 +527,57 @@ export const OwnerDashboard: React.FC = () => {
               </div>
             </motion.div>
           </div>
+
+          {/* Pending Orders Section */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          >
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div>
+                <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                  <FileCheck size={18} className="text-purple-600" />
+                  Pending Orders
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Allocation requests awaiting your approval
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/owner/allocations")}
+                className="text-xs font-semibold text-[#48A111] hover:underline flex items-center gap-1"
+              >
+                View All <ArrowRight size={12} />
+              </button>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {loadingOrders ? (
+                <div className="p-8 text-center text-gray-400">
+                  Loading orders...
+                </div>
+              ) : incomingOrders.length > 0 ? (
+                incomingOrders.map((order) => (
+                  <OrderRow
+                    key={order.id}
+                    order={order}
+                    onRefresh={fetchIncomingOrders}
+                  />
+                ))
+              ) : (
+                <div className="p-12 text-center">
+                  <div className="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mx-auto mb-3">
+                    <CheckCircle2 size={24} />
+                  </div>
+                  <p className="text-gray-900 font-medium">All caught up!</p>
+                  <p className="text-sm text-gray-500">
+                    No pending orders to review.
+                  </p>
+                </div>
+              )}
+            </div>
+          </motion.div>
 
           {/* Quick Actions / Featured Features */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
