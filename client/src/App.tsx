@@ -26,7 +26,6 @@ import { QCDashboard } from "./pages/QCDashboard";
 import { QCOrders } from "./pages/QCOrders";
 import { QCOrderTracking } from "./pages/QCOrderTracking";
 import { AllocationManagePage } from "./pages/AllocationManagePage";
-import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 import { FarmerManagement } from "./pages/FarmerManagement";
 import { DispatchHistory } from "./pages/DispatchHistory";
 import { ContactInfo } from "./pages/ContactInfo";

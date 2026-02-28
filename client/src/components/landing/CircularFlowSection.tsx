@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Thermometer, Package, FileText, Network, CheckCircle, TrendingUp, Sparkles, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Thermometer, Package, FileText, Network, CheckCircle, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
 
 const CircularFlowSection = () => {
   const [isVisible, setIsVisible] = useState(false);
