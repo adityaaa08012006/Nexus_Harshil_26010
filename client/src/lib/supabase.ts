@@ -49,14 +49,48 @@ export interface UserProfile {
 }
 
 // ─── Warehouse types ──────────────────────────────────────────────────────────
+export type StorageType =
+  | "ambient"
+  | "refrigerated"
+  | "controlled_atmosphere"
+  | "dry"
+  | "mixed";
+
 export interface Warehouse {
   id: string;
   name: string;
   location: string;
   capacity: number;
+  zones: number; // 1-4, determines which zones are available
+  storage_type: StorageType;
   owner_id: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface WarehouseInsert {
+  name: string;
+  location: string;
+  capacity: number;
+  zones: number;
+  storage_type: StorageType;
+  owner_id: string;
+}
+
+export interface WarehouseUpdate {
+  name?: string;
+  location?: string;
+  capacity?: number;
+  zones?: number;
+  storage_type?: StorageType;
+}
+
+export interface ManagerAssignment {
+  id: string;
+  manager_id: string;
+  warehouse_id: string;
+  assigned_at: string;
+  assigned_by?: string;
 }
 
 // ─── Batch types ──────────────────────────────────────────────────────────────
@@ -65,7 +99,7 @@ export type BatchStatus = "active" | "dispatched" | "expired";
 export interface Batch {
   id: string;
   batch_id: string;
-  farmer_id: string | null;   // UUID FK → contacts(id)
+  farmer_id: string | null; // UUID FK → contacts(id)
   crop: string;
   variety?: string | null;
   quantity: number;
@@ -89,7 +123,7 @@ export interface Batch {
 
 export interface BatchInsert {
   batch_id: string;
-  farmer_id?: string | null;   // UUID FK → contacts(id)
+  farmer_id?: string | null; // UUID FK → contacts(id)
   crop: string;
   variety?: string;
   quantity: number;
@@ -102,7 +136,7 @@ export interface BatchInsert {
 }
 
 export interface BatchUpdate {
-  farmer_id?: string | null;   // UUID FK → contacts(id)
+  farmer_id?: string | null; // UUID FK → contacts(id)
   crop?: string;
   variety?: string;
   quantity?: number;

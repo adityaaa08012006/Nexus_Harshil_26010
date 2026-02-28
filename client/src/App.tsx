@@ -29,6 +29,7 @@ import { AllocationManagePage } from "./pages/AllocationManagePage";
 import { AllocationRequestPage } from "./pages/AllocationRequestPage";
 import { FarmerManagement } from "./pages/FarmerManagement";
 import { DispatchHistory } from "./pages/DispatchHistory";
+import { ContactInfo } from "./pages/ContactInfo";
 import { ContactsPage } from "./pages/ContactsPage";
 import { QCContactInfo } from "./pages/QCContactInfo";
 import ClickSpark from "./components/home/ClickSpark";

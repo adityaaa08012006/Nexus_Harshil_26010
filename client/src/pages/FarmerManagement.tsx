@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuthContext } from "../context/AuthContext";
-import {
-  CROP_OPTIONS,
-  UNIT_OPTIONS,
-} from "../constants/cropOptions";
+import { useWarehouse } from "../context/WarehouseContext";
+import { CROP_OPTIONS, UNIT_OPTIONS } from "../constants/cropOptions";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -142,8 +140,18 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-gray-100 text-gray-500"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -152,7 +160,11 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
           {error && (
             <div
               className="rounded-lg p-3 text-sm border"
-              style={{ backgroundColor: "#FEF2F2", borderColor: "#DC2626", color: "#DC2626" }}
+              style={{
+                backgroundColor: "#FEF2F2",
+                borderColor: "#DC2626",
+                color: "#DC2626",
+              }}
             >
               {error}
             </div>
@@ -168,18 +180,24 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                 type="text"
                 required
                 value={formData.name}
-                onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, name: e.target.value }))
+                }
                 placeholder="Enter farmer name"
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                 style={inputStyle}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
+              </label>
               <input
                 type="text"
                 value={formData.phone}
-                onChange={(e) => setFormData((p) => ({ ...p, phone: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, phone: e.target.value }))
+                }
                 placeholder="+91 XXXXX XXXXX"
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                 style={inputStyle}
@@ -190,11 +208,15 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
           {/* Email + Location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, email: e.target.value }))
+                }
                 placeholder="farmer@email.com"
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                 style={inputStyle}
@@ -208,7 +230,9 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                 type="text"
                 required
                 value={formData.location}
-                onChange={(e) => setFormData((p) => ({ ...p, location: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, location: e.target.value }))
+                }
                 placeholder="Village, District, State"
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                 style={inputStyle}
@@ -227,7 +251,9 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
               onChange={(e) =>
                 setFormData((p) => ({
                   ...p,
-                  area_acres: e.target.value ? parseFloat(e.target.value) : null,
+                  area_acres: e.target.value
+                    ? parseFloat(e.target.value)
+                    : null,
                 }))
               }
               min="0"
@@ -250,7 +276,12 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                     type="text"
                     required
                     value={formData.custom_crop}
-                    onChange={(e) => setFormData((p) => ({ ...p, custom_crop: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((p) => ({
+                        ...p,
+                        custom_crop: e.target.value,
+                      }))
+                    }
                     placeholder="Enter crop name"
                     className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                     style={inputStyle}
@@ -259,7 +290,11 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                     type="button"
                     onClick={() => {
                       setUseCustomCrop(false);
-                      setFormData((p) => ({ ...p, growing_crop: "", custom_crop: "" }));
+                      setFormData((p) => ({
+                        ...p,
+                        growing_crop: "",
+                        custom_crop: "",
+                      }));
                     }}
                     className="px-3 py-2 text-xs font-medium rounded-lg border transition-colors hover:bg-gray-50"
                     style={{ borderColor: "#E5E7EB", color: "#6B7280" }}
@@ -277,7 +312,10 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                         setUseCustomCrop(true);
                         setFormData((p) => ({ ...p, growing_crop: "Other" }));
                       } else {
-                        setFormData((p) => ({ ...p, growing_crop: e.target.value }));
+                        setFormData((p) => ({
+                          ...p,
+                          growing_crop: e.target.value,
+                        }));
                       }
                     }}
                     className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
@@ -285,7 +323,9 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                   >
                     <option value="">Select crop</option>
                     {CROP_OPTIONS.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                   <button
@@ -307,7 +347,9 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
               <input
                 type="text"
                 value={formData.crop_variety}
-                onChange={(e) => setFormData((p) => ({ ...p, crop_variety: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, crop_variety: e.target.value }))
+                }
                 placeholder="e.g. Basmati, Roma"
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                 style={inputStyle}
@@ -325,7 +367,10 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                 type="date"
                 value={formData.expected_harvest_date}
                 onChange={(e) =>
-                  setFormData((p) => ({ ...p, expected_harvest_date: e.target.value }))
+                  setFormData((p) => ({
+                    ...p,
+                    expected_harvest_date: e.target.value,
+                  }))
                 }
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                 style={inputStyle}
@@ -341,7 +386,9 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
                 onChange={(e) =>
                   setFormData((p) => ({
                     ...p,
-                    expected_quantity: e.target.value ? parseFloat(e.target.value) : null,
+                    expected_quantity: e.target.value
+                      ? parseFloat(e.target.value)
+                      : null,
                   }))
                 }
                 min="0"
@@ -352,15 +399,21 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Unit
+              </label>
               <select
                 value={formData.quantity_unit}
-                onChange={(e) => setFormData((p) => ({ ...p, quantity_unit: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, quantity_unit: e.target.value }))
+                }
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
                 style={inputStyle}
               >
                 {UNIT_OPTIONS.map((u) => (
-                  <option key={u} value={u}>{u}</option>
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
                 ))}
               </select>
             </div>
@@ -368,11 +421,15 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Notes
+            </label>
             <textarea
               rows={3}
               value={formData.notes}
-              onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))}
+              onChange={(e) =>
+                setFormData((p) => ({ ...p, notes: e.target.value }))
+              }
               placeholder="Any additional notes..."
               className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 resize-none"
               style={inputStyle}
@@ -396,7 +453,11 @@ const FarmerModal: React.FC<FarmerModalProps> = ({
               className="flex-1 px-4 py-2 text-sm font-medium rounded-lg text-white transition-opacity disabled:opacity-50"
               style={{ backgroundColor: "#48A111" }}
             >
-              {submitting ? "Saving..." : farmer ? "Update Farmer" : "Add Farmer"}
+              {submitting
+                ? "Saving..."
+                : farmer
+                  ? "Update Farmer"
+                  : "Add Farmer"}
             </button>
           </div>
         </form>
@@ -429,20 +490,45 @@ const DeleteConfirmDialog: React.FC<DeleteDialogProps> = ({
             className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
             style={{ backgroundColor: "#DC262620" }}
           >
-            <svg className="w-5 h-5" style={{ color: "#DC2626" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className="w-5 h-5"
+              style={{ color: "#DC2626" }}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
           </div>
           <div>
             <h3 className="text-base font-bold text-gray-900">Delete Farmer</h3>
             <p className="text-sm text-gray-600 mt-1">
-              Are you sure you want to delete <span className="font-semibold">{farmerName}</span>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{farmerName}</span>? This action
+              cannot be undone.
             </p>
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 px-4 py-2 text-sm font-medium rounded-lg border" style={{ borderColor: "#E5E7EB", color: "#6B7280" }}>Cancel</button>
-          <button onClick={onConfirm} className="flex-1 px-4 py-2 text-sm font-medium rounded-lg text-white hover:opacity-90" style={{ backgroundColor: "#DC2626" }}>Delete</button>
+          <button
+            onClick={onCancel}
+            className="flex-1 px-4 py-2 text-sm font-medium rounded-lg border"
+            style={{ borderColor: "#E5E7EB", color: "#6B7280" }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 px-4 py-2 text-sm font-medium rounded-lg text-white hover:opacity-90"
+            style={{ backgroundColor: "#DC2626" }}
+          >
+            Delete
+          </button>
         </div>
       </div>
     </div>
@@ -453,6 +539,7 @@ const DeleteConfirmDialog: React.FC<DeleteDialogProps> = ({
 
 export const FarmerManagement: React.FC = () => {
   const { user } = useAuthContext();
+  const { selectedWarehouseId } = useWarehouse();
   const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -503,7 +590,7 @@ export const FarmerManagement: React.FC = () => {
       expected_quantity: data.expected_quantity,
       quantity_unit: data.quantity_unit || "kg",
       notes: data.notes || null,
-      warehouse_id: user?.warehouse_id || null,
+      warehouse_id: selectedWarehouseId || null,
     });
     if (insertErr) throw new Error(insertErr.message);
     await fetchFarmers();
@@ -557,7 +644,7 @@ export const FarmerManagement: React.FC = () => {
   });
 
   const uniqueCrops = Array.from(
-    new Set(farmers.map((f) => f.growing_crop).filter(Boolean))
+    new Set(farmers.map((f) => f.growing_crop).filter(Boolean)),
   ) as string[];
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -605,17 +692,29 @@ export const FarmerManagement: React.FC = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
-          style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#48A111" } as React.CSSProperties}
+          style={
+            {
+              borderColor: "#E5E7EB",
+              "--tw-ring-color": "#48A111",
+            } as React.CSSProperties
+          }
         />
         <select
           value={cropFilter}
           onChange={(e) => setCropFilter(e.target.value)}
           className="px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
-          style={{ borderColor: "#E5E7EB", "--tw-ring-color": "#48A111" } as React.CSSProperties}
+          style={
+            {
+              borderColor: "#E5E7EB",
+              "--tw-ring-color": "#48A111",
+            } as React.CSSProperties
+          }
         >
           <option value="">All Crops</option>
           {uniqueCrops.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>
+              {c}
+            </option>
           ))}
         </select>
       </div>
@@ -624,7 +723,11 @@ export const FarmerManagement: React.FC = () => {
       {error && (
         <div
           className="rounded-xl p-4 border text-sm"
-          style={{ backgroundColor: "#FEF2F2", borderColor: "#DC2626", color: "#DC2626" }}
+          style={{
+            backgroundColor: "#FEF2F2",
+            borderColor: "#DC2626",
+            color: "#DC2626",
+          }}
         >
           {error}
         </div>
@@ -646,18 +749,35 @@ export const FarmerManagement: React.FC = () => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b" style={{ backgroundColor: "#F9FAFB" }}>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Farmer</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Location</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Area</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Growing</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Harvest Date</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Exp. Quantity</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Actions</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">
+                    Farmer
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">
+                    Location
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">
+                    Area
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">
+                    Growing
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">
+                    Harvest Date
+                  </th>
+                  <th className="text-right px-4 py-3 font-medium text-gray-600">
+                    Exp. Quantity
+                  </th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredFarmers.map((f) => (
-                  <tr key={f.id} className="border-b last:border-0 hover:bg-gray-50">
+                  <tr
+                    key={f.id}
+                    className="border-b last:border-0 hover:bg-gray-50"
+                  >
                     <td className="px-4 py-3">
                       <div className="font-medium text-gray-900">{f.name}</div>
                       <div className="text-xs text-gray-400">
@@ -666,19 +786,27 @@ export const FarmerManagement: React.FC = () => {
                         {f.email && <span>{f.email}</span>}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{f.location ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {f.location ?? "—"}
+                    </td>
                     <td className="px-4 py-3 text-gray-600">
                       {f.area_acres != null ? `${f.area_acres} acres` : "—"}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-medium">{f.growing_crop ?? "—"}</span>
+                      <span className="font-medium">
+                        {f.growing_crop ?? "—"}
+                      </span>
                       {f.crop_variety && (
-                        <span className="text-gray-400 ml-1">({f.crop_variety})</span>
+                        <span className="text-gray-400 ml-1">
+                          ({f.crop_variety})
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       {f.expected_harvest_date
-                        ? new Date(f.expected_harvest_date).toLocaleDateString("en-IN")
+                        ? new Date(f.expected_harvest_date).toLocaleDateString(
+                            "en-IN",
+                          )
                         : "—"}
                     </td>
                     <td className="px-4 py-3 text-right text-gray-600">
@@ -723,28 +851,38 @@ export const FarmerManagement: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <p className="text-xs text-gray-500 mb-1">Total Farmers</p>
-            <p className="text-2xl font-bold" style={{ color: "#25671E" }}>{farmers.length}</p>
+            <p className="text-2xl font-bold" style={{ color: "#25671E" }}>
+              {farmers.length}
+            </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <p className="text-xs text-gray-500 mb-1">Unique Crops</p>
-            <p className="text-2xl font-bold" style={{ color: "#48A111" }}>{uniqueCrops.length}</p>
+            <p className="text-2xl font-bold" style={{ color: "#48A111" }}>
+              {uniqueCrops.length}
+            </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <p className="text-xs text-gray-500 mb-1">Total Area</p>
             <p className="text-2xl font-bold" style={{ color: "#25671E" }}>
-              {farmers.reduce((sum, f) => sum + (f.area_acres ?? 0), 0).toFixed(1)} ac
+              {farmers
+                .reduce((sum, f) => sum + (f.area_acres ?? 0), 0)
+                .toFixed(1)}{" "}
+              ac
             </p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-4">
             <p className="text-xs text-gray-500 mb-1">Upcoming Harvests</p>
             <p className="text-2xl font-bold" style={{ color: "#48A111" }}>
-              {farmers.filter((f) => {
-                if (!f.expected_harvest_date) return false;
-                const d = new Date(f.expected_harvest_date);
-                const now = new Date();
-                const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
-                return diff >= 0 && diff <= 30;
-              }).length}
+              {
+                farmers.filter((f) => {
+                  if (!f.expected_harvest_date) return false;
+                  const d = new Date(f.expected_harvest_date);
+                  const now = new Date();
+                  const diff =
+                    (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+                  return diff >= 0 && diff <= 30;
+                }).length
+              }
             </p>
           </div>
         </div>

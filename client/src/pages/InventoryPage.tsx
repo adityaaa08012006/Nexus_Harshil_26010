@@ -2,10 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useInventory } from "../hooks/useInventory";
 import { useAuthContext } from "../context/AuthContext";
+import { useWarehouse } from "../context/WarehouseContext";
 import type { Batch, BatchInsert, BatchUpdate } from "../lib/supabase";
 import { supabase } from "../lib/supabase";
 import { InventoryTable } from "../components/dashboard/InventoryTable";
-import { CROP_OPTIONS, UNIT_OPTIONS, GRADE_OPTIONS } from "../constants/cropOptions";
+import {
+  CROP_OPTIONS,
+  UNIT_OPTIONS,
+  GRADE_OPTIONS,
+} from "../constants/cropOptions";
 
 interface FarmerContact {
   id: string;
@@ -15,7 +20,6 @@ interface FarmerContact {
   growing_crop: string | null;
   crop_variety: string | null;
 }
-
 
 // ─── BatchModal Component ──────────────────────────────────────────────────────
 
@@ -36,7 +40,7 @@ const BatchModal: React.FC<BatchModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     batch_id: batch?.batch_id ?? "",
-    farmer_id: batch?.farmer_id ?? null as string | null,
+    farmer_id: batch?.farmer_id ?? (null as string | null),
     crop: batch?.crop ?? "",
     variety: batch?.variety ?? "",
     quantity: batch?.quantity ?? 0,
@@ -112,7 +116,9 @@ const BatchModal: React.FC<BatchModalProps> = ({
     if (!farmerId) return;
     const farmer = farmers.find((f) => f.id === farmerId);
     if (farmer) {
-      const isCustom = farmer.growing_crop && !CROP_OPTIONS.includes(farmer.growing_crop as any);
+      const isCustom =
+        farmer.growing_crop &&
+        !CROP_OPTIONS.includes(farmer.growing_crop as any);
       setFormData((prev) => ({
         ...prev,
         farmer_id: farmerId,
@@ -252,11 +258,14 @@ const BatchModal: React.FC<BatchModalProps> = ({
                 }
               >
                 <option value="">
-                  {loadingFarmers ? "Loading farmers..." : "-- Select a farmer (optional) --"}
+                  {loadingFarmers
+                    ? "Loading farmers..."
+                    : "-- Select a farmer (optional) --"}
                 </option>
                 {farmers.map((f) => (
                   <option key={f.id} value={f.id}>
-                    {f.name} {f.growing_crop ? `(${f.growing_crop})` : ""} {f.location ? `- ${f.location}` : ""}
+                    {f.name} {f.growing_crop ? `(${f.growing_crop})` : ""}{" "}
+                    {f.location ? `- ${f.location}` : ""}
                   </option>
                 ))}
               </select>
@@ -267,32 +276,36 @@ const BatchModal: React.FC<BatchModalProps> = ({
           )}
 
           {/* Selected farmer preview */}
-          {selectedFarmerId && (() => {
-            const f = farmers.find((fa) => fa.id === selectedFarmerId);
-            return f ? (
-              <div
-                className="rounded-lg p-3 text-sm border flex items-center gap-3"
-                style={{ backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }}
-              >
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" style={{ backgroundColor: "#48A111" }}>
-                  {f.name.charAt(0)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900">{f.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {[f.phone, f.location].filter(Boolean).join(" · ")}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleFarmerSelect("")}
-                  className="text-xs text-gray-400 hover:text-gray-600"
+          {selectedFarmerId &&
+            (() => {
+              const f = farmers.find((fa) => fa.id === selectedFarmerId);
+              return f ? (
+                <div
+                  className="rounded-lg p-3 text-sm border flex items-center gap-3"
+                  style={{ backgroundColor: "#F0FDF4", borderColor: "#86EFAC" }}
                 >
-                  ✕
-                </button>
-              </div>
-            ) : null;
-          })()}
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                    style={{ backgroundColor: "#48A111" }}
+                  >
+                    {f.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900">{f.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {[f.phone, f.location].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleFarmerSelect("")}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : null;
+            })()}
 
           {/* Crop info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -338,7 +351,10 @@ const BatchModal: React.FC<BatchModalProps> = ({
                         setUseCustomCrop(true);
                         setFormData((prev) => ({ ...prev, crop: "Other" }));
                       } else {
-                        setFormData((prev) => ({ ...prev, crop: e.target.value }));
+                        setFormData((prev) => ({
+                          ...prev,
+                          crop: e.target.value,
+                        }));
                       }
                     }}
                     required
@@ -352,7 +368,9 @@ const BatchModal: React.FC<BatchModalProps> = ({
                   >
                     <option value="">Select crop</option>
                     {CROP_OPTIONS.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
                     ))}
                   </select>
                   <button
@@ -397,7 +415,9 @@ const BatchModal: React.FC<BatchModalProps> = ({
             <select
               value={(formData as any).grade ?? ""}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, grade: e.target.value } as any))
+                setFormData(
+                  (prev) => ({ ...prev, grade: e.target.value }) as any,
+                )
               }
               className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2"
               style={
@@ -409,7 +429,9 @@ const BatchModal: React.FC<BatchModalProps> = ({
             >
               <option value="">Select grade (optional)</option>
               {GRADE_OPTIONS.map((g) => (
-                <option key={g} value={g}>{g}</option>
+                <option key={g} value={g}>
+                  {g}
+                </option>
               ))}
             </select>
           </div>
@@ -459,7 +481,9 @@ const BatchModal: React.FC<BatchModalProps> = ({
                 }
               >
                 {UNIT_OPTIONS.map((u) => (
-                  <option key={u} value={u}>{u}</option>
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
                 ))}
               </select>
             </div>
@@ -677,6 +701,7 @@ export const InventoryPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuthContext();
+  const { selectedWarehouseId } = useWarehouse();
   const {
     batches,
     isLoading,
@@ -685,7 +710,7 @@ export const InventoryPage: React.FC = () => {
     createBatch,
     updateBatch,
     deleteBatch,
-  } = useInventory();
+  } = useInventory(selectedWarehouseId);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBatch, setEditingBatch] = useState<Batch | null>(null);
@@ -817,7 +842,7 @@ export const InventoryPage: React.FC = () => {
       />
 
       {/* ── Modals ── */}
-      {isManager && user?.warehouse_id && (
+      {isManager && selectedWarehouseId && (
         <>
           <BatchModal
             isOpen={modalOpen}
@@ -827,7 +852,7 @@ export const InventoryPage: React.FC = () => {
             }}
             onSubmit={handleModalSubmit}
             batch={editingBatch}
-            warehouseId={user.warehouse_id}
+            warehouseId={selectedWarehouseId}
           />
 
           <DeleteConfirmDialog

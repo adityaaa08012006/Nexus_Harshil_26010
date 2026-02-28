@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useInventory } from "../hooks/useInventory";
 import { useAuthContext } from "../context/AuthContext";
+import { useWarehouse } from "../context/WarehouseContext";
 import { supabase } from "../lib/supabase";
 import { MetricCards } from "../components/dashboard/MetricCards";
 import { RiskChart } from "../components/dashboard/RiskChart";
@@ -41,10 +42,12 @@ interface IncomingOrder {
 export const ManagerDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthContext();
+  const { selectedWarehouseId } = useWarehouse();
   const [activeView, setActiveView] = useState<"overview" | "dispatch">(
     "overview",
   );
-  const { batches, stats, isLoading, error } = useInventory();
+  const { batches, stats, isLoading, error } =
+    useInventory(selectedWarehouseId);
   const [incomingOrders, setIncomingOrders] = useState<IncomingOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -75,9 +78,9 @@ export const ManagerDashboard: React.FC = () => {
         .in("status", ["pending", "reviewing"])
         .order("created_at", { ascending: false });
 
-      // Filter by manager's warehouse_id
-      if (user?.warehouse_id) {
-        query = query.eq("warehouse_id", user.warehouse_id);
+      // Filter by selected warehouse
+      if (selectedWarehouseId) {
+        query = query.eq("warehouse_id", selectedWarehouseId);
       }
 
       const { data: orders, error: ordersError } = await query;

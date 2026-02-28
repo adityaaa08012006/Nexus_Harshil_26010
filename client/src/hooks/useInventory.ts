@@ -27,19 +27,11 @@ interface UseInventoryReturn {
 }
 
 /**
- * Helper: check if a batch row matches the current user's filter criteria.
- * Mirrors the role-based filtering used in the initial fetch.
+ * Helper: check if a batch row matches the current filter criteria.
+ * Mirrors the filtering used in the initial fetch.
  */
-const matchesFilter = (
-  row: Batch,
-  userRole?: string,
-  userWarehouseId?: string | null,
-  filterWarehouseId?: string,
-): boolean => {
+const matchesFilter = (row: Batch, filterWarehouseId?: string): boolean => {
   if (row.status === "expired") return false;
-  if (userRole === "manager" && userWarehouseId) {
-    return row.warehouse_id === userWarehouseId;
-  }
   if (filterWarehouseId) {
     return row.warehouse_id === filterWarehouseId;
   }
@@ -64,10 +56,8 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
         .neq("status", "expired")
         .order("entry_date", { ascending: false });
 
-      // Role-based filtering
-      if (user?.role === "manager" && user?.warehouse_id) {
-        query = query.eq("warehouse_id", user.warehouse_id);
-      } else if (warehouseId) {
+      // Warehouse-based filtering
+      if (warehouseId) {
         query = query.eq("warehouse_id", warehouseId);
       }
 
@@ -79,7 +69,7 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, warehouseId]);
+  }, [warehouseId]);
 
   // ── Supabase Realtime Subscription ────────────────────────────────────────
   useEffect(() => {
@@ -93,14 +83,7 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
         { event: "INSERT", schema: "public", table: "batches" },
         (payload) => {
           const newRow = payload.new as Batch;
-          if (
-            matchesFilter(
-              newRow,
-              user?.role,
-              user?.warehouse_id,
-              warehouseId,
-            )
-          ) {
+          if (matchesFilter(newRow, warehouseId)) {
             setBatches((prev) => {
               // Avoid duplicates
               if (prev.some((b) => b.id === newRow.id)) return prev;
@@ -116,14 +99,7 @@ export const useInventory = (warehouseId?: string): UseInventoryReturn => {
           const updated = payload.new as Batch;
           setBatches((prev) => {
             // If updated to expired or no longer matches filter, remove it
-            if (
-              !matchesFilter(
-                updated,
-                user?.role,
-                user?.warehouse_id,
-                warehouseId,
-              )
-            ) {
+            if (!matchesFilter(updated, warehouseId)) {
               return prev.filter((b) => b.id !== updated.id);
             }
             // Replace existing row, or add if new

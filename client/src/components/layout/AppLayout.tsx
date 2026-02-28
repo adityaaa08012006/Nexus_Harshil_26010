@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useAlertCount } from "../../hooks/useAlertCount";
+import { useWarehouse } from "../../context/WarehouseContext";
 
 // ─── Role-Based Nav ────────────────────────────────────────────────────────────
 
@@ -341,7 +342,12 @@ const qcNav: NavItem[] = [
     icon: <EyeIcon />,
   },
   { id: "alerts", label: "Alerts", path: "/qc/alerts", icon: <BellIcon /> },
-  { id: "contacts", label: "Contacts", path: "/qc/contacts", icon: <UsersIcon /> },
+  {
+    id: "contacts",
+    label: "Contacts",
+    path: "/qc/contacts",
+    icon: <UsersIcon />,
+  },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -356,6 +362,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { count: alertCount } = useAlertCount();
+  const {
+    warehouses,
+    selectedWarehouseId,
+    setSelectedWarehouseId,
+    selectedWarehouse,
+  } = useWarehouse();
+  const [warehouseDropdownOpen, setWarehouseDropdownOpen] = useState(false);
 
   const navItems = isOwner() ? ownerNav : isManager() ? managerNav : qcNav;
 
@@ -567,11 +580,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            {/* Notification bell placeholder */}
-            <button className="p-1.5 rounded-md text-gray-500 hover:bg-gray-100 transition-colors relative">
-              <BellIcon />
-            </button>
-
             {/* Avatar */}
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white cursor-default"

@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, Warehouse } from "../lib/supabase";
 import { useAuthContext } from "./AuthContext";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 interface WarehouseContextType {
   warehouses: Warehouse[];
   selectedWarehouseId: string | undefined;
@@ -35,39 +37,64 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setIsLoading(true);
       try {
-        let query = supabase.from("warehouses").select("*");
+        let warehouseData: Warehouse[] = [];
 
-        // Role-based filtering
+        // Role-based fetching
         if (user.role === "manager" || user.role === "qc_rep") {
-          // Managers and QC only see their assigned warehouse
-          if (user.warehouse_id) {
-            query = query.eq("id", user.warehouse_id);
+          // Managers and QC fetch from API (uses junction table)
+          const { data: sessionData } = await supabase.auth.getSession();
+          const token = sessionData.session?.access_token;
+
+          if (token) {
+            const response = await fetch(`${API_URL}/api/warehouses`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              warehouseData = result.warehouses || [];
+            }
           }
         } else if (user.role === "owner") {
-          // Owners see all their warehouses
-          query = query.eq("owner_id", user.id);
+          // Owners fetch directly from Supabase
+          const { data, error } = await supabase
+            .from("warehouses")
+            .select("*")
+            .eq("owner_id", user.id)
+            .order("name", { ascending: true });
+
+          if (error) {
+            console.error("Error fetching warehouses:", error);
+          } else {
+            warehouseData = data ?? [];
+          }
         }
 
-        const { data, error } = await query.order("name", { ascending: true });
+        setWarehouses(warehouseData);
 
-        if (error) {
-          console.error("Error fetching warehouses:", error);
-          setWarehouses([]);
-        } else {
-          setWarehouses(data ?? []);
-
-          // Auto-select warehouse based on role
-          if (user.role === "manager" || user.role === "qc_rep") {
-            // For managers/QC, always use their assigned warehouse
-            setSelectedWarehouseId(user.warehouse_id ?? undefined);
-          } else if (user.role === "owner") {
-            // For owners, try to restore from localStorage or select first
-            const storedId = localStorage.getItem("selectedWarehouseId");
-            if (storedId && data?.some((w) => w.id === storedId)) {
-              setSelectedWarehouseId(storedId);
-            } else if (data && data.length > 0) {
-              setSelectedWarehouseId(data[0].id);
-            }
+        // Auto-select warehouse based on role
+        if (user.role === "manager" || user.role === "qc_rep") {
+          // For managers/QC, try to restore from localStorage
+          const storedId = localStorage.getItem(
+            `selectedWarehouseId_${user.id}`,
+          );
+          if (storedId && warehouseData.some((w) => w.id === storedId)) {
+            setSelectedWarehouseId(storedId);
+          } else {
+            // Don't auto-select - require explicit selection
+            setSelectedWarehouseId(undefined);
+          }
+        } else if (user.role === "owner") {
+          // For owners, try to restore from localStorage or select first
+          const storedId = localStorage.getItem(
+            `selectedWarehouseId_${user.id}`,
+          );
+          if (storedId && warehouseData.some((w) => w.id === storedId)) {
+            setSelectedWarehouseId(storedId);
+          } else if (warehouseData.length > 0) {
+            setSelectedWarehouseId(warehouseData[0].id);
           }
         }
       } catch (err) {
@@ -81,12 +108,15 @@ export const WarehouseProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchWarehouses();
   }, [user]);
 
-  // Persist owner's warehouse selection to localStorage
+  // Persist warehouse selection to localStorage (user-specific)
   useEffect(() => {
-    if (user?.role === "owner" && selectedWarehouseId) {
-      localStorage.setItem("selectedWarehouseId", selectedWarehouseId);
+    if (user?.id && selectedWarehouseId) {
+      localStorage.setItem(
+        `selectedWarehouseId_${user.id}`,
+        selectedWarehouseId,
+      );
     }
-  }, [selectedWarehouseId, user?.role]);
+  }, [selectedWarehouseId, user?.id]);
 
   const selectedWarehouse = warehouses.find(
     (w) => w.id === selectedWarehouseId,

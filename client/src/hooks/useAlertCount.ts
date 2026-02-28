@@ -6,7 +6,7 @@ import { useWarehouse } from "../context/WarehouseContext";
 /**
  * Hook to fetch and track the number of unacknowledged alerts
  * Updates every 30 seconds and when "alert-acknowledged" event is dispatched
- * Supports both managers (fixed warehouse) and owners (selected warehouse)
+ * Uses the currently selected warehouse from WarehouseContext
  */
 export const useAlertCount = () => {
   const { user } = useAuth();
@@ -14,9 +14,8 @@ export const useAlertCount = () => {
   const [count, setCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
-  // Determine the warehouse to check alerts for
-  const warehouseId =
-    user?.role === "owner" ? selectedWarehouseId : user?.warehouse_id;
+  // Use the selected warehouse for all roles
+  const warehouseId = selectedWarehouseId;
 
   useEffect(() => {
     if (!warehouseId) {

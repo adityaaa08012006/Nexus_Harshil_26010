@@ -49,19 +49,26 @@ export const requireAuth = async (req, res, next) => {
 
     if (profileError) {
       console.log(
-        "[AUTH MIDDLEWARE] ⚠️ Profile fetch error:",
+        "[AUTH MIDDLEWARE] ❌ Profile fetch error:",
         profileError.message,
       );
-    } else {
-      console.log(
-        "[AUTH MIDDLEWARE] Profile loaded - Role:",
-        profile?.role,
-        "Warehouse:",
-        profile?.warehouse_id || "none",
-      );
+      return res.status(500).json({ error: "Failed to load user profile" });
     }
 
-    req.user = { ...user, profile };
+    if (!profile) {
+      console.log("[AUTH MIDDLEWARE] ❌ No profile found for user");
+      return res.status(404).json({ error: "User profile not found" });
+    }
+
+    console.log(
+      "[AUTH MIDDLEWARE] ✅ Profile loaded - Role:",
+      profile.role,
+      "Warehouse:",
+      profile.warehouse_id || "none",
+    );
+
+    req.user = user;
+    req.profile = profile;
     next();
   } catch (err) {
     console.error("[AUTH MIDDLEWARE] ❌ Exception:", err);

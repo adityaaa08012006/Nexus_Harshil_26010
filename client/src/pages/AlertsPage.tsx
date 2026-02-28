@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuthContext } from "../context/AuthContext";
+import { useWarehouse } from "../context/WarehouseContext";
 import { supabase } from "../lib/supabase";
 import type { Alert, OrderAlert } from "../lib/supabase";
 import { formatRelativeTime } from "../utils/formatters";
@@ -48,6 +49,7 @@ type CombinedAlert = {
 
 export const AlertsPage: React.FC = () => {
   const { user } = useAuthContext();
+  const { selectedWarehouseId } = useWarehouse();
   const [alerts, setAlerts] = useState<CombinedAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"active" | "acknowledged" | "all">(
@@ -56,10 +58,10 @@ export const AlertsPage: React.FC = () => {
 
   useEffect(() => {
     fetchAlerts();
-  }, [user?.warehouse_id, user?.role, filter]);
+  }, [selectedWarehouseId, user?.role, filter]);
 
   const fetchAlerts = async () => {
-    if (!user?.warehouse_id) {
+    if (!selectedWarehouseId) {
       setLoading(false);
       return;
     }
@@ -72,7 +74,7 @@ export const AlertsPage: React.FC = () => {
       let sensorQuery = supabase
         .from("sensor_alerts")
         .select("*")
-        .eq("warehouse_id", user.warehouse_id)
+        .eq("warehouse_id", selectedWarehouseId)
         .order("triggered_at", { ascending: false });
 
       if (filter === "active") {
@@ -104,12 +106,12 @@ export const AlertsPage: React.FC = () => {
       }
 
       // Fetch order alerts for managers only
-      if (user.role === "manager") {
+      if (user?.role === "manager") {
         let orderQuery = supabase
           .from("alerts")
           .select("*")
           .eq("type", "order")
-          .eq("warehouse_id", user.warehouse_id) // Filter by manager's warehouse
+          .eq("warehouse_id", selectedWarehouseId) // Filter by selected warehouse
           .order("created_at", { ascending: false });
 
         if (filter === "active") {

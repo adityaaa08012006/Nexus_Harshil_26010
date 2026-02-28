@@ -24,10 +24,23 @@ export const SensorMonitoring: React.FC = () => {
     selectedWarehouse,
     isLoading: warehousesLoading,
   } = useWarehouse();
-  const [selectedZone, setSelectedZone] = useState<string>(ZONES[0]);
+
+  // Get available zones based on selected warehouse's zone count
+  const availableZones = selectedWarehouse?.zones
+    ? ZONES.slice(0, selectedWarehouse.zones)
+    : ZONES;
+
+  const [selectedZone, setSelectedZone] = useState<string>(availableZones[0]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [isThresholdModalOpen, setIsThresholdModalOpen] = useState(false);
+
+  // Reset selected zone if it's no longer available
+  React.useEffect(() => {
+    if (selectedZone && !availableZones.includes(selectedZone)) {
+      setSelectedZone(availableZones[0]);
+    }
+  }, [availableZones, selectedZone]);
 
   // Use selected warehouse ID from context
   const warehouseId = selectedWarehouseId || null;
@@ -277,7 +290,7 @@ export const SensorMonitoring: React.FC = () => {
 
           {/* Zone selector */}
           <div className="flex gap-2">
-            {ZONES.map((zone) => {
+            {availableZones.map((zone) => {
               const hasAlert = alerts.some((a) => a.zone === zone);
               return (
                 <button
