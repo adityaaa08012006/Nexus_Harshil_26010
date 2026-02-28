@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   Tractor, 
@@ -159,7 +159,6 @@ function SolutionSection({ data, index }: { data: any, index: number }) {
     offset: ["start end", "end start"]
   });
 
-  const xLeft = useTransform(scrollYProgress, [0, 1], [-50, 0]);
   const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
 
   const isEven = index % 2 === 0;

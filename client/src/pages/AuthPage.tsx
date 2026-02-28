@@ -14,7 +14,6 @@ import {
   ClipboardCheck,
   Check,
   Loader2,
-  Sprout,
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";

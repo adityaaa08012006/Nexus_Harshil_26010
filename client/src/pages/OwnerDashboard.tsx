@@ -143,7 +143,7 @@ export const OwnerDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { selectedWarehouseId, warehouses } = useWarehouse();
-  const { batches, stats, isLoading } = useInventory(selectedWarehouseId);
+  const { batches, stats } = useInventory(selectedWarehouseId);
   const [recentDispatches, setRecentDispatches] = useState<any[]>([]);
 
   // Derived Metrics

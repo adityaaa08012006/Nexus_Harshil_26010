@@ -1,13 +1,10 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Building2, 
   Users, 
   Target, 
   Lightbulb, 
-  TrendingUp, 
-  ShieldCheck, 
-  Award,
+  TrendingUp,
   ArrowRight,
   Github,
   Linkedin,
