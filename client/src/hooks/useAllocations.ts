@@ -3,8 +3,9 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 import type { AllocationRequest, AllocationInsert } from "../lib/supabase";
 import { useAuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 
-const API_BASE = "http://localhost:5000/api/allocation";
+const API_BASE = `${API_URL}/api/allocation`;
 
 interface UseAllocationsReturn {
   allocations: AllocationRequest[];

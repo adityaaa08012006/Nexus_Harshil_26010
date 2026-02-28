@@ -8,10 +8,7 @@ import { OrderStatusTimeline } from "../components/common/OrderStatusTimeline";
 import type { AllocationInsert } from "../lib/supabase";
 import {
   FileText,
-  Clock,
   Package,
-  CheckCircle,
-  AlertCircle,
   Calendar,
   MapPin,
   ArrowLeft,
@@ -139,49 +136,6 @@ export const QCOrders: React.FC = () => {
       if (order.dispatch_status === "cancelled") return order.status; // fall back
     }
     return order.status;
-  };
-
-  const getStatusColor = (_status: string) => {
-    switch (status) {
-      case "pending":
-        return { bg: "#FEF3C7", text: "#92400E", border: "#FCD34D" };
-      case "reviewing":
-        return { bg: "#E0E7FF", text: "#3730A3", border: "#C7D2FE" };
-      case "allocated":
-        return { bg: "#DBEAFE", text: "#1E40AF", border: "#93C5FD" };
-      case "dispatched":
-        return { bg: "#DDD6FE", text: "#5B21B6", border: "#C4B5FD" };
-      case "in-transit":
-        return { bg: "#E0E7FF", text: "#4338CA", border: "#A5B4FC" };
-      case "delivered":
-        return { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" };
-      case "completed":
-        return { bg: "#D1FAE5", text: "#065F46", border: "#6EE7B7" };
-      case "cancelled":
-        return { bg: "#FEE2E2", text: "#991B1B", border: "#FCA5A5" };
-      default:
-        return { bg: "#F3F4F6", text: "#374151", border: "#D1D5DB" };
-    }
-  };
-
-  const getStatusIcon = (_status: string) => {
-    switch (status) {
-      case "pending":
-      case "reviewing":
-        return <Clock className="w-4 h-4" />;
-      case "allocated":
-        return <Package className="w-4 h-4" />;
-      case "dispatched":
-      case "in-transit":
-        return <Truck className="w-4 h-4" />;
-      case "delivered":
-      case "completed":
-        return <CheckCircle className="w-4 h-4" />;
-      case "cancelled":
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <FileText className="w-4 h-4" />;
-    }
   };
 
   const getStatusCounts = () => {

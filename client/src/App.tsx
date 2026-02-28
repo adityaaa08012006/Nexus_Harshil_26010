@@ -1,4 +1,3 @@
-import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -30,9 +29,6 @@ import { QCOrderTracking } from "./pages/QCOrderTracking";
 import { AllocationManagePage } from "./pages/AllocationManagePage";
 import { FarmerManagement } from "./pages/FarmerManagement";
 import { DispatchHistory } from "./pages/DispatchHistory";
-import { ContactInfo } from "./pages/ContactInfo";
-import { ContactsPage } from "./pages/ContactsPage";
-import { QCContactInfo } from "./pages/QCContactInfo";
 import { ImpactDashboard } from "./pages/ImpactDashboard";
 import { SettingsPage } from "./pages/SettingsPage";
 import ClickSpark from "./components/home/ClickSpark";

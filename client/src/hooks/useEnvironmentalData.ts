@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { API_URL } from "../config/api";
 
 // ============================================================================
 // Types
@@ -99,8 +100,8 @@ export const useEnvironmentalData = (
       }
 
       const url = zone
-        ? `http://localhost:5000/api/sensors/readings/${warehouseId}/zone/${zone}`
-        : `http://localhost:5000/api/sensors/readings/${warehouseId}`;
+        ? `${API_URL}/api/sensors/readings/${warehouseId}/zone/${zone}`
+        : `${API_URL}/api/sensors/readings/${warehouseId}`;
 
       const response = await fetch(url, {
         method: "GET",
@@ -138,7 +139,7 @@ export const useEnvironmentalData = (
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/sensors/thresholds/${warehouseId}`,
+        `${API_URL}/api/sensors/thresholds/${warehouseId}`,
         {
           method: "GET",
           headers: {
@@ -176,7 +177,7 @@ export const useEnvironmentalData = (
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/sensors/alerts/${warehouseId}?acknowledged=false`,
+        `${API_URL}/api/sensors/alerts/${warehouseId}?acknowledged=false`,
         {
           method: "GET",
           headers: {
@@ -234,7 +235,7 @@ export const useEnvironmentalData = (
         }
 
         const response = await fetch(
-          `http://localhost:5000/api/sensors/thresholds`,
+          `${API_URL}/api/sensors/thresholds`,
           {
             method: "POST",
             headers: {
@@ -277,7 +278,7 @@ export const useEnvironmentalData = (
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/sensors/alerts/${alertId}/acknowledge`,
+        `${API_URL}/api/sensors/alerts/${alertId}/acknowledge`,
         {
           method: "POST",
           headers: {
@@ -316,7 +317,7 @@ export const useEnvironmentalData = (
         }
 
         const response = await fetch(
-          `http://localhost:5000/api/sensors/simulate/${warehouseId}`,
+          `${API_URL}/api/sensors/simulate/${warehouseId}`,
           {
             method: "POST",
             headers: {

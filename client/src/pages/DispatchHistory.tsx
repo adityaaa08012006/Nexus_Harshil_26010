@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 import {
   Truck,
   MapPin,
@@ -123,7 +124,7 @@ export const DispatchHistory: React.FC = () => {
           headers["Authorization"] = `Bearer ${session.access_token}`;
         }
         const res = await fetch(
-          "http://localhost:5000/api/allocation/dispatches/list",
+          `${API_URL}/api/allocation/dispatches/list`,
           { headers },
         );
         if (!res.ok) {
@@ -184,7 +185,7 @@ export const DispatchHistory: React.FC = () => {
         headers["Authorization"] = `Bearer ${session.access_token}`;
       }
       const res = await fetch(
-        `http://localhost:5000/api/allocation/dispatches/${dispatchId}/status`,
+        `${API_URL}/api/allocation/dispatches/${dispatchId}/status`,
         { method: "PUT", headers, body: JSON.stringify({ status: newStatus }) },
       );
       if (!res.ok) {

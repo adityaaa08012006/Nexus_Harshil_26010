@@ -132,7 +132,7 @@ export const getDaysRemaining = (
  * Generate recommendation based on risk score
  */
 export const generateRecommendation = (
-  score: number,
+  _score: number,
   level: RiskLevel,
 ): string => {
   switch (level) {

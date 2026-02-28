@@ -28,7 +28,7 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
   onView,
   onEdit,
   onDelete,
-  readOnly = false,
+  readOnly: _readOnly = false,
   title = "Batch Inventory",
   maxRows,
   showSearch = true,

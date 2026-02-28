@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 import {
   Users,
   Search,
@@ -99,7 +100,7 @@ const CROPS = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const apiBase = "http://localhost:5000/api/contacts";
+const apiBase = `${API_URL}/api/contacts`;
 const authHeaders = (token: string | undefined) => ({
   "Content-Type": "application/json",
   ...(token ? { Authorization: `Bearer ${token}` } : {}),

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 import { useAuth } from "../hooks/useAuth";
 import {
   Leaf,
@@ -111,7 +112,7 @@ interface ComparisonWarehouse {
 
 type Period = "7d" | "30d" | "90d" | "ytd" | "all";
 
-const API_BASE = "http://localhost:5000/api/analytics";
+const API_BASE = `${API_URL}/api/analytics`;
 
 const BRAND = {
   green: "#48A111",

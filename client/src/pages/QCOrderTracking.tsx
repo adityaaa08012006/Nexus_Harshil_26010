@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 import { MessageButton } from "../components/common/MessageThread";
 import {
   Truck,
@@ -196,7 +197,7 @@ export const QCOrderTracking: React.FC = () => {
           headers["Authorization"] = `Bearer ${session.access_token}`;
         }
         const res = await fetch(
-          "http://localhost:5000/api/allocation/dispatches/my",
+          `${API_URL}/api/allocation/dispatches/my`,
           { headers },
         );
         if (!res.ok) {

@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase, Warehouse } from "../lib/supabase";
 import { useAuthContext } from "./AuthContext";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { API_URL } from "../config/api";
 
 interface WarehouseContextType {
   warehouses: Warehouse[];

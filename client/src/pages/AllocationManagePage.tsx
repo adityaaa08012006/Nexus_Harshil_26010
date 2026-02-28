@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAllocations } from "../hooks/useAllocations";
 import { useInventory } from "../hooks/useInventory";
 import { useAuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 import { MessageButton } from "../components/common/MessageThread";
 import type { AllocationRequest, Batch } from "../lib/supabase";
 
@@ -123,7 +124,7 @@ const ApproveDialog: React.FC<ApproveDialogProps> = ({
         headers["Authorization"] = `Bearer ${session.access_token}`;
       }
       const res = await fetch(
-        `http://localhost:5000/api/allocation/suggest-farmers?${params}`,
+        `${API_URL}/api/allocation/suggest-farmers?${params}`,
         { headers },
       );
       if (!res.ok) {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuthContext } from "../../context/AuthContext";
+import { API_URL } from "../../config/api";
 import { supabase } from "../../lib/supabase";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { MessageCircle, Send, X, User } from "lucide-react";
@@ -58,7 +59,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     setError(null);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/messages/${allocationId}`,
+        `${API_URL}/api/messages/${allocationId}`,
         { headers: headers() },
       );
       if (!res.ok) {
@@ -69,7 +70,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       setMessages(data);
 
       // Mark messages as read
-      await fetch(`http://localhost:5000/api/messages/${allocationId}/read`, {
+      await fetch(`${API_URL}/api/messages/${allocationId}/read`, {
         method: "PUT",
         headers: headers(),
       });
@@ -126,7 +127,7 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
     setIsSending(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/messages/${allocationId}`,
+        `${API_URL}/api/messages/${allocationId}`,
         {
           method: "POST",
           headers: headers(),

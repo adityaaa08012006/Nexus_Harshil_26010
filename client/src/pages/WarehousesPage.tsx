@@ -13,8 +13,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { API_URL } from "../config/api";
 
 // Modal for creating new warehouse
 const CreateWarehouseModal: React.FC<{

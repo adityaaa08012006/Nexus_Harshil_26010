@@ -22,8 +22,7 @@ import {
   UNIT_OPTIONS,
   GRADE_OPTIONS,
 } from "../constants/cropOptions";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+import { API_URL } from "../config/api";
 
 // Confidence badge helper component
 const ConfidenceBadge: React.FC<{ confidence: number }> = ({ confidence }) => {

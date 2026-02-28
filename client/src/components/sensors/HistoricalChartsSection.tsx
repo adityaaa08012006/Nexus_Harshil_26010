@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_URL } from "../../config/api";
 import {
   LineChart,
   Line,
@@ -102,7 +103,7 @@ const HistoricalChartsSection: React.FC<HistoricalChartsSectionProps> = ({
         const endTime = getEndTime();
 
         const url = new URL(
-          `http://localhost:5000/api/sensors/readings/${warehouseId}/history`,
+          `${API_URL}/api/sensors/readings/${warehouseId}/history`,
         );
         url.searchParams.append("zone", selectedZone);
         url.searchParams.append("startTime", startTime);

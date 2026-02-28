@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-import { useAuthContext } from "../context/AuthContext";
 import { useWarehouse } from "../context/WarehouseContext";
 import { CROP_OPTIONS, UNIT_OPTIONS } from "../constants/cropOptions";
 
@@ -538,7 +537,6 @@ const DeleteConfirmDialog: React.FC<DeleteDialogProps> = ({
 // ─── Main FarmerManagement Page ─────────────────────────────────────────────
 
 export const FarmerManagement: React.FC = () => {
-  const { user } = useAuthContext();
   const { selectedWarehouseId } = useWarehouse();
   const [farmers, setFarmers] = useState<Farmer[]>([]);
   const [isLoading, setIsLoading] = useState(true);

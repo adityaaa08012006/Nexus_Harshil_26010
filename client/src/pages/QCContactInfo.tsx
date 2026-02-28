@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuthContext } from "../context/AuthContext";
+import { API_URL } from "../config/api";
 import { Users, Phone, Mail, MapPin, Search, Warehouse } from "lucide-react";
 
 interface ManagerInfo {
@@ -33,7 +34,7 @@ export const QCContactInfo: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch("http://localhost:5000/api/contacts/managers", {
+        const res = await fetch(`${API_URL}/api/contacts/managers`, {
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

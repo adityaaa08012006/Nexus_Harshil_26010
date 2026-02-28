@@ -19,8 +19,6 @@ export const RiskChart: React.FC<RiskChartProps> = ({ batches }) => {
     { name: "High Risk", value: high, color: "#DC2626" },
   ].filter((d) => d.value > 0);
 
-  const total = batches.length;
-
   if (batches.length === 0) {
     return (
       <div
