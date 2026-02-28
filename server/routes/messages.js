@@ -24,16 +24,16 @@ router.get("/:allocationId", requireAuth, async (req, res) => {
 
     // Fetch sender profiles separately since messages.sender_id -> auth.users, not user_profiles
     if (messages && messages.length > 0) {
-      const senderIds = [...new Set(messages.map(m => m.sender_id))];
+      const senderIds = [...new Set(messages.map((m) => m.sender_id))];
       const { data: profiles } = await supabaseAdmin
         .from("user_profiles")
         .select("id, name, email, role")
         .in("id", senderIds);
 
       // Attach sender info to each message
-      const messagesWithSenders = messages.map(msg => ({
+      const messagesWithSenders = messages.map((msg) => ({
         ...msg,
-        sender: profiles?.find(p => p.id === msg.sender_id) || null
+        sender: profiles?.find((p) => p.id === msg.sender_id) || null,
       }));
 
       return res.json(messagesWithSenders);
